@@ -1,111 +1,189 @@
 # JOB — Plataforma de Intermediação de Serviços
 
-Plataforma web para intermediação de serviços entre **clientes** que precisam contratar um serviço e **prestadores** que oferecem seus serviços.
+Plataforma web para **intermediação de serviços entre usuários**, permitindo que qualquer usuário publique uma necessidade, encontre oportunidades, envie propostas, negocie valores e condições e participe de contratações.
 
-O projeto está sendo desenvolvido como uma aplicação web moderna, utilizando uma arquitetura baseada em API REST, frontend separado e banco de dados PostgreSQL, com todos os principais serviços executados através do Docker.
+O **JOB** não trabalha com a ideia de usuários permanentemente classificados como "cliente" ou "prestador". **Todos os usuários possuem os mesmos recursos dentro da plataforma** e podem assumir diferentes papéis de acordo com a ação realizada.
+
+Um usuário pode, por exemplo:
+
+* Publicar uma necessidade de serviço;
+* Receber propostas de outros usuários;
+* Enviar propostas para publicações de outros usuários;
+* Negociar valores, prazos e condições;
+* Prestar um serviço;
+* Contratar outro usuário;
+* Avaliar um serviço realizado;
+* Vincular categorias ao próprio perfil.
+
+O projeto utiliza uma arquitetura baseada em **API REST**, frontend separado, banco de dados PostgreSQL e infraestrutura executada através do Docker.
 
 ---
 
-## 1. Escopo do Projeto
+# 1. Conceito do Projeto
 
-O **JOB** tem como objetivo facilitar a contratação de profissionais autônomos, permitindo que clientes publiquem necessidades de serviços e que prestadores possam enviar propostas.
+O JOB funciona como uma plataforma de intermediação onde os usuários se encontram através de uma **timeline de publicações**.
 
-### Fluxo principal
+A ideia principal é eliminar a necessidade de definir antecipadamente quem é "cliente" e quem é "prestador".
+
+O papel de cada usuário surge de acordo com a operação:
 
 ```text
-Cliente
+Usuário
    │
-   ├── Cria uma solicitação de serviço
+   ├── Publica um serviço
+   │       │
+   │       └── Está procurando alguém para realizar o trabalho
    │
-   ▼
-Post de Serviço
-   │
-   ├── Categoria
-   ├── Descrição
-   ├── Localização
-   ├── Data desejada
-   └── Faixa de valor
-   │
-   ▼
-Prestadores visualizam a solicitação
-   │
-   ├── Enviam proposta
-   ├── Definem valor
-   └── Definem prazo
-   │
-   ▼
-Cliente analisa as propostas
-   │
-   ▼
-Proposta aceita
-   │
-   ▼
-Contratação
-   │
-   ├── Pagamento
-   ├── Agendamento
-   ├── Execução
-   ├── Confirmação
-   └── Avaliação
-   │
-   ▼
-Repasse ao prestador
+   └── Envia uma proposta
+           │
+           └── Está disposto a realizar o trabalho
+```
+
+Assim, o mesmo usuário pode publicar um serviço hoje e prestar um serviço para outra pessoa amanhã.
+
+---
+
+# 2. Fluxo Principal da Plataforma
+
+O fluxo geral do JOB será:
+
+```text
+                    USUÁRIOS
+                       │
+                       ▼
+                    TIMELINE
+                       │
+              ┌────────┴────────┐
+              │                 │
+              ▼                 ▼
+       PUBLICAR POST       VISUALIZAR POSTS
+              │                 │
+              │                 ▼
+              │          ENVIAR PROPOSTA
+              │                 │
+              │                 ▼
+              │          NEGOCIAÇÃO
+              │                 │
+              └────────┬────────┘
+                       │
+                       ▼
+                PROPOSTA ACEITA
+                       │
+                       ▼
+                  CONTRATAÇÃO
+                       │
+                       ▼
+                    PAGAMENTO
+                       │
+                       ▼
+             PAGAMENTO CONFIRMADO
+                       │
+                       ▼
+              SERVIÇO AGENDADO
+                       │
+                       ▼
+              EXECUÇÃO DO SERVIÇO
+                       │
+                       ▼
+              PRESTADOR FINALIZA
+                       │
+                       ▼
+          AGUARDANDO CONFIRMAÇÃO
+                       │
+                       ▼
+            CONTRATANTE CONFIRMA
+                       │
+                       ▼
+             REPASSE AO EXECUTOR
+                       │
+                       ▼
+                  AVALIAÇÃO
 ```
 
 ---
 
-# 2. Principais Funcionalidades
+# 3. Usuários
 
-## Autenticação
+Todos os usuários possuem a mesma estrutura básica.
 
-* Cadastro de usuários
-* Login
-* Logout
-* Autenticação por token
-* Controle de acesso
-* Perfis de usuário
+Não haverá mais o campo `tipo` para diferenciar cliente, prestador ou administrador.
 
-### Tipos de usuário
+O comportamento do usuário será determinado pelas ações realizadas dentro da plataforma.
 
-```text
-cliente
-prestador
-administrador
-```
+## Dados do usuário
 
----
-
-## Usuários
-
-Cadastro e gerenciamento das informações dos usuários:
+O cadastro poderá possuir:
 
 * Nome
 * E-mail
 * Senha
 * Telefone
-* Tipo de usuário
 * Foto
 * Cidade
 * Estado
 * Status
 
+Exemplo:
+
+```text
+Usuário
+│
+├── Nome
+├── E-mail
+├── Senha
+├── Telefone
+├── Foto
+├── Cidade
+├── Estado
+└── Status
+```
+
+O usuário poderá alterar seus próprios dados através da área de **Perfil**.
+
 ---
 
-## Perfil do Prestador
+# 4. Perfil do Usuário
 
-Prestadores poderão possuir informações adicionais:
+O perfil será uma das principais áreas da aplicação.
 
-* Descrição profissional
-* Experiência
-* Avaliação média
-* Quantidade de serviços realizados
-* Taxa de conclusão
+Cada usuário poderá visualizar e editar suas próprias informações.
+
+## Informações editáveis
+
+* Nome
+* E-mail
+* Telefone
+* Foto
+* Cidade
+* Estado
+* Senha
+
+O usuário também poderá selecionar as **categorias com as quais trabalha ou possui interesse**.
+
+Exemplo:
+
+```text
+Meu Perfil
+
+Carlos Eduardo
+Rio do Sul - SC
+
+Categorias:
+
+[x] Informática
+[x] Manutenção
+[ ] Pintura
+[ ] Jardinagem
+[ ] Elétrica
+```
+
+As categorias selecionadas ficarão vinculadas ao usuário através de uma relação entre usuários e categorias.
 
 ---
 
-## Categorias
+# 5. Categorias
 
-As categorias permitem organizar os serviços disponíveis na plataforma.
+As categorias servem para organizar os tipos de serviços existentes na plataforma.
 
 Exemplos:
 
@@ -118,9 +196,15 @@ Limpeza
 Manutenção
 Informática
 Construção
+Marcenaria
+Automotivo
+Design
+Fotografia
 ```
 
-Operações previstas:
+O usuário poderá vincular uma ou mais categorias ao seu perfil.
+
+## Operações
 
 ```text
 GET     /api/categorias
@@ -132,45 +216,130 @@ DELETE  /api/categorias/{id}
 
 ---
 
-## Publicação de Serviços
+# 6. Timeline / Home
 
-Clientes poderão publicar solicitações contendo:
+A **Home** será a timeline principal da plataforma.
 
+Todos os usuários poderão publicar posts.
+
+Não existe uma timeline exclusiva para clientes ou prestadores.
+
+A Home apresentará as publicações disponíveis e permitirá interação entre os usuários.
+
+Exemplo:
+
+```text
+HOME
+
+┌──────────────────────────────────────┐
+│ Carlos                               │
+│ Preciso de alguém para pintar uma    │
+│ sala.                                │
+│                                      │
+│ Categoria: Pintura                   │
+│ Cidade: Rio do Sul                   │
+│                                      │
+│ [ Fazer proposta ]                   │
+└──────────────────────────────────────┘
+
+┌──────────────────────────────────────┐
+│ João                                 │
+│ Preciso instalar alguns pontos       │
+│ elétricos em minha residência.       │
+│                                      │
+│ Categoria: Elétrica                  │
+│                                      │
+│ [ Fazer proposta ]                   │
+└──────────────────────────────────────┘
+```
+
+---
+
+# 7. Publicações
+
+Qualquer usuário poderá criar uma publicação.
+
+A publicação representa uma necessidade, oportunidade ou solicitação de serviço.
+
+## Informações previstas
+
+* Usuário que publicou
 * Título
 * Descrição
 * Categoria
-* Localização
 * Cidade
 * Estado
 * Data desejada
 * Valor mínimo
 * Valor máximo
 * Status
+* Data de criação
+* Data de atualização
 
-Estados possíveis:
+## Status da publicação
 
 ```text
 publicado
 em_negociacao
 contratado
-encerrado
+em_execucao
+concluido
 cancelado
+encerrado
 ```
 
 ---
 
-## Propostas
+# 8. Privacidade das Publicações
 
-Prestadores poderão enviar propostas para os serviços publicados.
+A plataforma terá uma preocupação importante com a privacidade dos usuários.
 
-Uma proposta possui:
+Durante a fase de publicação e negociação, **dados sensíveis não serão expostos publicamente**.
 
-* Valor proposto
-* Prazo
-* Mensagem
-* Status
+A timeline não deverá apresentar informações como:
 
-Status previstos:
+* Endereço completo;
+* Número da residência;
+* Horário exato do serviço;
+* Outras informações privadas desnecessárias.
+
+A publicação poderá apresentar apenas informações gerais necessárias para que outros usuários avaliem se possuem interesse em realizar o trabalho.
+
+Exemplo:
+
+```text
+Cidade: Rio do Sul - SC
+Categoria: Pintura
+Data desejada: 15/09
+
+Endereço completo:
+NÃO EXIBIDO
+
+Horário:
+NÃO EXIBIDO
+```
+
+---
+
+# 9. Propostas
+
+Qualquer usuário poderá enviar uma proposta para uma publicação.
+
+Não é necessário que o usuário tenha um "tipo prestador".
+
+Ao enviar uma proposta, ele demonstra interesse em realizar aquele trabalho.
+
+Uma proposta poderá possuir:
+
+* Usuário que enviou;
+* Publicação relacionada;
+* Valor proposto;
+* Prazo;
+* Mensagem;
+* Condições;
+* Status.
+
+## Status
 
 ```text
 enviada
@@ -178,179 +347,451 @@ em_negociacao
 contraproposta
 aceita
 recusada
+cancelada
 nao_selecionada
 ```
 
 ---
 
-## Negociação
+# 10. Negociação
 
-A plataforma permitirá interações entre cliente e prestador.
-
-Tipos de interação:
+Após uma proposta ser enviada, inicia-se uma negociação entre:
 
 ```text
-mensagem
-proposta
-contraproposta
-aceitacao
-recusa
+Usuário que publicou
+        │
+        │
+        ▼
+Usuário interessado em realizar
 ```
 
+A negociação funcionará através de interações.
+
+Uma negociação poderá conter:
+
+```text
+Mensagem
+    │
+    ▼
+Proposta
+    │
+    ▼
+Contraproposta
+    │
+    ▼
+Mensagem
+    │
+    ▼
+Nova proposta
+    │
+    ▼
+Aceitação
+```
+
+O objetivo é permitir que os usuários negociem:
+
+* Valor;
+* Prazo;
+* Data;
+* Horário;
+* Condições;
+* Detalhes da execução.
+
 ---
 
-## Contratações
+# 11. Negociação entre os Usuários
 
-Quando uma proposta for aceita, será criada uma contratação.
+A negociação ficará vinculada à proposta e à publicação.
 
-A contratação armazenará:
+Exemplo:
 
-* Cliente
-* Prestador
-* Serviço
-* Proposta
-* Valor do serviço
-* Taxa da plataforma
-* Valor destinado ao prestador
-* Data
-* Horário
-* Status
+```text
+PUBLICAÇÃO
+"Preciso pintar minha sala"
+
+        │
+        ▼
+
+PROPOSTA
+"Faço por R$ 500"
+
+        │
+        ▼
+
+NEGOCIAÇÃO
+
+Contratante:
+"Consigo pagar R$ 400."
+
+        │
+
+Executor:
+"Posso fazer por R$ 450."
+
+        │
+
+Contratante:
+"Fechado."
+
+        │
+        ▼
+
+PROPOSTA ACEITA
+```
+
+O histórico das interações deverá ser preservado para manter a rastreabilidade da negociação.
 
 ---
 
-## Pagamentos
+# 12. Contratação
 
-O sistema terá estrutura para gerenciamento dos pagamentos.
+Quando os usuários chegam a um acordo e a proposta é aceita, a negociação gera uma **contratação**.
 
-Método inicial:
+A contratação representa o compromisso entre:
+
+```text
+Quem solicitou o serviço
+        │
+        │
+        ▼
+Quem irá realizar o serviço
+```
+
+A contratação deverá armazenar informações como:
+
+* Usuário contratante;
+* Usuário executor;
+* Publicação;
+* Proposta;
+* Valor final;
+* Taxa da plataforma;
+* Valor destinado ao executor;
+* Data;
+* Horário;
+* Local;
+* Status.
+
+---
+
+# 13. Privacidade após a Contratação
+
+Mesmo depois da proposta ser aceita, os dados privados não deverão ser disponibilizados imediatamente.
+
+O endereço e o horário combinados serão divulgados **somente após a contratação estar confirmada e as condições necessárias terem sido cumpridas**, principalmente o pagamento da plataforma.
+
+Fluxo:
+
+```text
+Publicação
+    │
+    ▼
+Proposta
+    │
+    ▼
+Negociação
+    │
+    ▼
+Acordo
+    │
+    ▼
+Contratação
+    │
+    ▼
+Pagamento
+    │
+    ▼
+Pagamento confirmado
+    │
+    ▼
+Dados completos liberados
+```
+
+Somente nesse momento os envolvidos poderão ter acesso às informações necessárias para execução do serviço.
+
+---
+
+# 14. Pagamento
+
+Após a contratação ser criada, o usuário que solicitou o serviço deverá realizar o pagamento através da plataforma.
+
+O método inicial previsto será:
 
 ```text
 PIX
 ```
 
-Status:
+Fluxo:
 
 ```text
-aguardando
-pago
-recebido
-estornado
+Contratação criada
+        │
+        ▼
+Aguardando pagamento
+        │
+        ▼
+Pagamento realizado
+        │
+        ▼
+Plataforma confirma pagamento
+        │
+        ▼
+Serviço liberado para execução
+```
+
+A plataforma poderá armazenar:
+
+* Valor bruto;
+* Taxa da plataforma;
+* Valor destinado ao executor;
+* Método de pagamento;
+* Identificador da transação;
+* Data;
+* Status.
+
+---
+
+# 15. Execução do Serviço
+
+Depois que o pagamento for confirmado, o usuário responsável pela execução poderá realizar o serviço.
+
+Fluxo:
+
+```text
+Pagamento confirmado
+        │
+        ▼
+Agendado
+        │
+        ▼
+Em execução
+        │
+        ▼
+Executor informa conclusão
+        │
+        ▼
+Aguardando confirmação
+        │
+        ▼
+Contratante confirma
+        │
+        ▼
+Concluído
 ```
 
 ---
 
-## Execução do Serviço
+# 16. Confirmação do Serviço
 
-A execução permitirá controlar o ciclo do serviço:
+Quando o serviço for realizado, o executor deverá informar que concluiu o trabalho.
+
+O sistema não deverá considerar o serviço definitivamente concluído imediatamente.
+
+Será criado um estado de:
 
 ```text
-agendado
-     ↓
-em_execucao
-     ↓
 aguardando_confirmacao
-     ↓
-concluido
 ```
 
-Também serão registradas as confirmações do cliente e do prestador.
+O usuário que contratou deverá confirmar que o serviço foi realizado.
+
+Somente após a confirmação será liberado o repasse ao executor.
+
+```text
+Executor informa conclusão
+          │
+          ▼
+Aguardando confirmação
+          │
+          ▼
+Contratante confirma
+          │
+          ▼
+Serviço concluído
+          │
+          ▼
+Repasse ao executor
+```
 
 ---
 
-## Avaliações
+# 17. Repasse ao Executor
 
-Após a conclusão do serviço, cliente e prestador poderão realizar avaliações.
+Depois que o contratante confirmar a conclusão do serviço, a plataforma realizará o repasse ao usuário que executou o trabalho.
 
-A avaliação possuirá:
+Exemplo:
 
-* Nota de 1 a 5
-* Comentário
-* Avaliador
-* Avaliado
-* Contratação relacionada
+```text
+Valor contratado: R$ 500,00
+
+Taxa da plataforma: R$ 50,00
+
+Repasse ao executor: R$ 450,00
+```
+
+Os valores e regras da taxa poderão ser configurados posteriormente.
 
 ---
 
-## Notificações
+# 18. Avaliações
 
-O sistema terá suporte a notificações para informar eventos importantes aos usuários.
+Após a conclusão da contratação, os usuários poderão avaliar a experiência.
+
+A avaliação poderá conter:
+
+* Nota de 1 a 5;
+* Comentário;
+* Usuário avaliador;
+* Usuário avaliado;
+* Contratação relacionada;
+* Data.
+
+As avaliações poderão futuramente ser utilizadas para formar a reputação dos usuários.
+
+---
+
+# 19. Notificações
+
+O sistema terá suporte a notificações para informar eventos importantes.
 
 Exemplos:
 
 ```text
 Nova proposta recebida
+Nova mensagem na negociação
+Nova contraproposta
 Proposta aceita
+Proposta recusada
+Pagamento realizado
 Pagamento confirmado
 Serviço agendado
+Serviço liberado
 Serviço concluído
+Confirmação solicitada
+Serviço confirmado
+Repasse realizado
 Nova avaliação
 ```
 
 ---
 
-## Auditoria
+# 20. Auditoria
 
-A plataforma manterá registros de operações importantes para permitir rastreabilidade.
+A plataforma deverá manter registros de operações importantes para permitir rastreabilidade.
 
 Exemplos:
 
 ```text
+Criação de publicação
+Criação de proposta
+Alteração de proposta
+Criação de contraproposta
+Aceitação de proposta
+Recusa de proposta
 Criação de contratação
+Pagamento confirmado
 Alteração de status
-Confirmação de pagamento
-Conclusão de serviço
+Conclusão do serviço
+Confirmação do contratante
+Repasse realizado
 Cancelamento
 ```
 
 ---
 
-# 3. Arquitetura
+# 21. Segurança e Privacidade
 
-O projeto utiliza uma arquitetura separando frontend, backend e banco de dados.
+A segurança é uma parte importante da plataforma.
+
+O projeto deverá considerar:
+
+* Senhas armazenadas utilizando hash;
+* Autenticação utilizando Laravel Sanctum;
+* Validação dos dados recebidos;
+* Autorização das operações;
+* Middleware;
+* Proteção contra Mass Assignment;
+* Proteção contra SQL Injection através do Eloquent;
+* CORS configurado;
+* Rate Limiting;
+* Não exposição de senhas nas respostas;
+* Controle de acesso aos recursos;
+* Proteção das informações privadas;
+* Controle sobre endereço e horário;
+* Registro de operações através da auditoria.
+
+## Regra de privacidade
+
+A plataforma não deverá expor publicamente os dados necessários para execução do serviço.
+
+O objetivo é:
 
 ```text
-                    JOB
-                     │
-             Docker Compose
-                     │
-       ┌─────────────┼─────────────┐
-       │             │             │
-       ▼             ▼             ▼
-   Frontend        Backend      PostgreSQL
-   React/Vite      Laravel          17
-     :5173          :8000          :5432
-       │             │
-       └─────────────┘
-          HTTP/REST
+Timeline
+   │
+   └── Informações gerais
+
+Negociação
+   │
+   └── Informações necessárias para acordo
+
+Contratação + Pagamento
+   │
+   └── Liberação das informações privadas
+
+Execução
+   │
+   └── Endereço e horário disponíveis aos envolvidos
 ```
 
 ---
 
-# 4. Stack Tecnológica
+# 22. Arquitetura
+
+O projeto utiliza uma arquitetura separando frontend, backend e banco de dados.
+
+```text
+                         JOB
+                          │
+                   Docker Compose
+                          │
+          ┌───────────────┼───────────────┐
+          │               │               │
+          ▼               ▼               ▼
+      Frontend          Backend       PostgreSQL
+      React/Vite        Laravel            17
+        :5173            :8000           :5432
+          │               │
+          └────── HTTP/REST ──────────────┘
+```
+
+---
+
+# 23. Stack Tecnológica
 
 ## Backend
 
 ### Laravel
 
-Framework PHP utilizado para construção da API REST.
+Framework utilizado para construção da API REST.
 
 Responsável por:
 
-* Rotas
-* Controllers
-* Models
-* Eloquent ORM
-* Migrations
-* Validações
-* Autenticação
-* Middleware
-* Regras de negócio
+* Rotas;
+* Controllers;
+* Models;
+* Eloquent ORM;
+* Migrations;
+* Validações;
+* Autenticação;
+* Middleware;
+* Regras de negócio;
+* Controle de acesso.
 
 ---
 
 ## PHP
 
-Linguagem utilizada no desenvolvimento do backend.
+Linguagem utilizada no backend.
 
 Versão utilizada no ambiente Docker:
 
@@ -360,7 +801,38 @@ PHP 8.3
 
 ---
 
-## PostgreSQL
+## Laravel Sanctum
+
+Utilizado para autenticação da API através de tokens.
+
+Fluxo:
+
+```text
+Frontend
+   │
+   │ Login
+   ▼
+Laravel
+   │
+   ▼
+Sanctum
+   │
+   ▼
+Token
+   │
+   ▼
+Frontend
+```
+
+As requisições protegidas utilizam:
+
+```http
+Authorization: Bearer TOKEN
+```
+
+---
+
+# 24. PostgreSQL
 
 Banco de dados relacional utilizado pelo projeto.
 
@@ -372,13 +844,24 @@ PostgreSQL 17
 
 ---
 
-## Frontend
+# 25. Frontend
 
-### React
+## React
 
-Biblioteca utilizada para construção da interface da aplicação.
+Biblioteca utilizada para construção da interface.
 
-### Vite
+O frontend será desenvolvido com foco em:
+
+* Mobile-first;
+* Responsividade;
+* Componentização;
+* Navegação por rotas;
+* Comunicação com API;
+* PWA futuramente.
+
+---
+
+## Vite
 
 Ferramenta utilizada para desenvolvimento e build do frontend.
 
@@ -392,9 +875,7 @@ Porta:
 
 ## Axios
 
-Utilizado pelo frontend para comunicação com a API Laravel.
-
-Exemplo:
+Utilizado para comunicação entre React e API Laravel.
 
 ```text
 React
@@ -402,13 +883,16 @@ React
   │ Axios
   ▼
 Laravel API
+  │
+  ▼
+PostgreSQL
 ```
 
 ---
 
-## Docker
+# 26. Docker
 
-Toda a infraestrutura principal é executada utilizando Docker.
+A infraestrutura principal é executada através do Docker.
 
 Serviços:
 
@@ -420,9 +904,9 @@ job_postgres
 
 ---
 
-## Docker Compose
+# 27. Docker Compose
 
-Utilizado para orquestrar todos os containers.
+Utilizado para orquestrar os containers.
 
 Com um único comando é possível iniciar:
 
@@ -434,18 +918,18 @@ PostgreSQL
 
 ---
 
-## Swagger / OpenAPI
+# 28. Swagger / OpenAPI
 
-Utilizado para documentação e testes da API.
+O projeto utiliza Swagger / OpenAPI para documentação e testes da API.
 
 A documentação permite:
 
-* Visualizar endpoints
-* Visualizar parâmetros
-* Visualizar respostas
-* Testar requisições
-* Testar autenticação
-* Consultar a documentação da API
+* Visualizar endpoints;
+* Visualizar parâmetros;
+* Visualizar respostas;
+* Testar requisições;
+* Testar autenticação;
+* Consultar a documentação da API.
 
 URL:
 
@@ -455,24 +939,37 @@ http://localhost:8000/api/documentation
 
 ---
 
-# 5. Estrutura do Banco
+# 29. Estrutura do Banco
 
-O modelo inicial possui as seguintes entidades:
+O modelo previsto possui as seguintes entidades:
 
 ```text
 users
-prestador_perfis
+
 categorias
+
+usuario_categoria
+
 post_servicos
+
 anexos_post
+
 propostas
+
 proposta_interacoes
+
 contratacoes
+
 pagamentos
+
 execucoes_servico
+
 repasses_prestador
+
 avaliacoes
+
 notificacoes
+
 auditoria
 ```
 
@@ -481,26 +978,28 @@ Relacionamento simplificado:
 ```text
 users
  │
- ├──────────────► prestador_perfis
+ ├──────────────► usuario_categoria
+ │                       │
+ │                       └──► categorias
  │
  ├──────────────► post_servicos
- │                      │
- │                      ├──► categorias
- │                      │
- │                      ├──► anexos_post
- │                      │
- │                      └──► propostas
- │                              │
- │                              └──► proposta_interacoes
+ │                       │
+ │                       ├──► categorias
+ │                       │
+ │                       ├──► anexos_post
+ │                       │
+ │                       └──► propostas
+ │                               │
+ │                               └──► proposta_interacoes
  │
  ├──────────────► propostas
  │
  ├──────────────► contratacoes
- │                      │
- │                      ├──► pagamentos
- │                      ├──► execucoes_servico
- │                      ├──► repasses_prestador
- │                      └──► avaliacoes
+ │                       │
+ │                       ├──► pagamentos
+ │                       ├──► execucoes_servico
+ │                       ├──► repasses_prestador
+ │                       └──► avaliacoes
  │
  ├──────────────► notificacoes
  │
@@ -509,12 +1008,14 @@ users
 
 ---
 
-# 6. Estrutura do Projeto
+# 30. Estrutura do Projeto
 
 ```text
 job/
 │
 ├── docker-compose.yml
+├── README.md
+├── .gitignore
 │
 ├── backend/
 │   │
@@ -526,7 +1027,6 @@ job/
 │   │   └── Models/
 │   │
 │   ├── bootstrap/
-│   │
 │   ├── config/
 │   │
 │   ├── database/
@@ -546,6 +1046,7 @@ job/
     │
     ├── src/
     │   ├── components/
+    │   ├── contexts/
     │   ├── pages/
     │   ├── services/
     │   └── ...
@@ -558,23 +1059,23 @@ job/
 
 ---
 
-# 7. Pré-requisitos
+# 31. Pré-requisitos
 
 Para executar o projeto é necessário ter instalado:
 
-* Docker Desktop
-* Git
+* Docker Desktop;
+* Git.
 
-O Node.js e o PHP **não precisam estar instalados diretamente no Windows**, pois serão executados pelos containers Docker.
+O Node.js e o PHP **não precisam estar instalados diretamente no Windows**, pois serão executados através dos containers Docker.
 
 ---
 
-# 8. Clonar o projeto
+# 32. Clonar o Projeto
 
 Clone o repositório:
 
 ```bash
-git clone URL_DO_REPOSITORIO
+git clone https://github.com/CarlosEduardo-N-O/job.git
 ```
 
 Entre na pasta:
@@ -585,7 +1086,7 @@ cd job
 
 ---
 
-# 9. Configuração do Backend
+# 33. Configuração do Backend
 
 Entre na pasta:
 
@@ -599,7 +1100,7 @@ Crie o arquivo `.env` a partir do exemplo:
 cp .env.example .env
 ```
 
-No Windows CMD, caso o comando acima não funcione:
+No Windows CMD:
 
 ```cmd
 copy .env.example .env
@@ -624,7 +1125,41 @@ cd ..
 
 ---
 
-# 10. Subir o projeto com Docker
+# 34. Configuração do Frontend
+
+Entre na pasta:
+
+```bash
+cd frontend
+```
+
+Crie o arquivo `.env`:
+
+```bash
+cp .env.example .env
+```
+
+No Windows CMD:
+
+```cmd
+copy .env.example .env
+```
+
+Configure:
+
+```env
+VITE_API_URL=http://localhost:8000/api
+```
+
+Volte para a raiz:
+
+```bash
+cd ..
+```
+
+---
+
+# 35. Subir o Projeto com Docker
 
 Na raiz do projeto:
 
@@ -634,16 +1169,16 @@ docker compose up -d --build
 
 Esse comando irá:
 
-1. Construir o backend
-2. Construir o frontend
-3. Baixar a imagem do PostgreSQL
-4. Criar os containers
-5. Criar a rede Docker
-6. Iniciar os serviços
+1. Construir o backend;
+2. Construir o frontend;
+3. Baixar a imagem do PostgreSQL;
+4. Criar os containers;
+5. Criar a rede Docker;
+6. Iniciar os serviços.
 
 ---
 
-# 11. Verificar os containers
+# 36. Verificar os Containers
 
 Execute:
 
@@ -659,13 +1194,13 @@ job_frontend
 job_postgres
 ```
 
-Os serviços devem estar com status:
+Os serviços devem estar com status semelhante a:
 
 ```text
 Up
 ```
 
-ou, no PostgreSQL:
+ou:
 
 ```text
 Up (healthy)
@@ -673,30 +1208,28 @@ Up (healthy)
 
 ---
 
-# 12. Executar as migrations
+# 37. Executar as Migrations
 
 Depois que o PostgreSQL estiver disponível:
 
 ```bash
-docker compose exec api php artisan migrate
+docker compose exec backend php artisan migrate
 ```
-
-As migrations criarão as tabelas do sistema.
 
 Para verificar:
 
 ```bash
-docker compose exec api php artisan migrate:status
+docker compose exec backend php artisan migrate:status
 ```
 
 ---
 
-# 13. Gerar documentação Swagger
+# 38. Gerar Documentação Swagger
 
-Depois de instalar e configurar o Swagger:
+Execute:
 
 ```bash
-docker compose exec api php artisan l5-swagger:generate
+docker compose exec backend php artisan l5-swagger:generate
 ```
 
 A documentação estará disponível em:
@@ -707,7 +1240,7 @@ http://localhost:8000/api/documentation
 
 ---
 
-# 14. URLs do projeto
+# 39. URLs do Projeto
 
 ## Frontend
 
@@ -727,65 +1260,107 @@ http://localhost:8000
 http://localhost:8000/api/documentation
 ```
 
-## API de teste
+---
+
+# 40. Rotas Principais da API
+
+## Autenticação
+
+```http
+POST /api/login
+POST /api/logout
+GET  /api/logon
+```
+
+## Usuário autenticado
+
+```http
+POST   /api/users
+GET    /api/users
+PUT    /api/users
+DELETE /api/users
+```
+
+## Categorias
+
+```http
+GET    /api/categorias
+POST   /api/categorias
+GET    /api/categorias/{id}
+PUT    /api/categorias/{id}
+DELETE /api/categorias/{id}
+```
+
+As demais rotas serão implementadas conforme o desenvolvimento das funcionalidades de:
 
 ```text
-http://localhost:8000/api/teste
+Posts
+Categorias do usuário
+Propostas
+Negociação
+Contratações
+Pagamentos
+Execução
+Confirmação
+Repasses
+Avaliações
+Notificações
+Auditoria
 ```
 
 ---
 
-# 15. Comandos Docker úteis
+# 41. Comandos Docker Úteis
 
-### Iniciar
+## Iniciar
 
 ```bash
 docker compose up -d
 ```
 
-### Iniciar reconstruindo as imagens
+## Iniciar reconstruindo as imagens
 
 ```bash
 docker compose up -d --build
 ```
 
-### Parar
+## Parar
 
 ```bash
 docker compose stop
 ```
 
-### Parar e remover os containers
+## Parar e remover os containers
 
 ```bash
 docker compose down
 ```
 
-### Ver containers
+## Ver containers
 
 ```bash
 docker compose ps
 ```
 
-### Ver logs
+## Ver logs
 
 ```bash
 docker compose logs -f
 ```
 
-### Logs somente do backend
+## Logs do backend
 
 ```bash
-docker compose logs -f api
+docker compose logs -f backend
 ```
 
-### Logs somente do frontend
+## Logs do frontend
 
 ```bash
 docker compose logs -f frontend
 ```
 
-### Reiniciar
+## Reiniciar
 
 ```bash
 docker compose restart
@@ -793,61 +1368,67 @@ docker compose restart
 
 ---
 
-# 16. Comandos Laravel
+# 42. Comandos Laravel
 
-### Listar rotas
-
-```bash
-docker compose exec api php artisan route:list
-```
-
-### Criar Model
+## Listar rotas
 
 ```bash
-docker compose exec api php artisan make:model NomeDoModel
+docker compose exec backend php artisan route:list
 ```
 
-### Criar Migration
+## Criar Model
 
 ```bash
-docker compose exec api php artisan make:migration create_nome_table
+docker compose exec backend php artisan make:model NomeDoModel
 ```
 
-### Criar Controller
+## Criar Migration
 
 ```bash
-docker compose exec api php artisan make:controller NomeController
+docker compose exec backend php artisan make:migration create_nome_table
 ```
 
-### Criar Model + Migration + Controller
+## Criar Controller
 
 ```bash
-docker compose exec api php artisan make:model Nome -mc
+docker compose exec backend php artisan make:controller NomeController
 ```
 
-### Executar migrations
+## Criar Model + Migration + Controller
 
 ```bash
-docker compose exec api php artisan migrate
+docker compose exec backend php artisan make:model Nome -mc
 ```
 
-### Ver status das migrations
+## Executar migrations
 
 ```bash
-docker compose exec api php artisan migrate:status
+docker compose exec backend php artisan migrate
 ```
 
-### Recriar banco
+## Ver status das migrations
 
 ```bash
-docker compose exec api php artisan migrate:fresh
+docker compose exec backend php artisan migrate:status
 ```
 
-> `migrate:fresh` apaga as tabelas existentes. Utilize somente durante o desenvolvimento quando não houver dados importantes.
+## Recriar banco
+
+```bash
+docker compose exec backend php artisan migrate:fresh
+```
+
+> `migrate:fresh` apaga todas as tabelas existentes. Utilize somente durante o desenvolvimento quando não houver dados importantes.
+
+## Limpar cache
+
+```bash
+docker compose exec backend php artisan optimize:clear
+```
 
 ---
 
-# 17. Desenvolvimento da API
+# 43. Desenvolvimento da API
 
 A API seguirá o padrão:
 
@@ -874,7 +1455,7 @@ POST /api/categorias
 CategoriaController
         │
         ▼
-StoreCategoriaRequest
+Validation
         │
         ▼
 Categoria
@@ -885,19 +1466,19 @@ PostgreSQL
 
 ---
 
-# 18. Padrão de API
+# 44. Padrão REST
 
 Os endpoints utilizarão HTTP REST.
 
-### GET
+## GET
 
-Consultar dados:
+Consultar:
 
 ```http
 GET /api/categorias
 ```
 
-### POST
+## POST
 
 Criar:
 
@@ -905,7 +1486,7 @@ Criar:
 POST /api/categorias
 ```
 
-### PUT
+## PUT
 
 Atualizar:
 
@@ -913,7 +1494,7 @@ Atualizar:
 PUT /api/categorias/1
 ```
 
-### DELETE
+## DELETE
 
 Excluir:
 
@@ -925,46 +1506,71 @@ As respostas serão fornecidas em JSON.
 
 ---
 
-# 19. Segurança
+# 45. Regras de Negócio Principais
 
-O projeto deverá considerar:
+As principais regras previstas para a plataforma são:
 
-* Senhas armazenadas utilizando hash
-* Validação dos dados recebidos
-* Autenticação
-* Autorização
-* Middleware
-* Proteção contra Mass Assignment
-* Controle de acesso por perfil
-* Proteção contra SQL Injection através do Eloquent
-* CORS configurado
-* Rate Limiting
-* Não exposição de senhas nas respostas da API
-* Registro de operações importantes através da auditoria
+### Regra 1 — Todos os usuários são iguais
+
+Não haverá diferenciação de usuário através de `tipo`.
+
+```text
+Usuário
+   │
+   ├── Pode publicar
+   ├── Pode propor
+   ├── Pode negociar
+   ├── Pode contratar
+   └── Pode prestar serviços
+```
+
+### Regra 2 — Categorias pertencem ao perfil
+
+O usuário poderá selecionar as categorias que deseja vincular ao seu perfil.
+
+### Regra 3 — Qualquer usuário pode publicar
+
+Não existe necessidade de ser "cliente" para criar uma publicação.
+
+### Regra 4 — Qualquer usuário pode enviar propostas
+
+Não existe necessidade de ser "prestador" para enviar uma proposta.
+
+### Regra 5 — A negociação acontece antes da contratação
+
+Uma proposta pode receber mensagens, contrapropostas e alterações até que os envolvidos cheguem a um acordo.
+
+### Regra 6 — A contratação nasce de uma negociação aceita
+
+Somente após a aceitação de uma proposta será criada a contratação.
+
+### Regra 7 — O pagamento acontece antes da execução
+
+O serviço somente será liberado para execução após a confirmação do pagamento exigido pela plataforma.
+
+### Regra 8 — Dados privados não ficam expostos na timeline
+
+Endereço completo e horário não serão exibidos publicamente.
+
+### Regra 9 — Dados de execução são liberados somente aos envolvidos
+
+Após a contratação e confirmação das condições necessárias, os dados necessários para realização do serviço serão disponibilizados aos envolvidos.
+
+### Regra 10 — O executor informa a conclusão
+
+Quem realizou o serviço deverá informar que terminou.
+
+### Regra 11 — O contratante confirma
+
+O usuário que contratou deverá confirmar a realização.
+
+### Regra 12 — O repasse ocorre após a confirmação
+
+Somente após a confirmação do contratante o valor será liberado para o executor, respeitando as regras financeiras da plataforma.
 
 ---
 
-# 20. Objetivo acadêmico
-
-Além de implementar uma plataforma funcional, o projeto tem como objetivo demonstrar a aplicação prática de conceitos de:
-
-* Engenharia de Software
-* Desenvolvimento Web
-* APIs REST
-* Banco de Dados
-* Modelagem Relacional
-* ORM
-* Docker
-* Arquitetura de Software
-* Autenticação
-* Segurança
-* Desenvolvimento Frontend
-* Desenvolvimento Backend
-* Integração entre sistemas
-
----
-
-# 21. Roadmap
+# 46. Roadmap
 
 ## Fase 1 — Infraestrutura
 
@@ -974,86 +1580,223 @@ Além de implementar uma plataforma funcional, o projeto tem como objetivo demon
 * [x] Laravel
 * [x] React
 * [x] Vite
-* [x] Swagger
+* [x] Axios
+* [x] Swagger / OpenAPI
 
-## Fase 2 — Backend básico
+## Fase 2 — Autenticação
 
-* [ ] Migration `users`
-* [ ] Model `User`
-* [ ] Migration `categorias`
-* [ ] Model `Categoria`
-* [ ] Controllers
-* [ ] Routes
-* [ ] CRUD de categorias
+* [x] Cadastro
+* [x] Login
+* [x] Logout
+* [x] Token
+* [x] Laravel Sanctum
+* [x] Middleware
+* [x] Recuperação do usuário autenticado
 
-## Fase 3 — Autenticação
+## Fase 3 — Usuário
 
-* [ ] Cadastro
-* [ ] Login
-* [ ] Logout
-* [ ] Token
-* [ ] Middleware
-* [ ] Controle de acesso
+* [x] Cadastro de usuário
+* [x] Visualização do perfil
+* [x] Alteração do perfil
+* [x] Alteração de senha
+* [ ] Upload de foto
+* [ ] Vinculação de categorias
+* [ ] Visualização das categorias vinculadas
 
-## Fase 4 — Serviços
+## Fase 4 — Categorias
 
-* [ ] Cadastro de categorias
-* [ ] Publicação de serviços
-* [ ] Anexos
-* [ ] Consulta de serviços
+* [x] CRUD de categorias
+* [ ] Vincular categoria ao usuário
+* [ ] Remover categoria do usuário
+* [ ] Listar categorias do usuário
 
-## Fase 5 — Propostas
+## Fase 5 — Timeline
 
-* [ ] Criar propostas
-* [ ] Negociação
+* [ ] Criar publicação
+* [ ] Editar publicação
+* [ ] Excluir publicação
+* [ ] Listar publicações
+* [ ] Visualizar publicação
+* [ ] Filtrar por categoria
+* [ ] Filtrar por cidade
+* [ ] Timeline da Home
+
+## Fase 6 — Propostas
+
+* [ ] Criar proposta
+* [ ] Visualizar propostas
+* [ ] Editar proposta
+* [ ] Recusar proposta
+* [ ] Aceitar proposta
 * [ ] Contraproposta
+
+## Fase 7 — Negociação
+
+* [ ] Mensagens
+* [ ] Histórico da negociação
+* [ ] Propostas dentro da negociação
+* [ ] Contrapropostas
 * [ ] Aceitação
 * [ ] Recusa
+* [ ] Encerramento da negociação
 
-## Fase 6 — Contratação
+## Fase 8 — Contratação
 
 * [ ] Criar contratação
+* [ ] Definir valor final
+* [ ] Definir data
+* [ ] Definir horário
+* [ ] Definir endereço
+* [ ] Controle de status
+* [ ] Proteção das informações privadas
+
+## Fase 9 — Pagamento
+
+* [ ] Criar pagamento
+* [ ] PIX
+* [ ] Confirmação do pagamento
+* [ ] Taxa da plataforma
+* [ ] Controle financeiro
+* [ ] Estorno/cancelamento
+
+## Fase 10 — Execução
+
+* [ ] Serviço agendado
+* [ ] Serviço em execução
+* [ ] Executor informa conclusão
+* [ ] Aguardando confirmação
+* [ ] Contratante confirma
+* [ ] Serviço concluído
+
+## Fase 11 — Repasse
+
+* [ ] Calcular taxa da plataforma
+* [ ] Calcular valor do executor
+* [ ] Criar repasse
+* [ ] Processar repasse
+* [ ] Histórico financeiro
+
+## Fase 12 — Avaliações
+
+* [ ] Avaliar usuário
+* [ ] Nota de 1 a 5
+* [ ] Comentário
+* [ ] Histórico de avaliações
+* [ ] Média das avaliações
+
+## Fase 13 — Notificações
+
+* [ ] Nova proposta
+* [ ] Nova mensagem
+* [ ] Contraproposta
+* [ ] Proposta aceita
 * [ ] Pagamento
 * [ ] Agendamento
+* [ ] Conclusão
+* [ ] Confirmação
+* [ ] Repasse
+* [ ] Avaliação
+
+## Fase 14 — Auditoria
+
+* [ ] Registrar operações
+* [ ] Registrar alterações de status
+* [ ] Registrar pagamentos
+* [ ] Registrar contratações
+* [ ] Registrar confirmações
+* [ ] Registrar repasses
+
+## Fase 15 — Frontend
+
+* [x] Login
+* [ ] Cadastro
+* [x] Home
+* [x] Bottom Navigation
+* [x] Perfil
+* [ ] Categorias do perfil
+* [ ] Timeline
+* [ ] Criar publicação
+* [ ] Visualizar publicação
+* [ ] Criar proposta
+* [ ] Negociação
+* [ ] Contratação
+* [ ] Pagamento
 * [ ] Execução
 * [ ] Confirmação
-
-## Fase 7 — Pós-serviço
-
 * [ ] Avaliações
-* [ ] Repasses
 * [ ] Notificações
-* [ ] Auditoria
-
-## Fase 8 — Frontend
-
-* [ ] Login
-* [ ] Cadastro
-* [ ] Dashboard
-* [ ] Perfil
-* [ ] Lista de serviços
-* [ ] Publicação de serviço
-* [ ] Propostas
-* [ ] Contratações
-* [ ] Pagamentos
-* [ ] Avaliações
 
 ---
 
-# 22. Status atual
+# 47. Status Atual
 
 O projeto encontra-se em desenvolvimento.
 
-A infraestrutura inicial utiliza:
+A infraestrutura atual utiliza:
 
 ```text
 Docker
+│
 ├── Laravel API
 ├── React + Vite
 └── PostgreSQL 17
 ```
 
-O desenvolvimento está sendo realizado de forma incremental, implementando inicialmente as estruturas fundamentais de banco, API e autenticação antes das funcionalidades mais avançadas da plataforma.
+As funcionalidades básicas de autenticação, API, documentação Swagger, frontend e perfil estão sendo desenvolvidas inicialmente.
+
+A próxima evolução da aplicação será concentrada no fluxo principal da plataforma:
+
+```text
+Perfil
+   ↓
+Categorias
+   ↓
+Timeline
+   ↓
+Publicação
+   ↓
+Proposta
+   ↓
+Negociação
+   ↓
+Contratação
+   ↓
+Pagamento
+   ↓
+Execução
+   ↓
+Confirmação
+   ↓
+Repasse
+   ↓
+Avaliação
+```
+
+---
+
+# 48. Objetivo do Projeto
+
+O JOB tem como objetivo desenvolver uma plataforma de intermediação de serviços que permita conectar pessoas que precisam realizar trabalhos com pessoas dispostas a executá-los.
+
+Além da implementação de uma plataforma funcional, o projeto busca demonstrar na prática conceitos de:
+
+* Engenharia de Software;
+* Desenvolvimento Web;
+* APIs REST;
+* Banco de Dados;
+* Modelagem Relacional;
+* ORM;
+* Docker;
+* Arquitetura de Software;
+* Autenticação;
+* Segurança;
+* Desenvolvimento Frontend;
+* Desenvolvimento Backend;
+* Integração entre sistemas;
+* Regras de negócio;
+* Processamento de pagamentos;
+* Controle de transações;
+* Privacidade de dados.
 
 ---
 
@@ -1061,8 +1804,14 @@ O desenvolvimento está sendo realizado de forma incremental, implementando inic
 
 **Plataforma de Intermediação de Serviços**
 
-Backend: Laravel + PHP
-Frontend: React + Vite
-Banco: PostgreSQL
+```text
+Backend:       Laravel + PHP
+Frontend:      React + Vite
+Banco:         PostgreSQL 17
+Autenticação:  Laravel Sanctum
+Comunicação:   Axios
 Infraestrutura: Docker + Docker Compose
-Documentação: Swagger / OpenAPI
+Documentação:  Swagger / OpenAPI
+```
+
+O JOB está sendo desenvolvido de forma incremental, começando pela infraestrutura, autenticação e perfil dos usuários e evoluindo para o fluxo completo de publicação, proposta, negociação, contratação, pagamento, execução, confirmação e repasse.
