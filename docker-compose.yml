@@ -1,0 +1,98 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: job_backend
+
+    restart: unless-stopped
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./backend:/var/www
+
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: job
+      DB_USERNAME: job
+      DB_PASSWORD: job
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - job_network
+
+
+  postgres:
+    image: postgres:17
+
+    container_name: job_postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: job
+      POSTGRES_USER: job
+      POSTGRES_PASSWORD: job
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U job -d job"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - job_network
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: job_frontend
+
+    restart: unless-stopped
+
+    ports:
+      - "5173:5173"
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+
+    depends_on:
+      - backend
+
+    networks:
+      - job_network
+
+
+networks:
+  job_network:
+    driver: bridge
+
+
+volumes:
+  postgres_data:

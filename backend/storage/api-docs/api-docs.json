@@ -1,0 +1,540 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "JOB API",
+        "description": "API da plataforma JOB para intermediação de serviços.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor local"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Realiza login do usuário",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "teste@job.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado com sucesso"
+                    },
+                    "401": {
+                        "description": "E-mail ou senha inválidos"
+                    },
+                    "403": {
+                        "description": "Usuário inativo"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Realiza logout do usuário",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Logout realizado com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/logon": {
+            "get": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Retorna o usuário autenticado",
+                "operationId": "34e30fbe9c4f03e816c26679da45dc9c",
+                "responses": {
+                    "200": {
+                        "description": "Usuário autenticado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categorias": {
+            "get": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Lista todas as categorias",
+                "operationId": "66bfb3e0bf7747700be142ec5329dfae",
+                "responses": {
+                    "200": {
+                        "description": "Lista de categorias"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categorias/{categoria}": {
+            "get": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Exibe uma categoria",
+                "operationId": "9efbf44dffb8e062845953c082ba6ed7",
+                "parameters": [
+                    {
+                        "name": "categoria",
+                        "in": "path",
+                        "description": "ID da categoria",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Categoria encontrada"
+                    },
+                    "404": {
+                        "description": "Categoria não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/usuario-categorias": {
+            "get": {
+                "tags": [
+                    "Usuário-Categorias"
+                ],
+                "summary": "Lista os vínculos entre usuários e categorias",
+                "operationId": "06ed3b06a2b9fd859ff11d79191a90ae",
+                "responses": {
+                    "200": {
+                        "description": "Lista de vínculos"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Usuário-Categorias"
+                ],
+                "summary": "Vincula um usuário a uma categoria",
+                "operationId": "14faad8474035c6a9bf3108f50ce7e66",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "categoria_id"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "categoria_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Vínculo criado"
+                    },
+                    "409": {
+                        "description": "Vínculo já existe"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                }
+            }
+        },
+        "/api/usuario-categorias/{usuarioCategoria}": {
+            "get": {
+                "tags": [
+                    "Usuário-Categorias"
+                ],
+                "summary": "Exibe um vínculo entre usuário e categoria",
+                "operationId": "a537757152ca1fdcccad2757a95f81bc",
+                "parameters": [
+                    {
+                        "name": "usuarioCategoria",
+                        "in": "path",
+                        "description": "ID do vínculo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vínculo encontrado"
+                    },
+                    "404": {
+                        "description": "Vínculo não encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Usuário-Categorias"
+                ],
+                "summary": "Atualiza um vínculo entre usuário e categoria",
+                "operationId": "3e8788d3b13b10892fde8ec1b989a823",
+                "parameters": [
+                    {
+                        "name": "usuarioCategoria",
+                        "in": "path",
+                        "description": "ID do vínculo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "categoria_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Vínculo atualizado"
+                    },
+                    "404": {
+                        "description": "Vínculo não encontrado"
+                    },
+                    "409": {
+                        "description": "Vínculo já existe"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Usuário-Categorias"
+                ],
+                "summary": "Remove o vínculo entre usuário e categoria",
+                "operationId": "db3b628c450294a0cb8ed1fc44ded592",
+                "parameters": [
+                    {
+                        "name": "usuarioCategoria",
+                        "in": "path",
+                        "description": "ID do vínculo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Vínculo removido"
+                    },
+                    "404": {
+                        "description": "Vínculo não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Exibe os dados do usuário autenticado",
+                "operationId": "953fbe16ca028c3d65368ea6ce5a1ba4",
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário autenticado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atualiza os dados do usuário autenticado",
+                "operationId": "bfa12d60f4ee1142cfe2ac454c85b9be",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Carlos Eduardo"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "carlos@email.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "123456"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "(47) 99999-9999"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "cliente",
+                                        "enum": [
+                                            "cliente",
+                                            "prestador"
+                                        ]
+                                    },
+                                    "foto_url": {
+                                        "type": "string",
+                                        "example": "https://site.com/foto.jpg"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "Rio do Sul"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SC"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuário atualizado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Cadastra um novo usuário",
+                "operationId": "592819a0265360b2014512d6dbfaf0e7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Carlos"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "carlos@email.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "123456"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "(47) 99999-9999"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "cliente",
+                                        "enum": [
+                                            "cliente",
+                                            "prestador"
+                                        ]
+                                    },
+                                    "foto_url": {
+                                        "type": "string",
+                                        "example": "https://site.com/foto.jpg"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "Rio do Sul"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SC"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Exclui a conta do usuário autenticado",
+                "operationId": "4c379784bda21ca7b50aa7d4446641db",
+                "responses": {
+                    "204": {
+                        "description": "Conta excluída"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Token de autenticação do Laravel Sanctum",
+                "bearerFormat": "Sanctum",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
+        {
+            "name": "Categorias",
+            "description": "Categorias"
+        },
+        {
+            "name": "Usuário-Categorias",
+            "description": "Usuário-Categorias"
+        },
+        {
+            "name": "Usuários",
+            "description": "Usuários"
+        }
+    ]
+}
