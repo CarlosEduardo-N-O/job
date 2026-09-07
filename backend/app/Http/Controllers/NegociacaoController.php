@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Interacao;
 use App\Models\Negociacao;
+use App\Models\NegociacaoPagamento;
+use App\Models\NegociacaoPagamentoStatus;
+use App\Models\NegociacaoStatus;
 use App\Models\Publicacao;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -38,6 +41,8 @@ class NegociacaoController extends Controller
         $usuario = $request->user();
 
         $negociacoes = Negociacao::with([
+            'status',
+            'pagamento.status',
             'publicacao.categoria',
             'interessado',
             'contratante',
@@ -46,8 +51,14 @@ class NegociacaoController extends Controller
         ])
             ->where(function ($query) use ($usuario) {
                 $query
-                    ->where('id_interessado', $usuario->id)
-                    ->orWhere('id_contratante', $usuario->id);
+                    ->where(
+                        'id_interessado',
+                        $usuario->id
+                    )
+                    ->orWhere(
+                        'id_contratante',
+                        $usuario->id
+                    );
             })
             ->orderByDesc('id_negociacao')
             ->get();
@@ -57,14 +68,60 @@ class NegociacaoController extends Controller
         ]);
     }
 
+    /**
+     * Lista as negociações em que o usuário
+     * participa como interessado.
+     */
+    #[OA\Get(
+        path: '/api/negociacoes/meus',
+        summary: 'Lista minhas negociações',
+        description: 'Retorna somente as negociações criadas pelo usuário autenticado em publicações de outros usuários.',
+        tags: ['Negociações'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Lista de negociações do interessado'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Usuário não autenticado'
+            )
+        ]
+    )]
+    public function minhas(Request $request)
+    {
+        $usuario = $request->user();
+
+        $negociacoes = Negociacao::with([
+            'status',
+            'pagamento.status',
+            'publicacao.categoria',
+            'interessado',
+            'contratante',
+            'interacoes.interacao.tipo',
+            'interacoes.interacao.remetente',
+        ])
+            ->where(
+                'id_interessado',
+                $usuario->id
+            )
+            ->orderByDesc('id_negociacao')
+            ->get();
+
+        return response()->json([
+            'data' => $negociacoes,
+        ]);
+    }
 
     /**
      * Exibe uma negociação completa.
      */
+    
     #[OA\Get(
         path: '/api/negociacoes/{negociacao}',
         summary: 'Exibe uma negociação',
-        description: 'Retorna a negociação e todo o histórico de interações entre os participantes.',
+        description: 'Retorna a negociação, seu status, pagamento e histórico de interações.',
         tags: ['Negociações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -106,6 +163,8 @@ class NegociacaoController extends Controller
         );
 
         $negociacao->load([
+            'status',
+            'pagamento.status',
             'publicacao.categoria',
             'interessado',
             'contratante',
@@ -248,17 +307,43 @@ class NegociacaoController extends Controller
             ]);
         }
 
+        /*
+         * Não permite novas negociações quando
+         * já existe uma negociação fechada.
+         */
+        $negociacaoFechada = Negociacao::where(
+            'id_publicacao',
+            $publicacao->id
+        )
+            ->whereHas('status', function ($query) {
+                $query->where(
+                    'codigo',
+                    'FECHADA'
+                );
+            })
+            ->exists();
+
+        if ($negociacaoFechada) {
+            throw ValidationException::withMessages([
+                'publicacao' => [
+                    'Esta publicação já possui uma negociação fechada.',
+                ],
+            ]);
+        }
+
         $dados = $request->validate([
             'tipo' => [
                 'required',
                 'string',
                 'in:INTERESSE,PROPOSTA,DUVIDA',
             ],
+
             'mensagem' => [
                 'nullable',
                 'string',
                 'max:5000',
             ],
+
             'valor_proposto' => [
                 'nullable',
                 'numeric',
@@ -274,14 +359,22 @@ class NegociacaoController extends Controller
             $dados['tipo'] === 'PROPOSTA' &&
             (
                 !isset($dados['valor_proposto']) ||
-                $dados['valor_proposto'] === ''
+                $dados['valor_proposto'] === '' ||
+                $dados['valor_proposto'] <= 0
             )
         ) {
             throw ValidationException::withMessages([
                 'valor_proposto' => [
-                    'O valor da proposta é obrigatório.',
+                    'O valor da proposta é obrigatório e deve ser maior que zero.',
                 ],
             ]);
+        }
+
+        /*
+         * Somente PROPOSTA carrega valor.
+         */
+        if ($dados['tipo'] !== 'PROPOSTA') {
+            $dados['valor_proposto'] = null;
         }
 
         /*
@@ -296,7 +389,7 @@ class NegociacaoController extends Controller
                 'id_publicacao',
                 $publicacao->id
             )
-            ->first();
+            ->exists();
 
         if ($negociacaoExistente) {
             throw ValidationException::withMessages([
@@ -311,7 +404,6 @@ class NegociacaoController extends Controller
             $usuario,
             $publicacao
         ) {
-
             $tipo = DB::table('interacao_tipos')
                 ->where(
                     'tipo',
@@ -332,71 +424,71 @@ class NegociacaoController extends Controller
              */
             $interacao = Interacao::create([
                 'id_interacao_tipo' =>
-                    $tipo->id_interacao_tipo,
+                $tipo->id_interacao_tipo,
 
                 'remetente_id' =>
-                    $usuario->id,
+                $usuario->id,
 
                 'mensagem' =>
-                    $dados['mensagem'] ?? null,
+                $dados['mensagem'] ?? null,
 
                 'valor_proposto' =>
-                    $dados['valor_proposto'] ?? null,
+                $dados['valor_proposto'] ?? null,
             ]);
 
             /*
-             * A primeira interação é enviada
-             * pelo interessado.
-             *
-             * Portanto, agora aguardamos
-             * a resposta do contratante.
+             * Toda nova negociação começa
+             * aguardando o contratante.
              */
-            $status = 'AGUARDANDO_CONTRATANTE';
+            $status = $this->buscarStatusNegociacao(
+                'AGUARDANDO_CONTRATANTE'
+            );
 
             $valorTrabalho =
                 $dados['tipo'] === 'PROPOSTA'
-                    ? $dados['valor_proposto']
-                    : null;
+                ? $dados['valor_proposto']
+                : null;
 
             /*
              * Cria a negociação.
              */
             $negociacao = Negociacao::create([
                 'id_interessado' =>
-                    $usuario->id,
+                $usuario->id,
 
                 'id_contratante' =>
-                    $publicacao->contratante_id,
+                $publicacao->contratante_id,
 
                 'id_publicacao' =>
-                    $publicacao->id,
+                $publicacao->id,
 
-                'status' =>
-                    $status,
+                'status_id' =>
+                $status->id,
 
                 'valor_trabalho' =>
-                    $valorTrabalho,
+                $valorTrabalho,
             ]);
 
             /*
-             * Relaciona a primeira interação
-             * com a negociação.
+             * Relaciona a primeira interação.
              */
             $negociacao->interacoes()->create([
                 'id_interacao' =>
-                    $interacao->id_interacao,
+                $interacao->id_interacao,
 
                 'id_interessado' =>
-                    $usuario->id,
+                $usuario->id,
 
                 'id_contratante' =>
-                    $publicacao->contratante_id,
+                $publicacao->contratante_id,
 
                 'id_publicacao' =>
-                    $publicacao->id,
+                $publicacao->id,
             ]);
 
             $negociacao->load([
+                'status',
+                'pagamento.status',
                 'publicacao.categoria',
                 'interessado',
                 'contratante',
@@ -406,22 +498,22 @@ class NegociacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Interação enviada e negociação criada com sucesso.',
+                'Interação enviada e negociação criada com sucesso.',
 
                 'data' =>
-                    $negociacao,
+                $negociacao,
             ], 201);
         });
     }
 
 
     /**
-     * Adiciona uma nova interação a uma negociação existente.
+     * Adiciona uma nova interação.
      */
     #[OA\Post(
         path: '/api/negociacoes/{negociacao}/interacoes',
-        summary: 'Envia uma nova interação na negociação',
-        description: 'Permite que o participante que ainda não respondeu envie INTERESSE, PROPOSTA ou DUVIDA.',
+        summary: 'Adiciona uma nova interação à negociação',
+        description: 'Permite continuar a negociação respeitando as regras de INTERESSE, PROPOSTA e DUVIDA.',
         tags: ['Negociações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -443,7 +535,7 @@ class NegociacaoController extends Controller
                 properties: [
                     new OA\Property(
                         property: 'tipo',
-                        description: 'Tipo da nova interação',
+                        description: 'Tipo da nova interação.',
                         type: 'string',
                         enum: [
                             'INTERESSE',
@@ -454,14 +546,12 @@ class NegociacaoController extends Controller
                     ),
                     new OA\Property(
                         property: 'mensagem',
-                        description: 'Mensagem da interação',
                         type: 'string',
                         nullable: true,
                         example: 'Consigo fazer por R$ 340.'
                     ),
                     new OA\Property(
                         property: 'valor_proposto',
-                        description: 'Valor da nova proposta',
                         type: 'number',
                         format: 'float',
                         nullable: true,
@@ -481,7 +571,7 @@ class NegociacaoController extends Controller
             ),
             new OA\Response(
                 response: 422,
-                description: 'Não é a vez do usuário ou dados inválidos'
+                description: 'Interação não permitida'
             )
         ]
     )]
@@ -496,13 +586,16 @@ class NegociacaoController extends Controller
             $negociacao
         );
 
+        $codigoStatus =
+            $negociacao->status->codigo;
+
         /*
          * Somente negociações abertas
-         * podem receber novas interações.
+         * podem receber interações.
          */
         if (
             !in_array(
-                $negociacao->status,
+                $codigoStatus,
                 [
                     'AGUARDANDO_INTERESSADO',
                     'AGUARDANDO_CONTRATANTE',
@@ -521,10 +614,10 @@ class NegociacaoController extends Controller
          */
         $ultimaInteracao =
             $negociacao
-                ->interacoes()
-                ->with('interacao')
-                ->latest('id_negociacao_interacao')
-                ->first();
+            ->interacoes()
+            ->with('interacao.tipo')
+            ->latest('id_negociacao_interacao')
+            ->first();
 
         if (!$ultimaInteracao) {
             throw ValidationException::withMessages([
@@ -534,16 +627,17 @@ class NegociacaoController extends Controller
             ]);
         }
 
-        $ultimoRemetente =
-            $ultimaInteracao
-                ->interacao
-                ->remetente_id;
+        $interacaoAnterior =
+            $ultimaInteracao->interacao;
 
         /*
          * Impede o mesmo usuário de responder
          * duas vezes seguidas.
          */
-        if ($ultimoRemetente == $usuario->id) {
+        if (
+            $interacaoAnterior->remetente_id ==
+            $usuario->id
+        ) {
             throw ValidationException::withMessages([
                 'negociacao' => [
                     'Aguarde o outro participante responder antes de enviar uma nova interação.',
@@ -551,17 +645,22 @@ class NegociacaoController extends Controller
             ]);
         }
 
+        $tipoAnterior =
+            $interacaoAnterior->tipo->tipo;
+
         $dados = $request->validate([
             'tipo' => [
                 'required',
                 'string',
                 'in:INTERESSE,PROPOSTA,DUVIDA',
             ],
+
             'mensagem' => [
                 'nullable',
                 'string',
                 'max:5000',
             ],
+
             'valor_proposto' => [
                 'nullable',
                 'numeric',
@@ -569,21 +668,121 @@ class NegociacaoController extends Controller
             ],
         ]);
 
+        $novoTipo =
+            $dados['tipo'];
+
+        /*
+         * Depois que o contratante aceita
+         * um INTERESSE, o interessado pode
+         * continuar a negociação.
+         *
+         * Portanto:
+         *
+         * INTERESSE + AGUARDANDO_CONTRATANTE
+         * = ainda aguardando aceite.
+         *
+         * INTERESSE + AGUARDANDO_INTERESSADO
+         * = contratante já aceitou.
+         */
+        if ($tipoAnterior === 'INTERESSE') {
+
+            if (
+                $codigoStatus ===
+                'AGUARDANDO_CONTRATANTE'
+            ) {
+                throw ValidationException::withMessages([
+                    'tipo' => [
+                        'A manifestação de interesse deve ser aceita ou recusada pelo contratante.',
+                    ],
+                ]);
+            }
+
+            /*
+             * Depois do aceite do interesse,
+             * o interessado pode:
+             *
+             * - enviar PROPOSTA
+             * - enviar DUVIDA
+             */
+            if (
+                !in_array(
+                    $novoTipo,
+                    [
+                        'PROPOSTA',
+                        'DUVIDA',
+                    ]
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'tipo' => [
+                        'Após o aceite do interesse, envie uma proposta ou uma dúvida.',
+                    ],
+                ]);
+            }
+        }
+
+        /*
+         * PROPOSTA pode receber:
+         * - nova PROPOSTA
+         * - DUVIDA
+         */
+        if ($tipoAnterior === 'PROPOSTA') {
+
+            if (
+                !in_array(
+                    $novoTipo,
+                    [
+                        'PROPOSTA',
+                        'DUVIDA',
+                    ]
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'tipo' => [
+                        'Uma proposta só pode receber uma nova proposta ou uma dúvida.',
+                    ],
+                ]);
+            }
+        }
+
+        /*
+         * DUVIDA somente pode receber
+         * outra interação DUVIDA.
+         */
+        if ($tipoAnterior === 'DUVIDA') {
+
+            if ($novoTipo !== 'DUVIDA') {
+                throw ValidationException::withMessages([
+                    'tipo' => [
+                        'Uma dúvida deve ser respondida com uma nova interação do tipo DUVIDA.',
+                    ],
+                ]);
+            }
+        }
+
         /*
          * PROPOSTA precisa possuir valor.
          */
         if (
-            $dados['tipo'] === 'PROPOSTA' &&
+            $novoTipo === 'PROPOSTA' &&
             (
                 !isset($dados['valor_proposto']) ||
-                $dados['valor_proposto'] === ''
+                $dados['valor_proposto'] === '' ||
+                $dados['valor_proposto'] <= 0
             )
         ) {
             throw ValidationException::withMessages([
                 'valor_proposto' => [
-                    'O valor da proposta é obrigatório.',
+                    'O valor da proposta é obrigatório e deve ser maior que zero.',
                 ],
             ]);
+        }
+
+        /*
+         * Somente PROPOSTA carrega valor.
+         */
+        if ($novoTipo !== 'PROPOSTA') {
+            $dados['valor_proposto'] = null;
         }
 
         return DB::transaction(function () use (
@@ -591,7 +790,6 @@ class NegociacaoController extends Controller
             $usuario,
             $negociacao
         ) {
-
             $tipo = DB::table('interacao_tipos')
                 ->where(
                     'tipo',
@@ -607,50 +805,57 @@ class NegociacaoController extends Controller
                 ]);
             }
 
+            /*
+             * Cria a interação.
+             */
             $interacao = Interacao::create([
                 'id_interacao_tipo' =>
-                    $tipo->id_interacao_tipo,
+                $tipo->id_interacao_tipo,
 
                 'remetente_id' =>
-                    $usuario->id,
+                $usuario->id,
 
                 'mensagem' =>
-                    $dados['mensagem'] ?? null,
+                $dados['mensagem'] ?? null,
 
                 'valor_proposto' =>
-                    $dados['valor_proposto'] ?? null,
+                $dados['valor_proposto'] ?? null,
             ]);
 
             /*
-             * Atualiza o valor da negociação
-             * caso seja uma nova proposta.
+             * Atualiza o valor somente
+             * quando houver nova proposta.
              */
             $valorTrabalho =
                 $dados['tipo'] === 'PROPOSTA'
-                    ? $dados['valor_proposto']
-                    : $negociacao->valor_trabalho;
+                ? $dados['valor_proposto']
+                : $negociacao->valor_trabalho;
 
             /*
-             * Descobre quem deve responder agora.
-             *
-             * Se o interessado acabou de responder,
-             * aguardamos o contratante.
-             *
-             * Se o contratante acabou de responder,
-             * aguardamos o interessado.
+             * Define quem deverá responder.
              */
-            if ($usuario->id == $negociacao->id_interessado) {
-                $novoStatus = 'AGUARDANDO_CONTRATANTE';
+            if (
+                $usuario->id ==
+                $negociacao->id_interessado
+            ) {
+                $novoStatus =
+                    'AGUARDANDO_CONTRATANTE';
             } else {
-                $novoStatus = 'AGUARDANDO_INTERESSADO';
+                $novoStatus =
+                    'AGUARDANDO_INTERESSADO';
             }
 
+            $status =
+                $this->buscarStatusNegociacao(
+                    $novoStatus
+                );
+
             $negociacao->update([
-                'status' =>
-                    $novoStatus,
+                'status_id' =>
+                $status->id,
 
                 'valor_trabalho' =>
-                    $valorTrabalho,
+                $valorTrabalho,
             ]);
 
             /*
@@ -658,19 +863,21 @@ class NegociacaoController extends Controller
              */
             $negociacao->interacoes()->create([
                 'id_interacao' =>
-                    $interacao->id_interacao,
+                $interacao->id_interacao,
 
                 'id_interessado' =>
-                    $negociacao->id_interessado,
+                $negociacao->id_interessado,
 
                 'id_contratante' =>
-                    $negociacao->id_contratante,
+                $negociacao->id_contratante,
 
                 'id_publicacao' =>
-                    $negociacao->id_publicacao,
+                $negociacao->id_publicacao,
             ]);
 
             $negociacao->load([
+                'status',
+                'pagamento.status',
                 'publicacao.categoria',
                 'interessado',
                 'contratante',
@@ -680,10 +887,10 @@ class NegociacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Interação enviada com sucesso.',
+                'Interação enviada com sucesso.',
 
                 'data' =>
-                    $negociacao,
+                $negociacao,
             ]);
         });
     }
@@ -694,8 +901,8 @@ class NegociacaoController extends Controller
      */
     #[OA\Post(
         path: '/api/negociacoes/{negociacao}/aceitar',
-        summary: 'Aceita a última interação',
-        description: 'O contratante aceita a negociação e ela passa para FECHADA. As demais negociações da mesma publicação serão encerradas.',
+        summary: 'Aceita a última interação da negociação',
+        description: 'O contratante pode aceitar um INTERESSE. Uma PROPOSTA pode ser aceita pelo participante que recebeu a proposta. Em ambos os casos a negociação passa para AGUARDANDO_PAGAMENTO e o pagamento é criado para o contratante.',
         tags: ['Negociações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -713,11 +920,11 @@ class NegociacaoController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Negociação fechada com sucesso'
+                description: 'Interação aceita com sucesso'
             ),
             new OA\Response(
                 response: 403,
-                description: 'Usuário não participa da negociação'
+                description: 'Usuário não pode aceitar esta interação'
             ),
             new OA\Response(
                 response: 422,
@@ -737,32 +944,21 @@ class NegociacaoController extends Controller
         );
 
         /*
-         * Somente o CONTRATANTE pode aceitar.
-         */
-        if ($negociacao->id_contratante != $usuario->id) {
-            throw ValidationException::withMessages([
-                'negociacao' => [
-                    'Somente o contratante pode aceitar uma negociação.',
-                ],
-            ]);
-        }
-
-        /*
          * Somente negociações abertas
-         * podem ser fechadas.
+         * podem ser aceitas.
          */
         if (
             !in_array(
-                $negociacao->status,
+                $negociacao->status->codigo,
                 [
-                    'AGUARDANDO_CONTRATANTE',
                     'AGUARDANDO_INTERESSADO',
+                    'AGUARDANDO_CONTRATANTE',
                 ]
             )
         ) {
             throw ValidationException::withMessages([
                 'negociacao' => [
-                    'Esta negociação não pode mais ser fechada.',
+                    'Esta negociação não pode mais ser aceita.',
                 ],
             ]);
         }
@@ -772,10 +968,10 @@ class NegociacaoController extends Controller
          */
         $ultimaInteracao =
             $negociacao
-                ->interacoes()
-                ->with('interacao.tipo')
-                ->latest('id_negociacao_interacao')
-                ->first();
+            ->interacoes()
+            ->with('interacao.tipo')
+            ->latest('id_negociacao_interacao')
+            ->first();
 
         if (!$ultimaInteracao) {
             throw ValidationException::withMessages([
@@ -789,8 +985,7 @@ class NegociacaoController extends Controller
             $ultimaInteracao->interacao;
 
         /*
-         * O contratante só pode aceitar
-         * uma interação enviada pelo interessado.
+         * Não pode aceitar a própria interação.
          */
         if (
             $interacao->remetente_id ==
@@ -803,51 +998,190 @@ class NegociacaoController extends Controller
             ]);
         }
 
+        $tipoInteracao =
+            $interacao->tipo->tipo;
+
         /*
-         * Dúvida não pode ser aceita diretamente.
+         * =========================================================
+         * ACEITAR INTERESSE
+         * =========================================================
+         *
+         * O interessado enviou INTERESSE.
+         *
+         * O contratante aceita.
+         *
+         * Agora já temos uma contratação definida,
+         * portanto:
+         *
+         * negociação = AGUARDANDO_PAGAMENTO
+         * pagamento   = AGUARDANDO_PAGAMENTO
          */
-        if (
-            $interacao->tipo->tipo ===
-            'DUVIDA'
-        ) {
-            throw ValidationException::withMessages([
-                'negociacao' => [
-                    'Uma dúvida deve ser respondida com uma nova interação.',
-                ],
-            ]);
+        if ($tipoInteracao === 'INTERESSE') {
+
+            if (
+                $usuario->id !=
+                $negociacao->id_contratante
+            ) {
+                throw ValidationException::withMessages([
+                    'negociacao' => [
+                        'Somente o contratante pode aceitar uma manifestação de interesse.',
+                    ],
+                ]);
+            }
+
+            /*
+             * O interesse não possui valor.
+             *
+             * Portanto utiliza o valor estimado
+             * da publicação.
+             */
+            $valorTrabalho =
+                $negociacao->valor_trabalho
+                ?? $negociacao->publicacao->valor_estimado;
+
+            if (!$valorTrabalho || $valorTrabalho <= 0) {
+                throw ValidationException::withMessages([
+                    'negociacao' => [
+                        'Não foi possível determinar o valor da contratação.',
+                    ],
+                ]);
+            }
+
+            return $this->fecharNegociacaoParaPagamento(
+                $negociacao,
+                $valorTrabalho
+            );
         }
 
         /*
-         * Determina o valor final.
+         * =========================================================
+         * ACEITAR PROPOSTA
+         * =========================================================
+         *
+         * A proposta pode ter sido enviada pelo:
+         *
+         * - interessado
+         * - contratante
+         *
+         * Quem recebe a proposta é quem pode aceitar.
+         *
+         * Após o aceite:
+         *
+         * negociação = AGUARDANDO_PAGAMENTO
+         * pagamento   = AGUARDANDO_PAGAMENTO
          */
-        $valorTrabalho =
-            $interacao->valor_proposto
-            ?? $negociacao->valor_trabalho
-            ?? $negociacao->publicacao->valor_estimado;
+        if ($tipoInteracao === 'PROPOSTA') {
 
+            /*
+             * O usuário não pode aceitar
+             * a própria proposta.
+             *
+             * Essa validação já existe acima,
+             * mas mantemos a regra explícita.
+             */
+            if (
+                $interacao->remetente_id ==
+                $usuario->id
+            ) {
+                throw ValidationException::withMessages([
+                    'negociacao' => [
+                        'Você não pode aceitar sua própria proposta.',
+                    ],
+                ]);
+            }
+
+            $valorTrabalho =
+                $interacao->valor_proposto
+                ?? $negociacao->valor_trabalho
+                ?? $negociacao->publicacao->valor_estimado;
+
+            if (!$valorTrabalho || $valorTrabalho <= 0) {
+                throw ValidationException::withMessages([
+                    'negociacao' => [
+                        'Não foi possível determinar o valor da contratação.',
+                    ],
+                ]);
+            }
+
+            return $this->fecharNegociacaoParaPagamento(
+                $negociacao,
+                $valorTrabalho
+            );
+        }
+
+        /*
+         * DUVIDA nunca pode ser aceita diretamente.
+         */
+        throw ValidationException::withMessages([
+            'negociacao' => [
+                'Uma dúvida deve ser respondida antes de qualquer aceitação.',
+            ],
+        ]);
+    }
+
+
+    /**
+     * Coloca a negociação em AGUARDANDO_PAGAMENTO
+     * e cria o registro do pagamento.
+     */
+    private function fecharNegociacaoParaPagamento(
+        Negociacao $negociacao,
+        $valorTrabalho
+    ) {
         return DB::transaction(function () use (
             $negociacao,
             $valorTrabalho
         ) {
+            /*
+             * Status da negociação.
+             */
+            $statusNegociacao =
+                $this->buscarStatusNegociacao(
+                    'AGUARDANDO_PAGAMENTO'
+                );
 
             /*
-             * Fecha a negociação escolhida.
+             * Status inicial do pagamento.
+             */
+            $statusPagamento =
+                $this->buscarStatusPagamento(
+                    'AGUARDANDO_PAGAMENTO'
+                );
+
+            /*
+             * Atualiza a negociação.
              */
             $negociacao->update([
-                'status' =>
-                    'FECHADA',
+                'status_id' =>
+                $statusNegociacao->id,
 
                 'valor_trabalho' =>
-                    $valorTrabalho,
+                $valorTrabalho,
             ]);
 
             /*
-             * Todas as outras negociações
-             * da mesma publicação são encerradas.
-             *
-             * Não altera a negociação que acabou
-             * de ser fechada.
+             * Cria o pagamento.
              */
+            NegociacaoPagamento::create([
+                'id_negociacao' =>
+                $negociacao->id_negociacao,
+
+                'status_id' =>
+                $statusPagamento->id,
+
+                'valor' =>
+                $valorTrabalho,
+            ]);
+
+            /*
+             * Todas as outras negociações abertas
+             * da mesma publicação são encerradas.
+             */
+            $statusEncerrada =
+                $this->buscarStatusNegociacao(
+                    'ENCERRADA'
+                );
+
             Negociacao::where(
                 'id_publicacao',
                 $negociacao->id_publicacao
@@ -857,30 +1191,34 @@ class NegociacaoController extends Controller
                     '!=',
                     $negociacao->id_negociacao
                 )
-                ->whereIn(
-                    'status',
-                    [
-                        'AGUARDANDO_INTERESSADO',
-                        'AGUARDANDO_CONTRATANTE',
-                    ]
-                )
+                ->whereHas('status', function ($query) {
+                    $query->whereIn(
+                        'codigo',
+                        [
+                            'AGUARDANDO_INTERESSADO',
+                            'AGUARDANDO_CONTRATANTE',
+                        ]
+                    );
+                })
                 ->update([
-                    'status' =>
-                        'ENCERRADA',
+                    'status_id' =>
+                    $statusEncerrada->id,
                 ]);
 
             return response()->json([
                 'message' =>
-                    'Negociação fechada com sucesso. As demais negociações desta publicação foram encerradas.',
+                'Negociação aceita. Aguardando pagamento do contratante.',
 
                 'data' =>
-                    $negociacao->fresh([
-                        'publicacao',
-                        'interessado',
-                        'contratante',
-                        'interacoes.interacao.tipo',
-                        'interacoes.interacao.remetente',
-                    ]),
+                $negociacao->fresh([
+                    'status',
+                    'pagamento.status',
+                    'publicacao',
+                    'interessado',
+                    'contratante',
+                    'interacoes.interacao.tipo',
+                    'interacoes.interacao.remetente',
+                ]),
             ]);
         });
     }
@@ -891,8 +1229,8 @@ class NegociacaoController extends Controller
      */
     #[OA\Post(
         path: '/api/negociacoes/{negociacao}/recusar',
-        summary: 'Recusa a última interação',
-        description: 'Recusa uma interação e encerra definitivamente a negociação.',
+        summary: 'Recusa uma manifestação de interesse ou proposta',
+        description: 'Interações do tipo INTERESSE ou PROPOSTA podem ser recusadas diretamente. DUVIDA deve ser respondida.',
         tags: ['Negociações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -918,7 +1256,7 @@ class NegociacaoController extends Controller
             ),
             new OA\Response(
                 response: 422,
-                description: 'Interação não pode ser recusada'
+                description: 'A interação não pode ser recusada'
             )
         ]
     )]
@@ -935,11 +1273,11 @@ class NegociacaoController extends Controller
 
         /*
          * Somente negociações abertas
-         * podem ser encerradas por recusa.
+         * podem ser recusadas.
          */
         if (
             !in_array(
-                $negociacao->status,
+                $negociacao->status->codigo,
                 [
                     'AGUARDANDO_INTERESSADO',
                     'AGUARDANDO_CONTRATANTE',
@@ -948,7 +1286,7 @@ class NegociacaoController extends Controller
         ) {
             throw ValidationException::withMessages([
                 'negociacao' => [
-                    'Esta negociação já foi encerrada.',
+                    'Esta negociação já foi encerrada ou está em processo de pagamento.',
                 ],
             ]);
         }
@@ -958,10 +1296,10 @@ class NegociacaoController extends Controller
          */
         $ultimaInteracao =
             $negociacao
-                ->interacoes()
-                ->with('interacao.tipo')
-                ->latest('id_negociacao_interacao')
-                ->first();
+            ->interacoes()
+            ->with('interacao.tipo')
+            ->latest('id_negociacao_interacao')
+            ->first();
 
         if (!$ultimaInteracao) {
             throw ValidationException::withMessages([
@@ -989,41 +1327,86 @@ class NegociacaoController extends Controller
         }
 
         /*
-         * Dúvida não pode ser recusada.
-         * Deve ser respondida.
+         * Somente INTERESSE e PROPOSTA
+         * podem ser recusados.
          */
         if (
-            $interacao->tipo->tipo ===
-            'DUVIDA'
+            !in_array(
+                $interacao->tipo->tipo,
+                [
+                    'INTERESSE',
+                    'PROPOSTA',
+                ]
+            )
         ) {
             throw ValidationException::withMessages([
                 'negociacao' => [
-                    'Uma dúvida deve ser respondida com uma nova interação.',
+                    'Somente uma manifestação de interesse ou uma proposta pode ser recusada. Dúvidas devem ser respondidas.',
                 ],
             ]);
         }
 
-        /*
-         * Qualquer recusa encerra a negociação.
-         */
+        $status =
+            $this->buscarStatusNegociacao(
+                'ENCERRADA'
+            );
+
         $negociacao->update([
-            'status' =>
-                'ENCERRADA',
+            'status_id' =>
+            $status->id,
         ]);
 
         return response()->json([
             'message' =>
-                'Negociação encerrada.',
+            'Negociação encerrada.',
 
             'data' =>
-                $negociacao->fresh([
-                    'publicacao',
-                    'interessado',
-                    'contratante',
-                    'interacoes.interacao.tipo',
-                    'interacoes.interacao.remetente',
-                ]),
+            $negociacao->fresh([
+                'status',
+                'pagamento.status',
+                'publicacao',
+                'interessado',
+                'contratante',
+                'interacoes.interacao.tipo',
+                'interacoes.interacao.remetente',
+            ]),
         ]);
+    }
+
+
+    /**
+     * Busca um status da negociação pelo código.
+     */
+    private function buscarStatusNegociacao(
+        string $codigo
+    ): NegociacaoStatus {
+        return NegociacaoStatus::where(
+            'codigo',
+            $codigo
+        )
+            ->where(
+                'ativo',
+                true
+            )
+            ->firstOrFail();
+    }
+
+
+    /**
+     * Busca um status do pagamento pelo código.
+     */
+    private function buscarStatusPagamento(
+        string $codigo
+    ): NegociacaoPagamentoStatus {
+        return NegociacaoPagamentoStatus::where(
+            'codigo',
+            $codigo
+        )
+            ->where(
+                'ativo',
+                true
+            )
+            ->firstOrFail();
     }
 
 
@@ -1036,10 +1419,10 @@ class NegociacaoController extends Controller
     ): void {
         if (
             $negociacao->id_interessado !=
-                $usuario->id
+            $usuario->id
             &&
             $negociacao->id_contratante !=
-                $usuario->id
+            $usuario->id
         ) {
             abort(
                 403,

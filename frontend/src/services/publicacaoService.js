@@ -43,9 +43,9 @@ export async function atualizarPublicacao(
     return response.data;
 }
 
-export async function excluirPublicacao(id) {
-    const response = await api.delete(
-        `/publicacoes/${id}`
+export async function cancelarPublicacao(id) {
+    const response = await api.patch(
+        `/publicacoes/${id}/cancelar`
     );
 
     return response.data;

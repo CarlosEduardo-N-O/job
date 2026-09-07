@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Publicacao;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Negociacao extends Model
 {
@@ -17,7 +17,7 @@ class Negociacao extends Model
         'id_interessado',
         'id_contratante',
         'id_publicacao',
-        'status',
+        'status_id',
         'valor_trabalho',
     ];
 
@@ -25,6 +25,20 @@ class Negociacao extends Model
         'valor_trabalho' => 'decimal:2',
     ];
 
+    /**
+     * Status atual da negociação.
+     */
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(
+            NegociacaoStatus::class,
+            'status_id'
+        );
+    }
+
+    /**
+     * Usuário interessado na publicação.
+     */
     public function interessado(): BelongsTo
     {
         return $this->belongsTo(
@@ -33,6 +47,9 @@ class Negociacao extends Model
         );
     }
 
+    /**
+     * Usuário contratante da publicação.
+     */
     public function contratante(): BelongsTo
     {
         return $this->belongsTo(
@@ -41,6 +58,9 @@ class Negociacao extends Model
         );
     }
 
+    /**
+     * Publicação relacionada à negociação.
+     */
     public function publicacao(): BelongsTo
     {
         return $this->belongsTo(
@@ -49,10 +69,22 @@ class Negociacao extends Model
         );
     }
 
+    /**
+     * Interações da negociação.
+     */
     public function interacoes(): HasMany
     {
         return $this->hasMany(
             NegociacaoInteracao::class,
+            'id_negociacao',
+            'id_negociacao'
+        );
+    }
+
+    public function pagamento(): HasOne
+    {
+        return $this->hasOne(
+            NegociacaoPagamento::class,
             'id_negociacao',
             'id_negociacao'
         );

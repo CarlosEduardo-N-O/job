@@ -7,7 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserCategoriaController;
 use App\Http\Controllers\PublicacaoController;
 use App\Http\Controllers\NegociacaoController;
-
+use App\Http\Controllers\NegociacaoPagamentoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,7 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Usuário x Categoria
+    | Publicações
     |--------------------------------------------------------------------------
     */
 
@@ -127,6 +127,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post(
         '/publicacoes/{publicacao}/interacoes',
         [NegociacaoController::class, 'store']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Negociações
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/negociacoes/meus',
+        [NegociacaoController::class, 'minhas']
     );
 
     Route::get(
@@ -152,5 +163,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post(
         '/negociacoes/{negociacao}/recusar',
         [NegociacaoController::class, 'recusar']
+    );
+
+
+    /*
+|--------------------------------------------------------------------------
+| Pagamentos
+|--------------------------------------------------------------------------
+*/
+
+    Route::get(
+        '/negociacoes/{negociacao}/pagamento',
+        [NegociacaoPagamentoController::class, 'show']
+    );
+
+    Route::post(
+        '/negociacoes/{negociacao}/pagamento/informar',
+        [NegociacaoPagamentoController::class, 'informar']
+    );
+
+    Route::post(
+        '/negociacoes/{negociacao}/pagamento/validar',
+        [NegociacaoPagamentoController::class, 'validar']
+    );
+
+    Route::post(
+        '/negociacoes/{negociacao}/pagamento/nao-validar',
+        [NegociacaoPagamentoController::class, 'naoValidar']
     );
 });

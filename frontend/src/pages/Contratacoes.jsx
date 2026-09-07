@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 
 import {
     getMinhasPublicacoes,
-    excluirPublicacao,
+    cancelarPublicacao,
 } from '../services/publicacaoService';
 
 import PublicacaoFormModal from '../components/PublicacaoFormModal';
+import NegociacoesModal from '../components/NegociacoesModal';
 
 import '../styles/contratacoes.css';
 
@@ -13,23 +14,24 @@ export default function Contratacoes() {
 
     const [publicacoes, setPublicacoes] = useState([]);
 
-    const [aba, setAba] = useState('publicacoes');
+    const [aba, setAba] =
+        useState('publicacoes');
 
-    const [carregando, setCarregando] = useState(true);
+    const [carregando, setCarregando] =
+        useState(true);
 
-    const [erro, setErro] = useState('');
+    const [erro, setErro] =
+        useState('');
 
     const [
         publicacaoEditando,
         setPublicacaoEditando,
     ] = useState(null);
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Carregar publicações
-    |--------------------------------------------------------------------------
-    */
+    const [
+        publicacaoNegociacoes,
+        setPublicacaoNegociacoes,
+    ] = useState(null);
 
     useEffect(() => {
         carregarPublicacoes();
@@ -40,9 +42,11 @@ export default function Contratacoes() {
             setCarregando(true);
             setErro('');
 
-            const response = await getMinhasPublicacoes();
+            const response =
+                await getMinhasPublicacoes();
 
-            const dados = response?.data ?? response;
+            const dados =
+                response?.data ?? response;
 
             setPublicacoes(
                 Array.isArray(dados)
@@ -51,7 +55,6 @@ export default function Contratacoes() {
             );
 
         } catch (error) {
-
             console.error(
                 'Erro ao carregar publicações:',
                 error
@@ -61,109 +64,73 @@ export default function Contratacoes() {
                 error?.response?.data?.message ||
                 'Não foi possível carregar suas publicações.'
             );
-
         } finally {
             setCarregando(false);
         }
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Nova publicação
-    |--------------------------------------------------------------------------
-    */
-
     function abrirNovaPublicacao() {
         setPublicacaoEditando({});
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Editar publicação
-    |--------------------------------------------------------------------------
-    */
-
     function abrirEdicao(publicacao) {
-        setPublicacaoEditando(publicacao);
+        setPublicacaoEditando(
+            publicacao
+        );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Fechar modal
-    |--------------------------------------------------------------------------
-    */
 
     function fecharEdicao() {
         setPublicacaoEditando(null);
     }
 
+    function abrirNegociacoes(publicacao) {
+        setPublicacaoNegociacoes(
+            publicacao
+        );
+    }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Publicação salva
-    |--------------------------------------------------------------------------
-    */
+    function fecharNegociacoes() {
+        setPublicacaoNegociacoes(null);
+    }
 
     function handlePublicacaoSalva(
         publicacaoSalva
     ) {
-
         if (!publicacaoSalva) {
             carregarPublicacoes();
             return;
         }
 
-        setPublicacoes((anterior) => {
+        setPublicacoes(
+            (anterior) => {
+                const existe =
+                    anterior.some(
+                        (publicacao) =>
+                            publicacao.id ===
+                            publicacaoSalva.id
+                    );
 
-            const existe = anterior.some(
-                (publicacao) =>
-                    publicacao.id ===
-                    publicacaoSalva.id
-            );
+                if (!existe) {
+                    return [
+                        publicacaoSalva,
+                        ...anterior,
+                    ];
+                }
 
-            /*
-            |--------------------------------------------------------------
-            | Nova publicação
-            |--------------------------------------------------------------
-            */
-
-            if (!existe) {
-                return [
-                    publicacaoSalva,
-                    ...anterior,
-                ];
+                return anterior.map(
+                    (publicacao) =>
+                        publicacao.id ===
+                        publicacaoSalva.id
+                            ? publicacaoSalva
+                            : publicacao
+                );
             }
-
-            /*
-            |--------------------------------------------------------------
-            | Publicação atualizada
-            |--------------------------------------------------------------
-            */
-
-            return anterior.map(
-                (publicacao) =>
-                    publicacao.id ===
-                    publicacaoSalva.id
-                        ? publicacaoSalva
-                        : publicacao
-            );
-        });
+        );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cancelar publicação
-    |--------------------------------------------------------------------------
-    */
-
-    async function cancelarPublicacao(
+    async function cancelarPublicacaoHandler(
         publicacao
     ) {
-
         const confirmar =
             window.confirm(
                 `Deseja realmente cancelar a publicação "${publicacao.titulo}"?`
@@ -174,22 +141,24 @@ export default function Contratacoes() {
         }
 
         try {
-
-            await excluirPublicacao(
+            await cancelarPublicacao(
                 publicacao.id
             );
 
             setPublicacoes(
                 (anterior) =>
-                    anterior.filter(
+                    anterior.map(
                         (item) =>
-                            item.id !==
+                            item.id ===
                             publicacao.id
+                                ? {
+                                    ...item,
+                                    status: 'CANCELADO',
+                                }
+                                : item
                     )
             );
-
         } catch (error) {
-
             console.error(
                 'Erro ao cancelar publicação:',
                 error
@@ -202,22 +171,10 @@ export default function Contratacoes() {
         }
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Renderização
-    |--------------------------------------------------------------------------
-    */
-
     return (
         <main className="contratacoes-page">
 
-            {/* ========================================================== */}
-            {/* CABEÇALHO                                                  */}
-            {/* ========================================================== */}
-
             <header className="contratacoes-header">
-
                 <div>
                     <h1>
                         Contratações
@@ -227,13 +184,7 @@ export default function Contratacoes() {
                         Gerencie suas publicações e contratações
                     </p>
                 </div>
-
             </header>
-
-
-            {/* ========================================================== */}
-            {/* ABAS                                                        */}
-            {/* ========================================================== */}
 
             <div className="contratacoes-tabs">
 
@@ -245,7 +196,9 @@ export default function Contratacoes() {
                             : 'tab'
                     }
                     onClick={() =>
-                        setAba('publicacoes')
+                        setAba(
+                            'publicacoes'
+                        )
                     }
                 >
                     Minhas publicações
@@ -259,7 +212,9 @@ export default function Contratacoes() {
                             : 'tab'
                     }
                     onClick={() =>
-                        setAba('contratacoes')
+                        setAba(
+                            'contratacoes'
+                        )
                     }
                 >
                     Contratações
@@ -267,23 +222,12 @@ export default function Contratacoes() {
 
             </div>
 
-
-            {/* ========================================================== */}
-            {/* ABA — MINHAS PUBLICAÇÕES                                    */}
-            {/* ========================================================== */}
-
             {aba === 'publicacoes' && (
-
                 <section className="contratacoes-content">
-
-                    {/* -------------------------------------------------- */}
-                    {/* TÍTULO + BOTÃO NOVA PUBLICAÇÃO                     */}
-                    {/* -------------------------------------------------- */}
 
                     <div className="section-title">
 
                         <div>
-
                             <h2>
                                 Minhas publicações
                             </h2>
@@ -291,13 +235,14 @@ export default function Contratacoes() {
                             <p>
                                 Serviços publicados por você
                             </p>
-
                         </div>
 
                         <div className="section-title-acoes">
 
                             <span className="count">
-                                {publicacoes.length}
+                                {
+                                    publicacoes.length
+                                }
                             </span>
 
                             <button
@@ -307,7 +252,9 @@ export default function Contratacoes() {
                                     abrirNovaPublicacao
                                 }
                             >
-                                <span>+</span>
+                                <span>
+                                    +
+                                </span>
 
                                 Nova publicação
                             </button>
@@ -316,41 +263,23 @@ export default function Contratacoes() {
 
                     </div>
 
-
-                    {/* -------------------------------------------------- */}
-                    {/* CARREGANDO                                          */}
-                    {/* -------------------------------------------------- */}
-
                     {carregando && (
-
                         <div className="contratacoes-loading">
                             Carregando publicações...
                         </div>
-
                     )}
 
-
-                    {/* -------------------------------------------------- */}
-                    {/* ERRO                                                 */}
-                    {/* -------------------------------------------------- */}
-
-                    {!carregando && erro && (
-
-                        <div className="contratacoes-error">
-                            {erro}
-                        </div>
-
-                    )}
-
-
-                    {/* -------------------------------------------------- */}
-                    {/* VAZIO                                                */}
-                    {/* -------------------------------------------------- */}
+                    {!carregando &&
+                        erro && (
+                            <div className="contratacoes-error">
+                                {erro}
+                            </div>
+                        )}
 
                     {!carregando &&
                         !erro &&
-                        publicacoes.length === 0 && (
-
+                        publicacoes.length ===
+                            0 && (
                             <div className="contratacoes-empty">
 
                                 <div className="empty-icon">
@@ -372,28 +301,26 @@ export default function Contratacoes() {
                                         abrirNovaPublicacao
                                     }
                                 >
-                                    <span>+</span>
+                                    <span>
+                                        +
+                                    </span>
+
                                     Criar primeira publicação
                                 </button>
 
                             </div>
-
                         )}
-
-
-                    {/* -------------------------------------------------- */}
-                    {/* LISTA DE PUBLICAÇÕES                                */}
-                    {/* -------------------------------------------------- */}
 
                     {!carregando &&
                         !erro &&
-                        publicacoes.length > 0 && (
-
+                        publicacoes.length >
+                            0 && (
                             <div className="contratacoes-list">
 
                                 {publicacoes.map(
-                                    (publicacao) => (
-
+                                    (
+                                        publicacao
+                                    ) => (
                                         <article
                                             key={
                                                 publicacao.id
@@ -401,14 +328,9 @@ export default function Contratacoes() {
                                             className="contratacao-publicacao-card"
                                         >
 
-                                            {/* ---------------------- */}
-                                            {/* CABEÇALHO DO CARD       */}
-                                            {/* ---------------------- */}
-
                                             <div className="contratacao-card-header">
 
                                                 <div>
-
                                                     <h3>
                                                         {
                                                             publicacao.titulo
@@ -416,40 +338,27 @@ export default function Contratacoes() {
                                                     </h3>
 
                                                     {publicacao.categoria && (
-
                                                         <span className="publicacao-categoria">
-
                                                             {
                                                                 publicacao
                                                                     .categoria
                                                                     .nome
                                                             }
-
                                                         </span>
-
                                                     )}
-
                                                 </div>
 
                                                 <span className="publicacao-status">
-
                                                     {
                                                         publicacao.status
                                                     }
-
                                                 </span>
 
                                             </div>
 
-
-                                            {/* ---------------------- */}
-                                            {/* INFORMAÇÕES             */}
-                                            {/* ---------------------- */}
-
                                             <div className="contratacao-card-meta">
 
                                                 <div>
-
                                                     <span>
                                                         Valor
                                                     </span>
@@ -459,12 +368,9 @@ export default function Contratacoes() {
                                                             publicacao.valor_estimado
                                                         )}
                                                     </strong>
-
                                                 </div>
 
-
                                                 <div>
-
                                                     <span>
                                                         Data
                                                     </span>
@@ -474,12 +380,9 @@ export default function Contratacoes() {
                                                             publicacao.data_inicio
                                                         )}
                                                     </strong>
-
                                                 </div>
 
-
                                                 <div>
-
                                                     <span>
                                                         Negociações
                                                     </span>
@@ -491,28 +394,15 @@ export default function Contratacoes() {
                                                             0
                                                         }
                                                     </strong>
-
                                                 </div>
 
                                             </div>
 
-
-                                            {/* ---------------------- */}
-                                            {/* DESCRIÇÃO               */}
-                                            {/* ---------------------- */}
-
                                             <div className="contratacao-card-descricao">
-
                                                 {
                                                     publicacao.descricao
                                                 }
-
                                             </div>
-
-
-                                            {/* ---------------------- */}
-                                            {/* AÇÕES                   */}
-                                            {/* ---------------------- */}
 
                                             <div className="publicacao-acoes-contratacao">
 
@@ -528,14 +418,36 @@ export default function Contratacoes() {
                                                     ✏️ Editar
                                                 </button>
 
+                                                <button
+                                                    type="button"
+                                                    className="btn-negociacoes-publicacao"
+                                                    onClick={() =>
+                                                        abrirNegociacoes(
+                                                            publicacao
+                                                        )
+                                                    }
+                                                >
+                                                    🤝 Negociações
+                                                    <span>
+                                                        {
+                                                            publicacao
+                                                                .negociacoes_count ??
+                                                            0
+                                                        }
+                                                    </span>
+                                                </button>
 
                                                 <button
                                                     type="button"
                                                     className="btn-cancelar-publicacao"
                                                     onClick={() =>
-                                                        cancelarPublicacao(
+                                                        cancelarPublicacaoHandler(
                                                             publicacao
                                                         )
+                                                    }
+                                                    disabled={
+                                                        publicacao.status !==
+                                                        'ATIVO'
                                                     }
                                                 >
                                                     ✕ Cancelar
@@ -544,25 +456,16 @@ export default function Contratacoes() {
                                             </div>
 
                                         </article>
-
                                     )
                                 )}
 
                             </div>
-
                         )}
 
                 </section>
-
             )}
 
-
-            {/* ========================================================== */}
-            {/* ABA — CONTRATAÇÕES                                         */}
-            {/* ========================================================== */}
-
             {aba === 'contratacoes' && (
-
                 <section className="contratacoes-content">
 
                     <div className="contratacoes-empty">
@@ -582,16 +485,9 @@ export default function Contratacoes() {
                     </div>
 
                 </section>
-
             )}
 
-
-            {/* ========================================================== */}
-            {/* MODAL NOVA / EDITAR PUBLICAÇÃO                             */}
-            {/* ========================================================== */}
-
             {publicacaoEditando !== null && (
-
                 <PublicacaoFormModal
                     publicacao={
                         publicacaoEditando.id
@@ -605,22 +501,24 @@ export default function Contratacoes() {
                         handlePublicacaoSalva
                     }
                 />
+            )}
 
+            {publicacaoNegociacoes !== null && (
+                <NegociacoesModal
+                    publicacao={
+                        publicacaoNegociacoes
+                    }
+                    onClose={
+                        fecharNegociacoes
+                    }
+                />
             )}
 
         </main>
     );
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| Formatação
-|--------------------------------------------------------------------------
-*/
-
 function formatarValor(valor) {
-
     if (
         valor === null ||
         valor === undefined ||
@@ -644,9 +542,7 @@ function formatarValor(valor) {
     );
 }
 
-
 function formatarData(data) {
-
     if (!data) {
         return 'Não informada';
     }

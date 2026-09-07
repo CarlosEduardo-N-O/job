@@ -172,7 +172,7 @@
                     "Negociações"
                 ],
                 "summary": "Inicia uma negociação com uma publicação",
-                "description": "Cria a primeira interação do usuário com uma publicação e cria automaticamente uma negociação.",
+                "description": "Cria a primeira interação do usuário com uma publicação e cria automaticamente uma negociação. Não permite iniciar uma nova negociação quando já existe uma negociação FECHADA para a publicação.",
                 "operationId": "b429f8cca8ceedebbf7a3d793de9a25d",
                 "parameters": [
                     {
@@ -235,7 +235,7 @@
                         "description": "Usuário não pode interagir com esta publicação"
                     },
                     "422": {
-                        "description": "Dados inválidos ou negociação já existente"
+                        "description": "Dados inválidos, negociação já existente ou a publicação já possui uma negociação fechada"
                     }
                 },
                 "security": [
@@ -250,8 +250,8 @@
                 "tags": [
                     "Negociações"
                 ],
-                "summary": "Envia uma nova interação na negociação",
-                "description": "Permite que o participante que ainda não respondeu envie INTERESSE, PROPOSTA ou DUVIDA.",
+                "summary": "Recusa uma manifestação de interesse ou proposta",
+                "description": "Interações do tipo INTERESSE ou PROPOSTA podem ser recusadas diretamente. DUVIDA deve ser respondida com uma nova interação.",
                 "operationId": "c579e8e628506baa8e04fe987b9625aa",
                 "parameters": [
                     {
@@ -275,7 +275,7 @@
                                 ],
                                 "properties": {
                                     "tipo": {
-                                        "description": "Tipo da nova interação",
+                                        "description": "Tipo da nova interação. O tipo permitido depende da última interação da negociação.",
                                         "type": "string",
                                         "example": "PROPOSTA",
                                         "enum": [
@@ -291,7 +291,7 @@
                                         "nullable": true
                                     },
                                     "valor_proposto": {
-                                        "description": "Valor da nova proposta",
+                                        "description": "Valor da nova proposta. Obrigatório quando o tipo for PROPOSTA.",
                                         "type": "number",
                                         "format": "float",
                                         "example": 340,
@@ -311,7 +311,7 @@
                         "description": "Usuário não participa da negociação"
                     },
                     "422": {
-                        "description": "Não é a vez do usuário ou dados inválidos"
+                        "description": "Não é a vez do usuário, o tipo de interação não é permitido para o estado atual da negociação ou os dados são inválidos"
                     }
                 },
                 "security": [
@@ -327,7 +327,7 @@
                     "Negociações"
                 ],
                 "summary": "Aceita a última interação",
-                "description": "Aceita uma interação do outro participante. Pode ser usada para INTERESSE ou PROPOSTA.",
+                "description": "Somente o contratante pode aceitar. INTERESSE e PROPOSTA podem ser aceitos quando a última interação foi enviada pelo interessado. DUVIDA não pode ser aceita diretamente e deve ser respondida. Ao fechar uma negociação, as demais negociações abertas da mesma publicação são encerradas.",
                 "operationId": "4e7e488352cb180fee4e99c64063fc4c",
                 "parameters": [
                     {
@@ -343,13 +343,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Interação aceita com sucesso"
+                        "description": "Negociação fechada com sucesso"
                     },
                     "403": {
-                        "description": "Usuário não participa da negociação"
+                        "description": "Usuário não participa da negociação ou não é o contratante"
                     },
                     "422": {
-                        "description": "Interação não pode ser aceita"
+                        "description": "Negociação não pode ser aceita"
                     }
                 },
                 "security": [
@@ -364,8 +364,8 @@
                 "tags": [
                     "Negociações"
                 ],
-                "summary": "Recusa a última interação",
-                "description": "Recusa uma interação de INTERESSE ou PROPOSTA enviada pelo outro participante.",
+                "summary": "Recusa uma manifestação de interesse",
+                "description": "Somente uma interação do tipo INTERESSE pode ser recusada diretamente. PROPOSTA deve ser aceita ou respondida com uma nova proposta. DUVIDA deve ser respondida com uma nova interação.",
                 "operationId": "9917306ca9457f9c9d0e1b45733aa130",
                 "parameters": [
                     {
@@ -381,13 +381,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Interação recusada com sucesso"
+                        "description": "Negociação encerrada com sucesso"
                     },
                     "403": {
                         "description": "Usuário não participa da negociação"
                     },
                     "422": {
-                        "description": "Interação não pode ser recusada"
+                        "description": "A interação não pode ser recusada"
                     }
                 },
                 "security": [
@@ -403,7 +403,7 @@
                     "Publicações"
                 ],
                 "summary": "Lista publicações disponíveis para o usuário autenticado",
-                "description": "Retorna somente publicações ativas pertencentes às categorias vinculadas ao usuário autenticado. As publicações criadas pelo próprio usuário não são exibidas.",
+                "description": "Retorna somente publicações ativas pertencentes às categorias vinculadas ao usuário autenticado, que não foram criadas pelo próprio usuário e que ainda não possuem negociação iniciada pelo usuário.",
                 "operationId": "5fce4def948e1b77a02ebfd056d7868b",
                 "responses": {
                     "200": {
@@ -509,7 +509,7 @@
                     "Publicações"
                 ],
                 "summary": "Lista minhas publicações",
-                "description": "Retorna todas as publicações criadas pelo usuário autenticado, independentemente do status.",
+                "description": "Retorna todas as publicações criadas pelo usuário autenticado, independentemente do status, incluindo a quantidade de negociações vinculadas a cada publicação.",
                 "operationId": "6b557fe15958fd4410d2ff42e181f77b",
                 "responses": {
                     "200": {
@@ -567,6 +567,7 @@
                     "Publicações"
                 ],
                 "summary": "Atualiza uma publicação do usuário autenticado",
+                "description": "Atualiza os dados da publicação. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.",
                 "operationId": "463d90bd10e9ef6779cb03655246db1b",
                 "parameters": [
                     {
@@ -634,8 +635,7 @@
                                         "example": "ENCERRADO",
                                         "enum": [
                                             "ATIVO",
-                                            "ENCERRADO",
-                                            "CANCELADO"
+                                            "ENCERRADO"
                                         ]
                                     }
                                 },
@@ -666,13 +666,16 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "delete": {
+            }
+        },
+        "/api/publicacoes/{publicacao}/cancelar": {
+            "patch": {
                 "tags": [
                     "Publicações"
                 ],
-                "summary": "Exclui uma publicação do usuário autenticado",
-                "operationId": "b4c627b89a47c0ce7bbf6563e2b4ce5f",
+                "summary": "Cancela uma publicação",
+                "description": "Cancela a publicação e altera todas as negociações abertas vinculadas para CANCELADA.",
+                "operationId": "ddfbfecb35335d111a57f66d6d90d949",
                 "parameters": [
                     {
                         "name": "publicacao",
@@ -686,8 +689,8 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Publicação excluída"
+                    "200": {
+                        "description": "Publicação cancelada com sucesso"
                     },
                     "401": {
                         "description": "Não autenticado"
@@ -697,6 +700,9 @@
                     },
                     "404": {
                         "description": "Publicação não encontrada"
+                    },
+                    "422": {
+                        "description": "Publicação não pode ser cancelada"
                     }
                 },
                 "security": [

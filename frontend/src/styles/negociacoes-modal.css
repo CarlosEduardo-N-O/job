@@ -1,0 +1,673 @@
+.negociacoes-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.negociacoes-modal {
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #ffffff;
+    border-radius: 14px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.negociacoes-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 20px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.negociacoes-modal-header h2 {
+    margin: 0;
+
+    font-size: 22px;
+}
+
+.negociacoes-modal-header p {
+    margin: 5px 0 0;
+
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.negociacoes-modal-fechar {
+    width: 36px;
+    height: 36px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #f3f4f6;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.negociacoes-lista {
+    padding: 20px;
+}
+
+.negociacoes-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.negociacao-card {
+    padding: 16px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+    background: #ffffff;
+}
+
+.negociacao-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.negociacao-card-header h3 {
+    margin: 0 0 3px;
+
+    font-size: 16px;
+}
+
+.negociacao-card-header span {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.negociacao-status {
+    padding: 6px 9px;
+
+    border-radius: 20px;
+
+    background: #f3f4f6;
+
+    color: #374151 !important;
+
+    font-size: 12px !important;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.negociacao-card-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin: 16px 0;
+}
+
+.negociacao-card-info div,
+.negociacao-resumo div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.negociacao-card-info span,
+.negociacao-resumo span {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.negociacao-card-info strong,
+.negociacao-resumo strong {
+    font-size: 14px;
+}
+
+.btn-abrir-negociacao {
+    width: 100%;
+
+    min-height: 40px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.btn-abrir-negociacao:hover {
+    opacity: 0.9;
+}
+
+.negociacoes-loading,
+.negociacoes-error,
+.negociacoes-empty {
+    padding: 35px 20px;
+
+    text-align: center;
+}
+
+.negociacoes-error {
+    color: #b91c1c;
+}
+
+.negociacoes-empty>div {
+    margin-bottom: 10px;
+
+    font-size: 35px;
+}
+
+.negociacoes-empty h3 {
+    margin: 0 0 6px;
+}
+
+.negociacoes-empty p {
+    margin: 0;
+
+    color: #6b7280;
+}
+
+.negociacao-detalhes {
+    padding: 20px;
+}
+
+.negociacao-voltar {
+    margin-bottom: 20px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.negociacao-resumo {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 12px;
+
+    margin-bottom: 25px;
+}
+
+.negociacao-resumo div {
+    padding: 12px;
+
+    border-radius: 8px;
+
+    background: #f9fafb;
+}
+
+.negociacao-historico h3 {
+    margin: 0 0 15px;
+}
+
+.negociacao-interacao {
+    margin-bottom: 12px;
+    padding: 14px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+    background: #ffffff;
+}
+
+.negociacao-interacao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 8px;
+}
+
+.negociacao-interacao-header strong {
+    font-size: 14px;
+}
+
+.negociacao-interacao-header span {
+    color: #6b7280;
+
+    font-size: 11px;
+}
+
+.negociacao-interacao-tipo {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    padding: 4px 8px;
+
+    border-radius: 6px;
+
+    background: #f3f4f6;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.negociacao-interacao p {
+    margin: 5px 0 10px;
+
+    color: #374151;
+
+    font-size: 14px;
+
+    white-space: pre-wrap;
+}
+
+.negociacao-interacao-valor {
+    font-size: 13px;
+}
+
+.negociacao-sem-interacoes {
+    color: #6b7280;
+}
+
+.negociacoes-detalhes-loading {
+    padding: 15px 20px;
+
+    border-top: 1px solid #e5e7eb;
+
+    color: #6b7280;
+
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .negociacoes-modal-overlay {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .negociacoes-modal {
+        max-height: 94vh;
+
+        border-radius:
+            14px 14px 0 0;
+    }
+
+    .negociacoes-modal-header {
+        padding: 16px;
+    }
+
+    .negociacoes-lista,
+    .negociacao-detalhes {
+        padding: 16px;
+    }
+
+    .negociacao-card-header {
+        flex-direction: column;
+    }
+
+    .negociacao-status {
+        align-self: flex-start;
+    }
+
+    .negociacao-resumo {
+        grid-template-columns: 1fr;
+    }
+
+    .negociacao-interacao-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* =========================================================
+   AÇÕES DA NEGOCIAÇÃO
+========================================================= */
+
+.negociacao-acoes {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.negociacao-acoes-titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 14px;
+}
+
+.negociacao-acoes-titulo h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.negociacao-acoes-titulo span {
+    color: var(--text-muted, #6b7280);
+    font-size: 12px;
+}
+
+/* =========================================================
+   BOTÕES ACEITAR / RECUSAR
+========================================================= */
+
+.negociacao-botoes-principais {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.btn-negociacao-aceitar,
+.btn-negociacao-recusar {
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-negociacao-aceitar {
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.btn-negociacao-aceitar:hover {
+    background: #dcfce7;
+}
+
+.btn-negociacao-recusar {
+    border: 1px solid #fecaca;
+    background: #fff;
+    color: #b91c1c;
+}
+
+.btn-negociacao-recusar:hover {
+    background: #fef2f2;
+}
+
+/* =========================================================
+   RESPOSTA
+========================================================= */
+
+.negociacao-resposta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.negociacao-resposta-aviso {
+    padding: 12px;
+    border-radius: 9px;
+    background: var(--background-secondary, #f9fafb);
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text-muted, #6b7280);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.negociacao-form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.negociacao-form-grupo label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.negociacao-form-grupo select,
+.negociacao-form-grupo input,
+.negociacao-form-grupo textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border, #d1d5db);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text-primary, #111827);
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.negociacao-form-grupo select,
+.negociacao-form-grupo input {
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.negociacao-form-grupo textarea {
+    padding: 10px 12px;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+.negociacao-form-grupo select:focus,
+.negociacao-form-grupo input:focus,
+.negociacao-form-grupo textarea:focus {
+    outline: none;
+    border-color: var(--accent, #2563eb);
+}
+
+.btn-negociacao-responder {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 9px;
+    background: var(--accent, #2563eb);
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-negociacao-responder:hover {
+    opacity: 0.92;
+}
+
+/* =========================================================
+   SEM AÇÕES
+========================================================= */
+
+.negociacao-sem-acoes {
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 9px;
+    background: var(--background-secondary, #f9fafb);
+    border: 1px solid var(--border, #e5e7eb);
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.negociacao-sem-acoes strong {
+    font-size: 13px;
+}
+
+.negociacao-sem-acoes span {
+    color: var(--text-muted, #6b7280);
+    font-size: 12px;
+}
+
+/* =========================================================
+   ERRO NAS AÇÕES
+========================================================= */
+
+.negociacao-erro-acao {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .negociacao-botoes-principais {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .btn-negociacao-aceitar,
+    .btn-negociacao-recusar {
+        min-height: 40px;
+        padding: 0 6px;
+        font-size: 11px;
+    }
+
+    .negociacao-form-grupo select,
+    .negociacao-form-grupo input {
+        min-height: 40px;
+    }
+
+    .btn-negociacao-responder {
+        min-height: 40px;
+    }
+}
+
+/* ============================================================
+   BOTÃO PAGAMENTO REALIZADO
+   ============================================================ */
+
+.btn-pagamento-realizado {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #198754;
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-pagamento-realizado:hover {
+    background: #157347;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.btn-pagamento-realizado:active {
+    transform: scale(0.98);
+}
+
+.btn-pagamento-realizado:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ============================================================
+   BOTÃO VER INTERAÇÕES
+   ============================================================ */
+
+button.btn-ver-interacoes {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin: 12px 0 16px;
+    padding: 10px 14px;
+
+    box-sizing: border-box;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: var(--background-secondary);
+    color: var(--text);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.1s ease;
+}
+
+button.btn-ver-interacoes:hover {
+    background: var(--background-card);
+    border-color: var(--primary);
+}
+
+button.btn-ver-interacoes:active {
+    transform: scale(0.98);
+}
+
+button.btn-ver-interacoes:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+@media (max-width: 600px) {
+    button.btn-ver-interacoes {
+        min-height: 42px;
+        margin: 10px 0 14px;
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+}

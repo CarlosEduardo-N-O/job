@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Publicacao;
 use App\Models\Negociacao;
+use App\Models\NegociacaoStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
@@ -818,19 +819,49 @@ class PublicacaoController extends Controller
 
     private function cancelarNegociacoes(int $publicacaoId): void
     {
+        /*
+         * Busca o status CANCELADA na tabela
+         * negociacao_status.
+         */
+
+        $statusCancelada = NegociacaoStatus::where(
+            'codigo',
+            'CANCELADA'
+        )
+            ->where('ativo', true)
+            ->firstOrFail();
+
+        /*
+         * Busca os status que ainda estão abertos.
+         */
+
+        $statusAbertos = [
+            'AGUARDANDO_INTERESSADO',
+            'AGUARDANDO_CONTRATANTE'
+        ];
+
+        /*
+         * Atualiza somente negociações abertas.
+         *
+         * O status da negociação agora é controlado
+         * através da coluna status_id.
+         */
+
         Negociacao::where(
             'id_publicacao',
             $publicacaoId
         )
-            ->whereIn(
+            ->whereHas(
                 'status',
-                [
-                    'AGUARDANDO_INTERESSADO',
-                    'AGUARDANDO_CONTRATANTE'
-                ]
+                function ($query) use ($statusAbertos) {
+                    $query->whereIn(
+                        'codigo',
+                        $statusAbertos
+                    );
+                }
             )
             ->update([
-                'status' => 'CANCELADA'
+                'status_id' => $statusCancelada->id
             ]);
     }
 
@@ -849,6 +880,23 @@ class PublicacaoController extends Controller
 
     private function sincronizarNegociacoesCanceladas(): void
     {
+        /*
+         * Busca o status CANCELADA na tabela
+         * negociacao_status.
+         */
+
+        $statusCancelada = NegociacaoStatus::where(
+            'codigo',
+            'CANCELADA'
+        )
+            ->where('ativo', true)
+            ->firstOrFail();
+
+        /*
+         * Publicações CANCELADO possuem negociações
+         * que não podem mais permanecer abertas.
+         */
+
         Negociacao::whereHas(
             'publicacao',
             function ($query) {
@@ -858,15 +906,20 @@ class PublicacaoController extends Controller
                 );
             }
         )
-            ->whereIn(
+            ->whereHas(
                 'status',
-                [
-                    'AGUARDANDO_INTERESSADO',
-                    'AGUARDANDO_CONTRATANTE'
-                ]
+                function ($query) {
+                    $query->whereIn(
+                        'codigo',
+                        [
+                            'AGUARDANDO_INTERESSADO',
+                            'AGUARDANDO_CONTRATANTE'
+                        ]
+                    );
+                }
             )
             ->update([
-                'status' => 'CANCELADA'
+                'status_id' => $statusCancelada->id
             ]);
     }
 }
