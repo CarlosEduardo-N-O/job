@@ -2,29 +2,100 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Categoria;
 use App\Models\UserCategoria;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class UserCategoriaController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Lista categorias disponíveis
+    |--------------------------------------------------------------------------
+    */
+
     #[OA\Get(
-        path: '/api/usuario-categorias',
-        summary: 'Lista os vínculos entre usuários e categorias',
+        path: '/api/users-categorias/categorias',
+        summary: 'Lista todas as categorias e informa quais pertencem ao usuário autenticado',
         tags: ['Usuário-Categorias'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Lista de categorias'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Não autenticado'
+            )
+        ]
+    )]
+    public function categorias(Request $request)
+    {
+        $usuario = $request->user();
+
+        $categoriasUsuario = UserCategoria::where(
+            'user_id',
+            $usuario->id
+        )
+            ->get()
+            ->keyBy('categoria_id');
+
+        $categorias = Categoria::orderBy('nome')
+            ->get()
+            ->map(function ($categoria) use ($categoriasUsuario) {
+
+                $vinculo = $categoriasUsuario->get(
+                    $categoria->id
+                );
+
+                return [
+                    'id' => $categoria->id,
+                    'nome' => $categoria->nome,
+                    'descricao' => $categoria->descricao,
+                    'selecionada' => $vinculo !== null,
+                    'vinculo_id' => $vinculo?->id,
+                ];
+            });
+
+        return response()->json([
+            'data' => $categorias
+        ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lista meus vínculos
+    |--------------------------------------------------------------------------
+    */
+
+    #[OA\Get(
+        path: '/api/users-categorias',
+        summary: 'Lista as categorias do usuário autenticado',
+        tags: ['Usuário-Categorias'],
+        security: [['sanctum' => []]],
         responses: [
             new OA\Response(
                 response: 200,
                 description: 'Lista de vínculos'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Não autenticado'
             )
         ]
     )]
-    public function index()
+    public function index(Request $request)
     {
-        $vinculos = UserCategoria::with([
-            'usuario',
-            'categoria'
-        ])
+        $usuario = $request->user();
+
+        $vinculos = UserCategoria::with('categoria')
+            ->where(
+                'user_id',
+                $usuario->id
+            )
             ->orderByDesc('id')
             ->get();
 
@@ -34,23 +105,24 @@ class UserCategoriaController extends Controller
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Vincular categoria
+    |--------------------------------------------------------------------------
+    */
+
     #[OA\Post(
-        path: '/api/usuario-categorias',
-        summary: 'Vincula um usuário a uma categoria',
+        path: '/api/users-categorias',
+        summary: 'Vincula uma categoria ao usuário autenticado',
         tags: ['Usuário-Categorias'],
+        security: [['sanctum' => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: [
-                    'user_id',
                     'categoria_id'
                 ],
                 properties: [
-                    new OA\Property(
-                        property: 'user_id',
-                        type: 'integer',
-                        example: 1
-                    ),
                     new OA\Property(
                         property: 'categoria_id',
                         type: 'integer',
@@ -66,23 +138,23 @@ class UserCategoriaController extends Controller
             ),
             new OA\Response(
                 response: 409,
-                description: 'Vínculo já existe'
+                description: 'Categoria já vinculada'
             ),
             new OA\Response(
                 response: 422,
                 description: 'Dados inválidos'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Não autenticado'
             )
         ]
     )]
     public function store(Request $request)
     {
-        $dados = $request->validate([
-            'user_id' => [
-                'required',
-                'integer',
-                'exists:users,id'
-            ],
+        $usuario = $request->user();
 
+        $dados = $request->validate([
             'categoria_id' => [
                 'required',
                 'integer',
@@ -92,7 +164,7 @@ class UserCategoriaController extends Controller
 
         $existe = UserCategoria::where(
             'user_id',
-            $dados['user_id']
+            $usuario->id
         )
             ->where(
                 'categoria_id',
@@ -102,181 +174,35 @@ class UserCategoriaController extends Controller
 
         if ($existe) {
             return response()->json([
-                'message' => 'Este usuário já está vinculado a esta categoria.'
+                'message' => 'Esta categoria já está vinculada ao seu perfil.'
             ], 409);
         }
 
-        $vinculo = UserCategoria::create($dados);
-
-        $vinculo->load([
-            'usuario',
-            'categoria'
+        $vinculo = UserCategoria::create([
+            'user_id' => $usuario->id,
+            'categoria_id' => $dados['categoria_id'],
         ]);
 
+        $vinculo->load('categoria');
+
         return response()->json([
-            'message' => 'Usuário vinculado à categoria com sucesso.',
+            'message' => 'Categoria vinculada com sucesso.',
             'data' => $vinculo
         ], 201);
     }
 
 
-    #[OA\Get(
-        path: '/api/usuario-categorias/{usuarioCategoria}',
-        summary: 'Exibe um vínculo entre usuário e categoria',
-        tags: ['Usuário-Categorias'],
-        parameters: [
-            new OA\Parameter(
-                name: 'usuarioCategoria',
-                description: 'ID do vínculo',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(
-                    type: 'integer'
-                ),
-                example: 1
-            )
-        ],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Vínculo encontrado'
-            ),
-            new OA\Response(
-                response: 404,
-                description: 'Vínculo não encontrado'
-            )
-        ]
-    )]
-    public function show(UserCategoria $usuarioCategoria)
-    {
-        $usuarioCategoria->load([
-            'usuario',
-            'categoria'
-        ]);
-
-        return response()->json([
-            'data' => $usuarioCategoria
-        ]);
-    }
-
-
-    #[OA\Put(
-        path: '/api/usuario-categorias/{usuarioCategoria}',
-        summary: 'Atualiza um vínculo entre usuário e categoria',
-        tags: ['Usuário-Categorias'],
-        parameters: [
-            new OA\Parameter(
-                name: 'usuarioCategoria',
-                description: 'ID do vínculo',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(
-                    type: 'integer'
-                ),
-                example: 1
-            )
-        ],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(
-                        property: 'user_id',
-                        type: 'integer',
-                        example: 1
-                    ),
-                    new OA\Property(
-                        property: 'categoria_id',
-                        type: 'integer',
-                        example: 4
-                    )
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Vínculo atualizado'
-            ),
-            new OA\Response(
-                response: 404,
-                description: 'Vínculo não encontrado'
-            ),
-            new OA\Response(
-                response: 409,
-                description: 'Vínculo já existe'
-            ),
-            new OA\Response(
-                response: 422,
-                description: 'Dados inválidos'
-            )
-        ]
-    )]
-    public function update(
-        Request $request,
-        UserCategoria $usuarioCategoria
-    ) {
-        $dados = $request->validate([
-            'user_id' => [
-                'sometimes',
-                'required',
-                'integer',
-                'exists:users,id'
-            ],
-
-            'categoria_id' => [
-                'sometimes',
-                'required',
-                'integer',
-                'exists:categorias,id'
-            ],
-        ]);
-
-        $userId = $dados['user_id']
-            ?? $usuarioCategoria->user_id;
-
-        $categoriaId = $dados['categoria_id']
-            ?? $usuarioCategoria->categoria_id;
-
-        $duplicado = UserCategoria::where(
-            'user_id',
-            $userId
-        )
-            ->where(
-                'categoria_id',
-                $categoriaId
-            )
-            ->where(
-                'id',
-                '!=',
-                $usuarioCategoria->id
-            )
-            ->exists();
-
-        if ($duplicado) {
-            return response()->json([
-                'message' => 'Este usuário já está vinculado a esta categoria.'
-            ], 409);
-        }
-
-        $usuarioCategoria->update($dados);
-
-        $usuarioCategoria->load([
-            'usuario',
-            'categoria'
-        ]);
-
-        return response()->json([
-            'message' => 'Vínculo atualizado com sucesso.',
-            'data' => $usuarioCategoria
-        ]);
-    }
-
+    /*
+    |--------------------------------------------------------------------------
+    | Remover vínculo
+    |--------------------------------------------------------------------------
+    */
 
     #[OA\Delete(
-        path: '/api/usuario-categorias/{usuarioCategoria}',
-        summary: 'Remove o vínculo entre usuário e categoria',
+        path: '/api/users-categorias/{usuarioCategoria}',
+        summary: 'Remove uma categoria do usuário autenticado',
         tags: ['Usuário-Categorias'],
+        security: [['sanctum' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'usuarioCategoria',
@@ -297,11 +223,28 @@ class UserCategoriaController extends Controller
             new OA\Response(
                 response: 404,
                 description: 'Vínculo não encontrado'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Não autenticado'
             )
         ]
     )]
-    public function destroy(UserCategoria $usuarioCategoria)
-    {
+    public function destroy(
+        Request $request,
+        UserCategoria $usuarioCategoria
+    ) {
+        $usuario = $request->user();
+
+        if (
+            $usuarioCategoria->user_id !==
+            $usuario->id
+        ) {
+            return response()->json([
+                'message' => 'Este vínculo não pertence ao usuário autenticado.'
+            ], 404);
+        }
+
         $usuarioCategoria->delete();
 
         return response()->noContent();

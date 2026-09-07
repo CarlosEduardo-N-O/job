@@ -105,16 +105,20 @@
                 ]
             }
         },
-        "/api/categorias": {
+        "/api/negociacoes": {
             "get": {
                 "tags": [
-                    "Categorias"
+                    "Negociações"
                 ],
-                "summary": "Lista todas as categorias",
-                "operationId": "66bfb3e0bf7747700be142ec5329dfae",
+                "summary": "Lista as negociações do usuário autenticado",
+                "description": "Retorna as negociações em que o usuário participa como interessado ou contratante.",
+                "operationId": "e5946a1778f9dff10056a3d6597e1e81",
                 "responses": {
                     "200": {
-                        "description": "Lista de categorias"
+                        "description": "Lista de negociações"
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado"
                     }
                 },
                 "security": [
@@ -124,18 +128,416 @@
                 ]
             }
         },
-        "/api/categorias/{categoria}": {
+        "/api/negociacoes/{negociacao}": {
             "get": {
                 "tags": [
-                    "Categorias"
+                    "Negociações"
                 ],
-                "summary": "Exibe uma categoria",
-                "operationId": "9efbf44dffb8e062845953c082ba6ed7",
+                "summary": "Exibe uma negociação",
+                "description": "Retorna a negociação e todo o histórico de interações entre os participantes.",
+                "operationId": "80a3499ec119ef1b1c953031b39a7e94",
                 "parameters": [
                     {
-                        "name": "categoria",
+                        "name": "negociacao",
                         "in": "path",
-                        "description": "ID da categoria",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Negociação encontrada"
+                    },
+                    "403": {
+                        "description": "Usuário não participa desta negociação"
+                    },
+                    "404": {
+                        "description": "Negociação não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/publicacoes/{publicacao}/interacoes": {
+            "post": {
+                "tags": [
+                    "Negociações"
+                ],
+                "summary": "Inicia uma negociação com uma publicação",
+                "description": "Cria a primeira interação do usuário com uma publicação e cria automaticamente uma negociação.",
+                "operationId": "b429f8cca8ceedebbf7a3d793de9a25d",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tipo"
+                                ],
+                                "properties": {
+                                    "tipo": {
+                                        "description": "Tipo da primeira interação",
+                                        "type": "string",
+                                        "example": "PROPOSTA",
+                                        "enum": [
+                                            "INTERESSE",
+                                            "PROPOSTA",
+                                            "DUVIDA"
+                                        ]
+                                    },
+                                    "mensagem": {
+                                        "description": "Mensagem da interação",
+                                        "type": "string",
+                                        "example": "Consigo realizar o serviço por este valor.",
+                                        "nullable": true
+                                    },
+                                    "valor_proposto": {
+                                        "description": "Valor da proposta. Obrigatório quando o tipo for PROPOSTA.",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 320,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Negociação criada com sucesso"
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado"
+                    },
+                    "403": {
+                        "description": "Usuário não pode interagir com esta publicação"
+                    },
+                    "422": {
+                        "description": "Dados inválidos ou negociação já existente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/negociacoes/{negociacao}/interacoes": {
+            "post": {
+                "tags": [
+                    "Negociações"
+                ],
+                "summary": "Envia uma nova interação na negociação",
+                "description": "Permite que o participante que ainda não respondeu envie INTERESSE, PROPOSTA ou DUVIDA.",
+                "operationId": "c579e8e628506baa8e04fe987b9625aa",
+                "parameters": [
+                    {
+                        "name": "negociacao",
+                        "in": "path",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tipo"
+                                ],
+                                "properties": {
+                                    "tipo": {
+                                        "description": "Tipo da nova interação",
+                                        "type": "string",
+                                        "example": "PROPOSTA",
+                                        "enum": [
+                                            "INTERESSE",
+                                            "PROPOSTA",
+                                            "DUVIDA"
+                                        ]
+                                    },
+                                    "mensagem": {
+                                        "description": "Mensagem da interação",
+                                        "type": "string",
+                                        "example": "Consigo fazer por R$ 340.",
+                                        "nullable": true
+                                    },
+                                    "valor_proposto": {
+                                        "description": "Valor da nova proposta",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 340,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Interação enviada com sucesso"
+                    },
+                    "403": {
+                        "description": "Usuário não participa da negociação"
+                    },
+                    "422": {
+                        "description": "Não é a vez do usuário ou dados inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/negociacoes/{negociacao}/aceitar": {
+            "post": {
+                "tags": [
+                    "Negociações"
+                ],
+                "summary": "Aceita a última interação",
+                "description": "Aceita uma interação do outro participante. Pode ser usada para INTERESSE ou PROPOSTA.",
+                "operationId": "4e7e488352cb180fee4e99c64063fc4c",
+                "parameters": [
+                    {
+                        "name": "negociacao",
+                        "in": "path",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Interação aceita com sucesso"
+                    },
+                    "403": {
+                        "description": "Usuário não participa da negociação"
+                    },
+                    "422": {
+                        "description": "Interação não pode ser aceita"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/negociacoes/{negociacao}/recusar": {
+            "post": {
+                "tags": [
+                    "Negociações"
+                ],
+                "summary": "Recusa a última interação",
+                "description": "Recusa uma interação de INTERESSE ou PROPOSTA enviada pelo outro participante.",
+                "operationId": "9917306ca9457f9c9d0e1b45733aa130",
+                "parameters": [
+                    {
+                        "name": "negociacao",
+                        "in": "path",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Interação recusada com sucesso"
+                    },
+                    "403": {
+                        "description": "Usuário não participa da negociação"
+                    },
+                    "422": {
+                        "description": "Interação não pode ser recusada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/publicacoes": {
+            "get": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Lista publicações disponíveis para o usuário autenticado",
+                "description": "Retorna somente publicações ativas pertencentes às categorias vinculadas ao usuário autenticado. As publicações criadas pelo próprio usuário não são exibidas.",
+                "operationId": "5fce4def948e1b77a02ebfd056d7868b",
+                "responses": {
+                    "200": {
+                        "description": "Lista de publicações disponíveis"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Cria uma nova publicação",
+                "operationId": "cf7e4b6378851cf1d4688cc486ec9843",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "categoria_id",
+                                    "titulo",
+                                    "descricao"
+                                ],
+                                "properties": {
+                                    "categoria_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "titulo": {
+                                        "type": "string",
+                                        "example": "Preciso de um eletricista"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Preciso instalar três tomadas em minha residência."
+                                    },
+                                    "valor_estimado": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 250
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "Rio do Sul"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SC"
+                                    },
+                                    "endereco_servico": {
+                                        "type": "string",
+                                        "example": "Rua das Flores, 100"
+                                    },
+                                    "data_inicio": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-15"
+                                    },
+                                    "horario_inicio": {
+                                        "type": "string",
+                                        "example": "14:00"
+                                    },
+                                    "data_fim": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-20"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Publicação criada"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/publicacoes/minhas_publicacoes": {
+            "get": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Lista minhas publicações",
+                "description": "Retorna todas as publicações criadas pelo usuário autenticado, independentemente do status.",
+                "operationId": "6b557fe15958fd4410d2ff42e181f77b",
+                "responses": {
+                    "200": {
+                        "description": "Lista das publicações do usuário"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/publicacoes/{publicacao}": {
+            "get": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Visualiza uma publicação",
+                "operationId": "d9a352842a37829214945f9fe5248df0",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -145,10 +547,156 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Categoria encontrada"
+                        "description": "Publicação encontrada"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
                     },
                     "404": {
-                        "description": "Categoria não encontrada"
+                        "description": "Publicação não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Atualiza uma publicação do usuário autenticado",
+                "operationId": "463d90bd10e9ef6779cb03655246db1b",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "categoria_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "titulo": {
+                                        "type": "string",
+                                        "example": "Preciso de um eletricista"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Preciso instalar tomadas."
+                                    },
+                                    "valor_estimado": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 300
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "Rio do Sul"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SC"
+                                    },
+                                    "endereco_servico": {
+                                        "type": "string",
+                                        "example": "Rua das Flores, 100"
+                                    },
+                                    "data_inicio": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-15"
+                                    },
+                                    "horario_inicio": {
+                                        "type": "string",
+                                        "example": "14:00"
+                                    },
+                                    "data_fim": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-20"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "ENCERRADO",
+                                        "enum": [
+                                            "ATIVO",
+                                            "ENCERRADO",
+                                            "CANCELADO"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Publicação atualizada"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Sem permissão"
+                    },
+                    "404": {
+                        "description": "Publicação não encontrada"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Exclui uma publicação do usuário autenticado",
+                "operationId": "b4c627b89a47c0ce7bbf6563e2b4ce5f",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Publicação excluída"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Sem permissão"
+                    },
+                    "404": {
+                        "description": "Publicação não encontrada"
                     }
                 },
                 "security": [
@@ -158,39 +706,64 @@
                 ]
             }
         },
-        "/api/usuario-categorias": {
+        "/api/users-categorias/categorias": {
             "get": {
                 "tags": [
                     "Usuário-Categorias"
                 ],
-                "summary": "Lista os vínculos entre usuários e categorias",
-                "operationId": "06ed3b06a2b9fd859ff11d79191a90ae",
+                "summary": "Lista todas as categorias e informa quais pertencem ao usuário autenticado",
+                "operationId": "8f1f2cefb3c0b94fb8d1af28fa49e4cc",
+                "responses": {
+                    "200": {
+                        "description": "Lista de categorias"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users-categorias": {
+            "get": {
+                "tags": [
+                    "Usuário-Categorias"
+                ],
+                "summary": "Lista as categorias do usuário autenticado",
+                "operationId": "c97d51e623d16cab6dbcb45a9f9d2f5c",
                 "responses": {
                     "200": {
                         "description": "Lista de vínculos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
                     "Usuário-Categorias"
                 ],
-                "summary": "Vincula um usuário a uma categoria",
-                "operationId": "14faad8474035c6a9bf3108f50ce7e66",
+                "summary": "Vincula uma categoria ao usuário autenticado",
+                "operationId": "5fcc1380ee0e7ffca14a7c8ff70a78e4",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "user_id",
                                     "categoria_id"
                                 ],
                                 "properties": {
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
                                     "categoria_id": {
                                         "type": "integer",
                                         "example": 4
@@ -206,101 +779,29 @@
                         "description": "Vínculo criado"
                     },
                     "409": {
-                        "description": "Vínculo já existe"
+                        "description": "Categoria já vinculada"
                     },
                     "422": {
                         "description": "Dados inválidos"
-                    }
-                }
-            }
-        },
-        "/api/usuario-categorias/{usuarioCategoria}": {
-            "get": {
-                "tags": [
-                    "Usuário-Categorias"
-                ],
-                "summary": "Exibe um vínculo entre usuário e categoria",
-                "operationId": "a537757152ca1fdcccad2757a95f81bc",
-                "parameters": [
-                    {
-                        "name": "usuarioCategoria",
-                        "in": "path",
-                        "description": "ID do vínculo",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "example": 1
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Vínculo encontrado"
                     },
-                    "404": {
-                        "description": "Vínculo não encontrado"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Usuário-Categorias"
-                ],
-                "summary": "Atualiza um vínculo entre usuário e categoria",
-                "operationId": "3e8788d3b13b10892fde8ec1b989a823",
-                "parameters": [
-                    {
-                        "name": "usuarioCategoria",
-                        "in": "path",
-                        "description": "ID do vínculo",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "example": 1
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "categoria_id": {
-                                        "type": "integer",
-                                        "example": 4
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
+                    "401": {
+                        "description": "Não autenticado"
                     }
                 },
-                "responses": {
-                    "200": {
-                        "description": "Vínculo atualizado"
-                    },
-                    "404": {
-                        "description": "Vínculo não encontrado"
-                    },
-                    "409": {
-                        "description": "Vínculo já existe"
-                    },
-                    "422": {
-                        "description": "Dados inválidos"
+                "security": [
+                    {
+                        "sanctum": []
                     }
-                }
-            },
+                ]
+            }
+        },
+        "/api/users-categorias/{usuarioCategoria}": {
             "delete": {
                 "tags": [
                     "Usuário-Categorias"
                 ],
-                "summary": "Remove o vínculo entre usuário e categoria",
-                "operationId": "db3b628c450294a0cb8ed1fc44ded592",
+                "summary": "Remove uma categoria do usuário autenticado",
+                "operationId": "e0ff58df76b7ca0c899aeffb66d8e0b0",
                 "parameters": [
                     {
                         "name": "usuarioCategoria",
@@ -319,8 +820,16 @@
                     },
                     "404": {
                         "description": "Vínculo não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/users": {
@@ -373,14 +882,6 @@
                                     "telefone": {
                                         "type": "string",
                                         "example": "(47) 99999-9999"
-                                    },
-                                    "tipo": {
-                                        "type": "string",
-                                        "example": "cliente",
-                                        "enum": [
-                                            "cliente",
-                                            "prestador"
-                                        ]
                                     },
                                     "foto_url": {
                                         "type": "string",
@@ -452,14 +953,6 @@
                                         "type": "string",
                                         "example": "(47) 99999-9999"
                                     },
-                                    "tipo": {
-                                        "type": "string",
-                                        "example": "cliente",
-                                        "enum": [
-                                            "cliente",
-                                            "prestador"
-                                        ]
-                                    },
                                     "foto_url": {
                                         "type": "string",
                                         "example": "https://site.com/foto.jpg"
@@ -525,8 +1018,12 @@
             "description": "Autenticação"
         },
         {
-            "name": "Categorias",
-            "description": "Categorias"
+            "name": "Negociações",
+            "description": "Negociações"
+        },
+        {
+            "name": "Publicações",
+            "description": "Publicações"
         },
         {
             "name": "Usuário-Categorias",

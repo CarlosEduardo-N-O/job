@@ -1,147 +1,227 @@
-import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
-import { useAuth } from '../contexts/AuthContext';
+import PublicacaoCard from '../components/PublicacaoCard';
+import InteracaoModal from '../components/InteracaoModal';
 
-export default function Login() {
-    const navigate = useNavigate();
+import {
+    getPublicacoes,
+    criarInteracao,
+} from '../services/publicacaoService';
 
-    const {
-        login,
-        isAuthenticated,
-    } = useAuth();
+import '../styles/home.css';
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+export default function Home() {
+    const [publicacoes, setPublicacoes] = useState([]);
+
+    const [loading, setLoading] = useState(true);
 
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
 
-    if (isAuthenticated) {
-        return <Navigate to="/" replace />;
-    }
+    const [publicacaoSelecionada, setPublicacaoSelecionada] =
+        useState(null);
 
-    async function handleSubmit(event) {
-        event.preventDefault();
+    const [tipoInteracao, setTipoInteracao] = useState(null);
 
-        setError('');
+    const [enviando, setEnviando] = useState(false);
+
+    const [erroInteracao, setErroInteracao] = useState('');
+
+    useEffect(() => {
+        carregarPublicacoes();
+    }, []);
+
+    async function carregarPublicacoes() {
         setLoading(true);
+        setError('');
 
         try {
-            await login(email, password);
+            const response = await getPublicacoes();
 
-            navigate('/', {
-                replace: true,
-            });
+            const dados =
+                response?.data ?? response ?? [];
+
+            setPublicacoes(
+                Array.isArray(dados)
+                    ? dados
+                    : []
+            );
         } catch (error) {
-            console.error(error);
+            console.error(
+                'Erro ao carregar publicações:',
+                error
+            );
 
-            if (error.response?.status === 422) {
-                setError(
-                    'Verifique o e-mail e a senha informados.'
-                );
-            } else if (error.response?.status === 401) {
-                setError(
-                    'E-mail ou senha incorretos.'
-                );
-            } else {
-                setError(
-                    'Não foi possível realizar o login.'
-                );
-            }
+            setError(
+                'Não foi possível carregar os trabalhos.'
+            );
         } finally {
             setLoading(false);
         }
     }
 
+    function abrirInteracao(publicacao, tipo) {
+        setPublicacaoSelecionada(publicacao);
+        setTipoInteracao(tipo);
+        setErroInteracao('');
+    }
+
+    function fecharModal() {
+        if (enviando) {
+            return;
+        }
+
+        setPublicacaoSelecionada(null);
+        setTipoInteracao(null);
+        setErroInteracao('');
+    }
+
+    async function enviarInteracao(dados) {
+        if (!publicacaoSelecionada || enviando) {
+            return;
+        }
+
+        setEnviando(true);
+        setErroInteracao('');
+
+        try {
+            await criarInteracao(
+                publicacaoSelecionada.id,
+                dados
+            );
+
+            /*
+             * A publicação deixa o Home imediatamente.
+             *
+             * O backend também garante essa regra através
+             * da negociação criada para o usuário.
+             */
+            setPublicacoes((publicacoesAtuais) =>
+                publicacoesAtuais.filter(
+                    (publicacao) =>
+                        publicacao.id !==
+                        publicacaoSelecionada.id
+                )
+            );
+
+            fecharModal();
+        } catch (error) {
+            console.error(
+                'Erro ao enviar interação:',
+                error
+            );
+
+            const mensagem =
+                error.response?.data?.message ||
+                'Não foi possível enviar sua interação.';
+
+            setErroInteracao(mensagem);
+        } finally {
+            setEnviando(false);
+        }
+    }
+
     return (
-        <div className="login-page">
-            <div className="login-card">
+        <main className="home-page">
 
-                <div className="login-logo">
-                    JOB
-                </div>
+            <header className="home-header">
+                <h1>
+                    Oportunidades para você
+                </h1>
 
-                <div className="login-header">
-                    <h1>Bem-vindo ao JOB</h1>
+                <p>
+                    Encontre trabalhos que combinam
+                    com suas categorias.
+                </p>
+            </header>
 
-                    <p>
-                        Encontre profissionais ou encontre
-                        novos trabalhos.
-                    </p>
-                </div>
+            <section className="timeline">
 
-                <form
-                    className="login-form"
-                    onSubmit={handleSubmit}
-                >
-                    <div className="form-group">
-                        <label htmlFor="email">
-                            E-mail
-                        </label>
+                {loading && (
+                    <div className="home-loading">
 
-                        <input
-                            id="email"
-                            type="email"
-                            placeholder="seu@email.com"
-                            value={email}
-                            onChange={(event) =>
-                                setEmail(event.target.value)
-                            }
-                            required
-                            autoComplete="email"
-                        />
+                        <div className="loading-spinner" />
+
+                        <span>
+                            Carregando oportunidades...
+                        </span>
+
                     </div>
+                )}
 
-                    <div className="form-group">
-                        <label htmlFor="password">
-                            Senha
-                        </label>
+                {!loading && error && (
+                    <div className="home-error">
 
-                        <input
-                            id="password"
-                            type="password"
-                            placeholder="Digite sua senha"
-                            value={password}
-                            onChange={(event) =>
-                                setPassword(event.target.value)
-                            }
-                            required
-                            autoComplete="current-password"
-                        />
-                    </div>
+                        <strong>
+                            Não foi possível carregar
+                            as oportunidades.
+                        </strong>
 
-                    {error && (
-                        <div className="error-message">
+                        <p>
                             {error}
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={carregarPublicacoes}
+                        >
+                            Tentar novamente
+                        </button>
+
+                    </div>
+                )}
+
+                {!loading &&
+                    !error &&
+                    publicacoes.length === 0 && (
+                        <div className="empty-state">
+
+                            <div className="empty-state-icon">
+                                📋
+                            </div>
+
+                            <h2>
+                                Nenhuma oportunidade
+                            </h2>
+
+                            <p>
+                                No momento não existem
+                                trabalhos disponíveis
+                                para você.
+                            </p>
+
                         </div>
                     )}
 
-                    <button
-                        type="submit"
-                        className="primary-button"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? 'Entrando...'
-                            : 'Entrar'}
-                    </button>
-                </form>
+                {!loading &&
+                    !error &&
+                    publicacoes.map((publicacao) => (
+                        <PublicacaoCard
+                            key={publicacao.id}
+                            publicacao={publicacao}
+                            onInteracao={
+                                abrirInteracao
+                            }
+                        />
+                    ))}
 
-                <div className="login-footer">
-                    <span>
-                        Ainda não possui uma conta?
-                    </span>
+            </section>
 
-                    <button
-                        type="button"
-                        className="link-button"
-                    >
-                        Criar conta
-                    </button>
-                </div>
+            {publicacaoSelecionada &&
+                tipoInteracao && (
+                    <InteracaoModal
+                        publicacao={
+                            publicacaoSelecionada
+                        }
+                        tipo={tipoInteracao}
+                        onClose={fecharModal}
+                        onSubmit={
+                            enviarInteracao
+                        }
+                        loading={enviando}
+                        error={erroInteracao}
+                    />
+                )}
 
-            </div>
-        </div>
+        </main>
     );
 }

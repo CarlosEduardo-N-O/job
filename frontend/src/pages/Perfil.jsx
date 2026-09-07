@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import {
     getAuthenticatedUser,
     updateAuthenticatedUser,
+    getUserCategories,
+    addUserCategory,
+    removeUserCategory,
 } from '../services/authService';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -24,25 +27,39 @@ export default function Perfil() {
         password: '',
     });
 
+    const [categorias, setCategorias] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [savingCategoria, setSavingCategoria] = useState(null);
+
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
-        loadUser();
+        loadData();
     }, []);
 
-    async function loadUser() {
+    async function loadData() {
         setLoading(true);
         setError('');
 
         try {
-            const response =
-                await getAuthenticatedUser();
+            const [
+                usuarioResponse,
+                categoriasResponse,
+            ] = await Promise.all([
+                getAuthenticatedUser(),
+                getUserCategories(),
+            ]);
 
             const usuario =
-                response.data ?? response;
+                usuarioResponse.data ??
+                usuarioResponse;
+
+            const listaCategorias =
+                categoriasResponse.data ??
+                categoriasResponse;
 
             setUser(usuario);
 
@@ -55,6 +72,8 @@ export default function Perfil() {
                 estado: usuario.estado ?? '',
                 password: '',
             });
+
+            setCategorias(listaCategorias);
         } catch (error) {
             console.error(error);
 
@@ -106,7 +125,8 @@ export default function Perfil() {
                 );
 
             const updatedUser =
-                response.data ?? response;
+                response.data ??
+                response;
 
             setUser(updatedUser);
 
@@ -142,11 +162,91 @@ export default function Perfil() {
         }
     }
 
+    async function handleCategoria(categoria) {
+        setSavingCategoria(categoria.id);
+        setMessage('');
+        setError('');
+
+        try {
+            if (categoria.selecionada) {
+
+                await removeUserCategory(
+                    categoria.vinculo_id
+                );
+
+                setCategorias((current) =>
+                    current.map((item) =>
+                        item.id === categoria.id
+                            ? {
+                                ...item,
+                                selecionada: false,
+                                vinculo_id: null,
+                            }
+                            : item
+                    )
+                );
+
+                setMessage(
+                    `Categoria "${categoria.nome}" removida.`
+                );
+
+            } else {
+
+                const response =
+                    await addUserCategory(
+                        categoria.id
+                    );
+
+                const novoVinculo =
+                    response.data ??
+                    response;
+
+                setCategorias((current) =>
+                    current.map((item) =>
+                        item.id === categoria.id
+                            ? {
+                                ...item,
+                                selecionada: true,
+                                vinculo_id:
+                                    novoVinculo.id,
+                            }
+                            : item
+                    )
+                );
+
+                setMessage(
+                    `Categoria "${categoria.nome}" adicionada.`
+                );
+            }
+
+        } catch (error) {
+            console.error(error);
+
+            if (
+                error.response?.status === 409
+            ) {
+                setMessage(
+                    'Esta categoria já está vinculada ao seu perfil.'
+                );
+            } else {
+                setError(
+                    'Não foi possível alterar a categoria.'
+                );
+            }
+
+        } finally {
+            setSavingCategoria(null);
+        }
+    }
+
     if (loading) {
         return (
             <div className="loading-screen">
                 <div className="loading-spinner"></div>
-                <p>Carregando perfil...</p>
+
+                <p>
+                    Carregando perfil...
+                </p>
             </div>
         );
     }
@@ -172,7 +272,7 @@ export default function Perfil() {
                     {form.foto_url ? (
                         <img
                             src={form.foto_url}
-                            alt={`Foto de ${form.name}`}
+                            alt={`Foto de ${form.name} `}
                         />
                     ) : (
                         form.name
@@ -207,6 +307,7 @@ export default function Perfil() {
             >
 
                 <div className="form-section">
+
                     <h2>
                         Dados pessoais
                     </h2>
@@ -270,9 +371,12 @@ export default function Perfil() {
                             placeholder="https://..."
                         />
                     </div>
+
                 </div>
 
+
                 <div className="form-section">
+
                     <h2>
                         Localização
                     </h2>
@@ -280,6 +384,7 @@ export default function Perfil() {
                     <div className="form-row">
 
                         <div className="form-group">
+
                             <label htmlFor="cidade">
                                 Cidade
                             </label>
@@ -291,9 +396,11 @@ export default function Perfil() {
                                 value={form.cidade}
                                 onChange={handleChange}
                             />
+
                         </div>
 
                         <div className="form-group state-field">
+
                             <label htmlFor="estado">
                                 Estado
                             </label>
@@ -307,17 +414,94 @@ export default function Perfil() {
                                 onChange={handleChange}
                                 placeholder="SC"
                             />
+
                         </div>
 
                     </div>
+
                 </div>
 
+
                 <div className="form-section">
+
+                    <h2>
+                        Minhas categorias
+                    </h2>
+
+                    <p className="form-description">
+                        Selecione as categorias dos
+                        serviços que você pode realizar.
+                    </p>
+
+                    <div className="categories-list">
+
+                        {categorias.length === 0 ? (
+                            <p>
+                                Nenhuma categoria
+                                cadastrada.
+                            </p>
+                        ) : (
+                            categorias.map((categoria) => (
+                                <button
+                                    key={categoria.id}
+                                    type="button"
+                                    className={
+                                        categoria.selecionada
+                                            ? 'category-item selected'
+                                            : 'category-item'
+                                    }
+                                    onClick={() =>
+                                        handleCategoria(
+                                            categoria
+                                        )
+                                    }
+                                    disabled={
+                                        savingCategoria ===
+                                        categoria.id
+                                    }
+                                >
+
+                                    <div className="category-content">
+
+                                        <strong>
+                                            {categoria.nome}
+                                        </strong>
+
+                                        {categoria.descricao && (
+                                            <span>
+                                                {
+                                                    categoria.descricao
+                                                }
+                                            </span>
+                                        )}
+
+                                    </div>
+
+                                    <div className="category-check">
+
+                                        {categoria.selecionada
+                                            ? '✓'
+                                            : '+'}
+
+                                    </div>
+
+                                </button>
+                            ))
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div className="form-section">
+
                     <h2>
                         Segurança
                     </h2>
 
                     <div className="form-group">
+
                         <label htmlFor="password">
                             Nova senha
                         </label>
@@ -331,8 +515,11 @@ export default function Perfil() {
                             placeholder="Deixe vazio para manter a atual"
                             minLength="6"
                         />
+
                     </div>
+
                 </div>
+
 
                 <button
                     type="submit"
@@ -345,6 +532,7 @@ export default function Perfil() {
                 </button>
 
             </form>
+
 
             <button
                 type="button"

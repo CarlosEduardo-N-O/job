@@ -12,6 +12,7 @@ import AppLayout from './components/AppLayout';
 
 import Login from './pages/Login';
 import Home from './pages/Home';
+import Contratacoes from './pages/Contratacoes';
 import Trabalhos from './pages/Trabalhos';
 import Perfil from './pages/Perfil';
 
@@ -19,12 +20,22 @@ export default function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
+
                 <Routes>
+
+                    {/* ================================================== */}
+                    {/* LOGIN                                              */}
+                    {/* ================================================== */}
 
                     <Route
                         path="/login"
                         element={<Login />}
                     />
+
+
+                    {/* ================================================== */}
+                    {/* ÁREA PROTEGIDA                                     */}
+                    {/* ================================================== */}
 
                     <Route
                         element={
@@ -33,21 +44,37 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     >
+
+                        {/* HOME */}
                         <Route
-                            path="/"
+                            index
                             element={<Home />}
                         />
 
+                        {/* CONTRATAÇÕES */}
                         <Route
-                            path="/trabalhos"
+                            path="contratacoes"
+                            element={<Contratacoes />}
+                        />
+
+                        {/* TRABALHOS */}
+                        <Route
+                            path="trabalhos"
                             element={<Trabalhos />}
                         />
 
+                        {/* PERFIL */}
                         <Route
-                            path="/perfil"
+                            path="perfil"
                             element={<Perfil />}
                         />
+
                     </Route>
+
+
+                    {/* ================================================== */}
+                    {/* ROTA PADRÃO                                         */}
+                    {/* ================================================== */}
 
                     <Route
                         path="*"
@@ -60,6 +87,7 @@ export default function App() {
                     />
 
                 </Routes>
+
             </AuthProvider>
         </BrowserRouter>
     );

@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('interacoes', function (Blueprint $table) {
+            $table->id('id_interacao');
+
+            $table->foreignId('id_interacao_tipo')
+                ->constrained(
+                    'interacao_tipos',
+                    'id_interacao_tipo'
+                )
+                ->restrictOnDelete();
+
+            $table->foreignId('remetente_id')
+                ->constrained('users', 'id')
+                ->restrictOnDelete();
+
+            $table->text('mensagem')
+                ->nullable();
+
+            $table->decimal('valor_proposto', 12, 2)
+                ->nullable();
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('interacoes');
+    }
+};

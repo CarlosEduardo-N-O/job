@@ -26,3 +26,30 @@ export async function logout() {
 
     return response.data;
 }
+
+export async function getUserCategories() {
+    const response = await api.get(
+        '/users-categorias/categorias'
+    );
+
+    return response.data;
+}
+
+export async function addUserCategory(categoriaId) {
+    const response = await api.post(
+        '/users-categorias',
+        {
+            categoria_id: categoriaId,
+        }
+    );
+
+    return response.data;
+}
+
+export async function removeUserCategory(vinculoId) {
+    const response = await api.delete(
+        `/users-categorias/${vinculoId}`
+    );
+
+    return response.data;
+}

@@ -15,6 +15,23 @@ function HomeIcon() {
     );
 }
 
+function ContractIcon() {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+        >
+            <path d="M9 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+            <path d="M9 3v3h6V3" />
+            <path d="M10 11h4" />
+            <path d="M10 15h4" />
+            <path d="M10 19h2" />
+        </svg>
+    );
+}
+
 function WorkIcon() {
     return (
         <svg
@@ -53,11 +70,14 @@ function UserIcon() {
 export default function BottomNav() {
     return (
         <nav className="bottom-nav">
+
             <NavLink
                 to="/"
                 end
                 className={({ isActive }) =>
-                    isActive ? 'nav-item active' : 'nav-item'
+                    isActive
+                        ? 'nav-item active'
+                        : 'nav-item'
                 }
             >
                 <HomeIcon />
@@ -65,9 +85,23 @@ export default function BottomNav() {
             </NavLink>
 
             <NavLink
+                to="/contratacoes"
+                className={({ isActive }) =>
+                    isActive
+                        ? 'nav-item active'
+                        : 'nav-item'
+                }
+            >
+                <ContractIcon />
+                <span>Contratações</span>
+            </NavLink>
+
+            <NavLink
                 to="/trabalhos"
                 className={({ isActive }) =>
-                    isActive ? 'nav-item active' : 'nav-item'
+                    isActive
+                        ? 'nav-item active'
+                        : 'nav-item'
                 }
             >
                 <WorkIcon />
@@ -77,12 +111,15 @@ export default function BottomNav() {
             <NavLink
                 to="/perfil"
                 className={({ isActive }) =>
-                    isActive ? 'nav-item active' : 'nav-item'
+                    isActive
+                        ? 'nav-item active'
+                        : 'nav-item'
                 }
             >
                 <UserIcon />
                 <span>Perfil</span>
             </NavLink>
+
         </nav>
     );
 }

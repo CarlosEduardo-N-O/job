@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\UserCategoriaController;
+use App\Http\Controllers\PublicacaoController;
+use App\Http\Controllers\NegociacaoController;
 
 
 /*
@@ -76,15 +77,34 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Categorias
+    | Usuário x Categoria
     |--------------------------------------------------------------------------
     */
 
-    Route::apiResource(
-        'categorias',
-        CategoriaController::class
+    // Lista todas as categorias e informa
+    // quais pertencem ao usuário logado
+    Route::get(
+        '/users-categorias/categorias',
+        [UserCategoriaController::class, 'categorias']
     );
 
+    // Lista os vínculos do usuário logado
+    Route::get(
+        '/users-categorias',
+        [UserCategoriaController::class, 'index']
+    );
+
+    // Cria um vínculo para o usuário logado
+    Route::post(
+        '/users-categorias',
+        [UserCategoriaController::class, 'store']
+    );
+
+    // Remove um vínculo do usuário logado
+    Route::delete(
+        '/users-categorias/{usuarioCategoria}',
+        [UserCategoriaController::class, 'destroy']
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -92,8 +112,45 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    Route::get(
+        '/publicacoes/minhas_publicacoes',
+        [PublicacaoController::class, 'minhas_publicacoes']
+    );
+
     Route::apiResource(
-        'users-categorias',
-        UserCategoriaController::class
+        'publicacoes',
+        PublicacaoController::class
+    )->parameters([
+        'publicacoes' => 'publicacao',
+    ]);
+
+    Route::post(
+        '/publicacoes/{publicacao}/interacoes',
+        [NegociacaoController::class, 'store']
+    );
+
+    Route::get(
+        '/negociacoes',
+        [NegociacaoController::class, 'index']
+    );
+
+    Route::get(
+        '/negociacoes/{negociacao}',
+        [NegociacaoController::class, 'show']
+    );
+
+    Route::post(
+        '/negociacoes/{negociacao}/interacoes',
+        [NegociacaoController::class, 'interagir']
+    );
+
+    Route::post(
+        '/negociacoes/{negociacao}/aceitar',
+        [NegociacaoController::class, 'aceitar']
+    );
+
+    Route::post(
+        '/negociacoes/{negociacao}/recusar',
+        [NegociacaoController::class, 'recusar']
     );
 });
