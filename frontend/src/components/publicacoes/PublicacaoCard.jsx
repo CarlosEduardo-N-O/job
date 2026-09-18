@@ -19,21 +19,12 @@ function formatarValor(valor) {
     });
 }
 
-
 function formatarData(data) {
     if (!data) {
         return 'Não informada';
     }
 
     const valor = String(data);
-
-    /*
-     * Laravel pode retornar:
-     *
-     * 2026-09-18T00:00:00.000000Z
-     *
-     * Pegamos somente a parte da data.
-     */
 
     const dataParte = valor.split('T')[0];
 
@@ -46,25 +37,10 @@ function formatarData(data) {
     return data;
 }
 
-
 export default function PublicacaoCard({
     publicacao,
     onInteracao,
 }) {
-
-    /*
-     * O backend agora retorna o status como objeto:
-     *
-     * status: {
-     *     id: 1,
-     *     codigo: "ATIVO",
-     *     nome: "Ativo"
-     * }
-     *
-     * Por isso usamos codigo para regras
-     * e nome para exibição.
-     */
-
     const statusCodigo =
         publicacao.status?.codigo ?? '';
 
@@ -73,14 +49,8 @@ export default function PublicacaoCard({
         statusCodigo ??
         'Sem status';
 
-
     return (
         <article className="publicacao-card">
-
-
-            {/* ==========================================
-                CABEÇALHO
-            ========================================== */}
 
             <div className="publicacao-card-header">
 
@@ -98,17 +68,11 @@ export default function PublicacaoCard({
 
                 </div>
 
-
                 <span className="publicacao-status">
                     {statusNome}
                 </span>
 
             </div>
-
-
-            {/* ==========================================
-                CORPO
-            ========================================== */}
 
             <div className="publicacao-card-body">
 
@@ -116,14 +80,9 @@ export default function PublicacaoCard({
                     {publicacao.descricao}
                 </p>
 
-
                 <div className="publicacao-info">
 
-
-                    {/* VALOR */}
-
                     <div>
-
                         <span>
                             Valor estimado
                         </span>
@@ -133,14 +92,9 @@ export default function PublicacaoCard({
                                 publicacao.valor_estimado
                             )}
                         </strong>
-
                     </div>
 
-
-                    {/* DATA */}
-
                     <div>
-
                         <span>
                             Data
                         </span>
@@ -150,40 +104,26 @@ export default function PublicacaoCard({
                                 publicacao.data_inicio
                             )}
                         </strong>
-
                     </div>
 
-
-                    {/* LOCAL */}
-
                     <div>
-
                         <span>
                             Local
                         </span>
 
                         <strong>
-
                             {publicacao.cidade ||
                                 'Não informado'}
 
                             {publicacao.estado
                                 ? ` - ${publicacao.estado}`
                                 : ''}
-
                         </strong>
-
                     </div>
 
                 </div>
 
-
-                {/* ==========================================
-                    CONTRATANTE
-                ========================================== */}
-
                 {publicacao.contratante && (
-
                     <div className="publicacao-contratante">
 
                         <span>
@@ -199,15 +139,9 @@ export default function PublicacaoCard({
                         </strong>
 
                     </div>
-
                 )}
 
             </div>
-
-
-            {/* ==========================================
-                AÇÕES
-            ========================================== */}
 
             <div className="publicacao-acoes">
 
@@ -220,11 +154,12 @@ export default function PublicacaoCard({
                             'INTERESSE'
                         )
                     }
-                    disabled={statusCodigo !== 'ATIVO'}
+                    disabled={
+                        statusCodigo !== 'ATIVO'
+                    }
                 >
                     ❤️ Interesse
                 </button>
-
 
                 <button
                     type="button"
@@ -235,11 +170,12 @@ export default function PublicacaoCard({
                             'DUVIDA'
                         )
                     }
-                    disabled={statusCodigo !== 'ATIVO'}
+                    disabled={
+                        statusCodigo !== 'ATIVO'
+                    }
                 >
                     ❓ Dúvida
                 </button>
-
 
                 <button
                     type="button"
@@ -250,7 +186,9 @@ export default function PublicacaoCard({
                             'PROPOSTA'
                         )
                     }
-                    disabled={statusCodigo !== 'ATIVO'}
+                    disabled={
+                        statusCodigo !== 'ATIVO'
+                    }
                 >
                     💰 Proposta
                 </button>

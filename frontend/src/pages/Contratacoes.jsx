@@ -9,12 +9,16 @@ import {
     getContratacoes,
 } from '../services/trabalhoService';
 
-import PublicacaoFormModal from '../components/PublicacaoFormModal';
+import Publicacao from '../components/publicacoes/Publicacao';
 
-import NegociacoesModal from '../components/NegociacoesModal';
+import NegociacoesModal from '../components/negociacoes/Negociacoes';
 
-import TrabalhoContratacaoCard from '../components/TrabalhoContratacaoCard';
+import Trabalhos from '../components/trabalhos/Trabalhos';
 
+import '../styles/publicacoes.css';
+import '../styles/negociacoes.css';
+import '../styles/trabalhos.css';
+import '../styles/trabalhos.css';
 import '../styles/contratacoes.css';
 
 
@@ -1032,29 +1036,11 @@ export default function Contratacoes() {
                         !erroTrabalhos &&
                         trabalhos.length > 0 && (
 
-                            <div className="contratacoes-list">
-
-                                {trabalhos.map(
-                                    (trabalho) => (
-
-                                        <TrabalhoContratacaoCard
-                                            key={
-                                                trabalho.id_trabalho
-                                            }
-
-                                            trabalho={
-                                                trabalho
-                                            }
-
-                                            onAtualizado={
-                                                carregarTrabalhos
-                                            }
-                                        />
-
-                                    )
-                                )}
-
-                            </div>
+                            <Trabalhos
+                                trabalhos={trabalhos}
+                                papel="CONTRATANTE"
+                                onAtualizado={carregarTrabalhos}
+                            />
 
                         )}
 
@@ -1069,7 +1055,9 @@ export default function Contratacoes() {
 
             {publicacaoEditando !== null && (
 
-                <PublicacaoFormModal
+                <Publicacao
+
+                    modo="form"
 
                     publicacao={
                         publicacaoEditando.id

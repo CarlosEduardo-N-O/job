@@ -8,19 +8,19 @@ import {
     getMeusTrabalhos,
 } from '../services/trabalhoService';
 
-import TrabalhosNegociacaoModal
-    from '../components/TrabalhosNegociacaoModal';
+import Negociacoes
+    from '../components/negociacoes/Negociacoes';
 
 import TrabalhoCard
-    from '../components/TrabalhoCard';
+    from '../components/trabalhos/TrabalhoCard';
 
-import '../styles/contratacoes.css';
+import "../styles/trabalhos.css";
+
 
 export default function Trabalhos() {
 
     /* ============================================================
        NEGOCIAÇÕES
-       Mantido o funcionamento original
        ============================================================ */
 
     const [negociacoes, setNegociacoes] =
@@ -54,7 +54,7 @@ export default function Trabalhos() {
 
 
     /* ============================================================
-       ABA
+       ABA ATUAL
        ============================================================ */
 
     const [aba, setAba] =
@@ -63,7 +63,6 @@ export default function Trabalhos() {
 
     /* ============================================================
        CARREGAMENTO INICIAL
-       Mantém exatamente o comportamento anterior
        ============================================================ */
 
     useEffect(() => {
@@ -74,7 +73,7 @@ export default function Trabalhos() {
 
 
     /* ============================================================
-       CARREGAR TRABALHOS SOMENTE QUANDO ABRIR A ABA
+       CARREGAR TRABALHOS AO ABRIR A ABA
        ============================================================ */
 
     useEffect(() => {
@@ -89,7 +88,7 @@ export default function Trabalhos() {
 
 
     /* ============================================================
-       NEGOCIAÇÕES
+       CARREGAR NEGOCIAÇÕES
        ============================================================ */
 
     async function carregarNegociacoes() {
@@ -132,7 +131,7 @@ export default function Trabalhos() {
 
 
     /* ============================================================
-       TRABALHOS
+       CARREGAR TRABALHOS
        GET /api/trabalhos/meus
        Usuário é o CONTRATADO
        ============================================================ */
@@ -147,28 +146,19 @@ export default function Trabalhos() {
             const response =
                 await getMeusTrabalhos();
 
-
-            /*
-             * A API pode retornar diretamente:
-             *
-             * [
-             *     {...},
-             *     {...}
-             * ]
-             *
-             * ou:
-             *
-             * {
-             *     data: [...]
-             * }
-             *
-             * Aceitamos os dois formatos.
-             */
-
             let dados =
                 response?.data ??
                 response;
 
+            /*
+             * Trata também respostas no formato:
+             *
+             * {
+             *     data: {
+             *         data: [...]
+             *     }
+             * }
+             */
 
             if (
                 dados &&
@@ -180,7 +170,6 @@ export default function Trabalhos() {
                     dados.data;
 
             }
-
 
             setTrabalhos(
                 Array.isArray(dados)
@@ -212,13 +201,10 @@ export default function Trabalhos() {
 
 
     /* ============================================================
-       MODAL DE NEGOCIAÇÃO
-       Mantido o funcionamento original
+       ABRIR NEGOCIAÇÃO
        ============================================================ */
 
-    function abrirNegociacao(
-        negociacao
-    ) {
+    function abrirNegociacao(negociacao) {
 
         if (
             !negociacao?.id_negociacao
@@ -238,6 +224,10 @@ export default function Trabalhos() {
     }
 
 
+    /* ============================================================
+       FECHAR NEGOCIAÇÃO
+       ============================================================ */
+
     function fecharNegociacao() {
 
         setNegociacaoSelecionada(
@@ -251,7 +241,6 @@ export default function Trabalhos() {
 
     /* ============================================================
        FORMATAÇÃO
-       Mantida para a aba Negociações
        ============================================================ */
 
     function formatarValor(valor) {
@@ -261,7 +250,9 @@ export default function Trabalhos() {
             valor === undefined ||
             valor === ''
         ) {
+
             return 'Não informado';
+
         }
 
         const numero =
@@ -270,7 +261,9 @@ export default function Trabalhos() {
         if (
             Number.isNaN(numero)
         ) {
+
             return valor;
+
         }
 
         return numero.toLocaleString(
@@ -280,17 +273,26 @@ export default function Trabalhos() {
                 currency: 'BRL',
             }
         );
+
     }
 
 
     function formatarData(data) {
 
         if (!data) {
+
             return 'Não informada';
+
         }
 
+        const valor =
+            String(data);
+
+        const dataParte =
+            valor.split('T')[0];
+
         const partes =
-            String(data).split('-');
+            dataParte.split('-');
 
         if (
             partes.length === 3
@@ -301,12 +303,12 @@ export default function Trabalhos() {
         }
 
         return data;
+
     }
 
 
     /* ============================================================
        STATUS DA NEGOCIAÇÃO
-       Mantido para não alterar o funcionamento existente
        ============================================================ */
 
     function obterNomeStatus(
@@ -314,7 +316,9 @@ export default function Trabalhos() {
     ) {
 
         if (!negociacao) {
+
             return 'Não informado';
+
         }
 
         if (
@@ -335,6 +339,7 @@ export default function Trabalhos() {
         return formatarStatus(
             negociacao.status
         );
+
     }
 
 
@@ -370,6 +375,7 @@ export default function Trabalhos() {
             status ||
             'Não informado'
         );
+
     }
 
 
@@ -382,14 +388,10 @@ export default function Trabalhos() {
         <main className="contratacoes-page">
 
             {/* ====================================================
-            CABEÇALHO
-           ==================================================== */}
+               CABEÇALHO / ABAS
+            ==================================================== */}
 
             <header className="contratacoes-header">
-
-                {/* ====================================================
-            ABAS
-           ==================================================== */}
 
                 <div className="contratacoes-tabs">
 
@@ -427,13 +429,9 @@ export default function Trabalhos() {
             </header>
 
 
-
-
-
             {/* ====================================================
-            ABA NEGOCIAÇÕES
-            NÃO ALTERADA
-           ==================================================== */}
+               ABA NEGOCIAÇÕES
+            ==================================================== */}
 
             {aba === 'negociacoes' && (
 
@@ -457,15 +455,19 @@ export default function Trabalhos() {
                         <div className="section-title-acoes">
 
                             <span className="count">
+
                                 {
                                     negociacoes.length
                                 }
+
                             </span>
 
                         </div>
 
                     </div>
 
+
+                    {/* LOADING */}
 
                     {carregando && (
 
@@ -478,6 +480,8 @@ export default function Trabalhos() {
                     )}
 
 
+                    {/* ERRO */}
+
                     {!carregando &&
                         erro && (
 
@@ -489,6 +493,8 @@ export default function Trabalhos() {
 
                         )}
 
+
+                    {/* VAZIO */}
 
                     {!carregando &&
                         !erro &&
@@ -505,13 +511,17 @@ export default function Trabalhos() {
                                 </h2>
 
                                 <p>
-                                    As publicações nas quais você demonstrar interesse aparecerão aqui quando uma negociação for criada.
+                                    As publicações nas quais você
+                                    demonstrar interesse aparecerão
+                                    aqui quando uma negociação for criada.
                                 </p>
 
                             </div>
 
                         )}
 
+
+                    {/* LISTA */}
 
                     {!carregando &&
                         !erro &&
@@ -533,6 +543,8 @@ export default function Trabalhos() {
                                                 }
                                                 className="contratacao-publicacao-card"
                                             >
+
+                                                {/* CABEÇALHO */}
 
                                                 <div className="contratacao-card-header">
 
@@ -574,6 +586,8 @@ export default function Trabalhos() {
                                                 </div>
 
 
+                                                {/* META */}
+
                                                 <div className="contratacao-card-meta">
 
                                                     <div>
@@ -583,10 +597,12 @@ export default function Trabalhos() {
                                                         </span>
 
                                                         <strong>
+
                                                             {formatarValor(
                                                                 negociacao.valor_trabalho ??
                                                                 publicacao?.valor_estimado
                                                             )}
+
                                                         </strong>
 
                                                     </div>
@@ -599,9 +615,11 @@ export default function Trabalhos() {
                                                         </span>
 
                                                         <strong>
+
                                                             {formatarData(
                                                                 publicacao?.data_inicio
                                                             )}
+
                                                         </strong>
 
                                                     </div>
@@ -614,19 +632,22 @@ export default function Trabalhos() {
                                                         </span>
 
                                                         <strong>
+
                                                             {
                                                                 (
-                                                                    negociacao
-                                                                        .interacoes ||
+                                                                    negociacao.interacoes ||
                                                                     []
                                                                 ).length
                                                             }
+
                                                         </strong>
 
                                                     </div>
 
                                                 </div>
 
+
+                                                {/* DESCRIÇÃO */}
 
                                                 <div className="contratacao-card-descricao">
 
@@ -637,6 +658,8 @@ export default function Trabalhos() {
 
                                                 </div>
 
+
+                                                {/* AÇÕES */}
 
                                                 <div className="publicacao-acoes-contratacao">
 
@@ -671,9 +694,8 @@ export default function Trabalhos() {
 
 
             {/* ====================================================
-            ABA TRABALHOS
-            USUÁRIO É O CONTRATADO
-           ==================================================== */}
+               ABA TRABALHOS
+            ==================================================== */}
 
             {aba === 'trabalhos' && (
 
@@ -688,7 +710,8 @@ export default function Trabalhos() {
                             </h2>
 
                             <p>
-                                Serviços que você foi contratado para realizar
+                                Serviços que você foi contratado
+                                para realizar
                             </p>
 
                         </div>
@@ -697,9 +720,11 @@ export default function Trabalhos() {
                         <div className="section-title-acoes">
 
                             <span className="count">
+
                                 {
                                     trabalhos.length
                                 }
+
                             </span>
 
                         </div>
@@ -707,9 +732,7 @@ export default function Trabalhos() {
                     </div>
 
 
-                    {/* =================================================
-                    CARREGANDO
-                   ================================================= */}
+                    {/* LOADING */}
 
                     {carregandoTrabalhos && (
 
@@ -722,9 +745,7 @@ export default function Trabalhos() {
                     )}
 
 
-                    {/* =================================================
-                    ERRO
-                   ================================================= */}
+                    {/* ERRO */}
 
                     {!carregandoTrabalhos &&
                         erroTrabalhos && (
@@ -738,9 +759,7 @@ export default function Trabalhos() {
                         )}
 
 
-                    {/* =================================================
-                    VAZIO
-                   ================================================= */}
+                    {/* VAZIO */}
 
                     {!carregandoTrabalhos &&
                         !erroTrabalhos &&
@@ -757,7 +776,8 @@ export default function Trabalhos() {
                                 </h2>
 
                                 <p>
-                                    Seus trabalhos aparecerão aqui quando uma negociação for aceita.
+                                    Seus trabalhos aparecerão aqui
+                                    quando uma negociação for aceita.
                                 </p>
 
                             </div>
@@ -765,9 +785,7 @@ export default function Trabalhos() {
                         )}
 
 
-                    {/* =================================================
-                    LISTA DE TRABALHOS
-                   ================================================= */}
+                    {/* LISTA DE TRABALHOS */}
 
                     {!carregandoTrabalhos &&
                         !erroTrabalhos &&
@@ -782,12 +800,15 @@ export default function Trabalhos() {
                                             key={
                                                 trabalho.id_trabalho
                                             }
+
                                             trabalho={
                                                 trabalho
                                             }
+
                                             onAtualizado={
                                                 carregarTrabalhos
                                             }
+
                                         />
 
                                     )
@@ -803,24 +824,27 @@ export default function Trabalhos() {
 
 
             {/* ====================================================
-            MODAL DE NEGOCIAÇÃO
-            Mantido igual
-           ==================================================== */}
+               MODAL DE NEGOCIAÇÃO
+            ==================================================== */}
 
             {negociacaoSelecionada && (
 
-                <TrabalhosNegociacaoModal
+                <Negociacoes
+
                     negociacao={
                         negociacaoSelecionada
                     }
+
                     onClose={
                         fecharNegociacao
                     }
+
                 />
 
             )}
 
         </main>
+
     );
 
 }

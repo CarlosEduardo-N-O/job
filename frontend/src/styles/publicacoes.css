@@ -1,0 +1,1215 @@
+/* ==========================================================================
+   PUBLICAÇÕES
+   ========================================================================== */
+
+
+/* ==========================================================================
+   CARD DE PUBLICAÇÃO
+   ========================================================================== */
+
+.publicacao-card {
+    position: relative;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 18px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 18px;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+
+/* --------------------------------------------------------------------------
+   Cabeçalho
+   -------------------------------------------------------------------------- */
+
+.publicacao-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.publicacao-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.publicacao-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #eeeeee;
+    color: #18181b;
+    font-weight: 700;
+}
+
+.publicacao-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.publicacao-user strong {
+    display: block;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.publicacao-location {
+    display: block;
+    margin-top: 2px;
+    color: #777777;
+    font-size: 0.78rem;
+}
+
+
+/* ==========================================================================
+   CATEGORIA
+   ========================================================================== */
+
+.publicacao-category,
+.publicacao-categoria {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    background: #f7f7f7;
+    color: #3f3f46;
+    font-size: 0.73rem;
+    font-weight: 700;
+}
+
+
+/* ==========================================================================
+   CONTEÚDO
+   ========================================================================== */
+
+.publicacao-content h2 {
+    margin: 0 0 8px;
+    color: #18181b;
+    font-size: 1.18rem;
+    line-height: 1.35;
+}
+
+.publicacao-description {
+    margin: 0;
+    color: #555555;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.read-more-button {
+    margin-top: 5px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #18181b;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.read-more-button:hover {
+    text-decoration: underline;
+}
+
+.read-more-button:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   INFORMAÇÕES DA PUBLICAÇÃO
+   ========================================================================== */
+
+.publicacao-info {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 18px;
+    padding: 12px 0;
+    border-top: 1px solid #eeeeee;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.publicacao-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.publicacao-info-item span {
+    color: #888888;
+    font-size: 0.7rem;
+}
+
+.publicacao-info-item strong {
+    overflow: hidden;
+    color: #18181b;
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ==========================================================================
+   ENDEREÇO
+   ========================================================================== */
+
+.publicacao-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 13px;
+    color: #666666;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================================
+   AÇÕES DO CARD
+   ========================================================================== */
+
+.publicacao-actions {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 7px;
+    margin-top: 16px;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 40px;
+    padding: 7px 8px;
+    box-sizing: border-box;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #18181b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.1s ease;
+}
+
+.action-button:hover {
+    background: #f7f7f7;
+}
+
+.action-button:active {
+    transform: translateY(1px);
+}
+
+.action-button:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: 2px;
+}
+
+.action-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.interest-button.interested {
+    border-color: #222222;
+    background: #222222;
+    color: #ffffff;
+}
+
+.proposal-button {
+    border-color: #222222;
+}
+
+.question-button {
+    border-color: #dddddd;
+}
+
+
+/* ==========================================================================
+   CARD DE PUBLICAÇÃO — MINHAS PUBLICAÇÕES
+   ========================================================================== */
+
+.contratacao-publicacao-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.04);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.contratacao-publicacao-card:hover {
+    border-color: #d1d5db;
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.06);
+}
+
+
+/* --------------------------------------------------------------------------
+   Cabeçalho do card
+   -------------------------------------------------------------------------- */
+
+.contratacao-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.contratacao-card-header > div {
+    min-width: 0;
+}
+
+.contratacao-card-header h3 {
+    margin: 0 0 7px;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+
+/* --------------------------------------------------------------------------
+   Status
+   -------------------------------------------------------------------------- */
+
+.contratacao-publicacao-card .publicacao-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-height: 28px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+
+/* --------------------------------------------------------------------------
+   Meta
+   -------------------------------------------------------------------------- */
+
+.contratacao-card-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 13px 0;
+    border-top: 1px solid #eeeeee;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.contratacao-card-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.contratacao-card-meta span {
+    color: #888888;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.contratacao-card-meta strong {
+    color: #18181b;
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* --------------------------------------------------------------------------
+   Descrição
+   -------------------------------------------------------------------------- */
+
+.contratacao-card-descricao {
+    margin-bottom: 18px;
+    color: #52525b;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================================
+   AÇÕES — MINHAS PUBLICAÇÕES
+   ========================================================================== */
+
+.publicacao-acoes-contratacao {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.publicacao-acoes-contratacao button {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.1s ease,
+        opacity 0.2s ease;
+}
+
+.publicacao-acoes-contratacao button:active {
+    transform: translateY(1px);
+}
+
+.publicacao-acoes-contratacao button:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: 2px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Editar
+   -------------------------------------------------------------------------- */
+
+.btn-editar-publicacao {
+    border: 1px solid #d4d4d8;
+    background: #ffffff;
+    color: #27272a;
+}
+
+.btn-editar-publicacao:hover {
+    background: #f4f4f5;
+    border-color: #a1a1aa;
+}
+
+
+/* --------------------------------------------------------------------------
+   Negociações
+   -------------------------------------------------------------------------- */
+
+.btn-negociacoes-publicacao {
+    border: 1px solid #18181b;
+    background: #18181b;
+    color: #ffffff;
+}
+
+.btn-negociacoes-publicacao:hover {
+    background: #27272a;
+    border-color: #27272a;
+}
+
+.btn-negociacoes-publicacao span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 10px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Cancelar
+   -------------------------------------------------------------------------- */
+
+.btn-cancelar-publicacao {
+    border: 1px solid #fecaca;
+    background: #ffffff;
+    color: #dc2626;
+}
+
+.btn-cancelar-publicacao:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.btn-cancelar-publicacao:disabled {
+    opacity: 0.45;
+    background: #f9fafb;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+}
+
+.btn-cancelar-publicacao:disabled:hover {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+
+/* ==========================================================================
+   MODAL DE PUBLICAÇÃO
+   ========================================================================== */
+
+.publicacao-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.55);
+}
+
+
+/* --------------------------------------------------------------------------
+   Estrutura principal
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    max-width: 720px;
+    max-height: calc(100vh - 40px);
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    border-radius: 16px;
+    background: #ffffff;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+
+/* --------------------------------------------------------------------------
+   Cabeçalho do modal
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 22px 24px;
+
+    box-sizing: border-box;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.publicacao-modal-header > div {
+    min-width: 0;
+}
+
+.publicacao-modal-header h2 {
+    margin: 0;
+    color: #18181b;
+    font-size: 22px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.publicacao-modal-header p {
+    margin: 6px 0 0;
+    color: #71717a;
+    font-size: 14px;
+}
+
+.publicacao-modal-fechar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 38px;
+    height: 38px;
+
+    box-sizing: border-box;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #f4f4f5;
+    color: #27272a;
+
+    font-size: 25px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease;
+}
+
+.publicacao-modal-fechar:hover {
+    background: #e4e4e7;
+}
+
+.publicacao-modal-fechar:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: 2px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Formulário
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-form {
+    width: 100%;
+    box-sizing: border-box;
+
+    overflow-y: auto;
+
+    padding: 24px;
+}
+
+.publicacao-modal-form::-webkit-scrollbar {
+    width: 7px;
+}
+
+.publicacao-modal-form::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #d4d4d8;
+}
+
+.publicacao-modal-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+/* --------------------------------------------------------------------------
+   Mensagens
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-erro {
+    margin: 18px 24px 0;
+    padding: 12px 14px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #f1b8b8;
+    border-radius: 9px;
+
+    background: #fff1f1;
+    color: #a00000;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.publicacao-modal-loading {
+    padding: 50px 20px;
+    color: #71717a;
+    text-align: center;
+}
+
+
+/* ==========================================================================
+   CAMPOS DO FORMULÁRIO
+   ========================================================================== */
+
+.publicacao-modal-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    min-width: 0;
+    margin-bottom: 17px;
+}
+
+.publicacao-modal-campo label {
+    color: #27272a;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.publicacao-modal-campo input,
+.publicacao-modal-campo select,
+.publicacao-modal-campo textarea {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+
+    padding: 12px 13px;
+
+    border: 1px solid #d4d4d8;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #18181b;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+/* --------------------------------------------------------------------------
+   Controles nativos de data e horário
+   -------------------------------------------------------------------------- */
+
+/*
+   Garante que os controles nativos de celular respeitem
+   a largura real do campo.
+*/
+
+.publicacao-modal-campo input[type="date"],
+.publicacao-modal-campo input[type="time"] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+}
+
+
+/*
+   O indicador nativo do navegador recebe espaço próprio,
+   evitando que o horário fique cortado.
+*/
+
+.publicacao-modal-campo input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+}
+
+.publicacao-modal-campo input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+}
+
+
+/* --------------------------------------------------------------------------
+   Textarea
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-campo textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+
+/* --------------------------------------------------------------------------
+   Placeholder
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-campo input::placeholder,
+.publicacao-modal-campo textarea::placeholder {
+    color: #a1a1aa;
+}
+
+
+/* --------------------------------------------------------------------------
+   Foco
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-campo input:focus,
+.publicacao-modal-campo select:focus,
+.publicacao-modal-campo textarea:focus {
+    outline: none;
+
+    border-color: #18181b;
+
+    box-shadow:
+        0 0 0 3px rgba(24, 24, 27, 0.08);
+}
+
+
+/* --------------------------------------------------------------------------
+   Disabled
+   -------------------------------------------------------------------------- */
+
+.publicacao-modal-campo input:disabled,
+.publicacao-modal-campo select:disabled,
+.publicacao-modal-campo textarea:disabled {
+    background: #f4f4f5;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================================
+   GRID DE CAMPOS
+   ========================================================================== */
+
+.publicacao-modal-grid {
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+    gap: 16px;
+
+    width: 100%;
+    min-width: 0;
+}
+
+.publicacao-modal-grid > .publicacao-modal-campo {
+    min-width: 0;
+}
+
+
+/* ==========================================================================
+   AÇÕES DO MODAL
+   ========================================================================== */
+
+.publicacao-modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 8px;
+    padding-top: 18px;
+
+    border-top: 1px solid #eeeeee;
+}
+
+.publicacao-modal-acoes button {
+    min-height: 44px;
+
+    padding: 0 18px;
+
+    box-sizing: border-box;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.publicacao-modal-btn-cancelar {
+    border: 1px solid #d4d4d8;
+    background: #ffffff;
+    color: #27272a;
+}
+
+.publicacao-modal-btn-cancelar:hover {
+    background: #f4f4f5;
+}
+
+.publicacao-modal-btn-salvar {
+    border: 1px solid #18181b;
+    background: #18181b;
+    color: #ffffff;
+}
+
+.publicacao-modal-btn-salvar:hover {
+    border-color: #27272a;
+    background: #27272a;
+}
+
+.publicacao-modal-acoes button:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: 2px;
+}
+
+.publicacao-modal-acoes button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================================
+   RESPONSIVIDADE — CARD DE PUBLICAÇÃO
+   ========================================================================== */
+
+@media (max-width: 700px) {
+
+    .contratacao-card-header {
+        gap: 12px;
+    }
+
+    .contratacao-card-header h3 {
+        font-size: 17px;
+    }
+
+    .publicacao-acoes-contratacao {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .btn-negociacoes-publicacao {
+        grid-column: span 2;
+        grid-row: 1;
+    }
+
+    .btn-editar-publicacao {
+        grid-column: span 1;
+        grid-row: 2;
+    }
+
+    .btn-cancelar-publicacao {
+        grid-column: span 1;
+        grid-row: 2;
+    }
+}
+
+
+/* ==========================================================================
+   RESPONSIVIDADE — MODAL
+   ========================================================================== */
+
+@media (max-width: 600px) {
+
+    .publicacao-modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .publicacao-modal {
+        width: 100%;
+        max-width: none;
+        max-height: 94vh;
+
+        border-radius: 18px 18px 0 0;
+    }
+
+    .publicacao-modal-header {
+        padding: 18px;
+    }
+
+    .publicacao-modal-header h2 {
+        font-size: 20px;
+    }
+
+    .publicacao-modal-header p {
+        font-size: 13px;
+    }
+
+    .publicacao-modal-form {
+        width: 100%;
+        padding: 18px;
+    }
+
+    .publicacao-modal-erro {
+        margin: 15px 18px 0;
+    }
+
+    /*
+       No celular os dois campos ficam um abaixo do outro.
+       Isso é especialmente importante para date/time,
+       pois os controles nativos variam de tamanho entre aparelhos.
+    */
+
+    .publicacao-modal-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .publicacao-modal-grid > .publicacao-modal-campo {
+        width: 100%;
+    }
+
+    .publicacao-modal-campo input,
+    .publicacao-modal-campo select,
+    .publicacao-modal-campo textarea {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .publicacao-modal-campo input[type="date"],
+    .publicacao-modal-campo input[type="time"] {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        /*
+           Evita que o navegador tente manter uma largura
+           mínima maior que o espaço disponível.
+        */
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    /*
+       Recoloca um visual de campo consistente depois
+       de remover a aparência nativa.
+    */
+
+    .publicacao-modal-campo input[type="date"],
+    .publicacao-modal-campo input[type="time"] {
+        min-height: 45px;
+        padding: 12px 13px;
+    }
+
+    .publicacao-modal-acoes {
+        flex-direction: column-reverse;
+
+        padding-bottom: 5px;
+    }
+
+    .publicacao-modal-acoes button {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================================================
+   CELULAR
+   ========================================================================== */
+
+@media (max-width: 430px) {
+
+    .publicacao-card {
+        padding: 15px;
+    }
+
+    .publicacao-user strong {
+        max-width: 180px;
+    }
+
+    .publicacao-info-item strong {
+        font-size: 0.75rem;
+    }
+
+    .action-button {
+        padding: 7px 5px;
+        font-size: 0.68rem;
+    }
+
+    .publicacao-actions {
+        gap: 5px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Minhas publicações
+       ---------------------------------------------------------------------- */
+
+    .contratacao-publicacao-card {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .contratacao-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .contratacao-card-header h3 {
+        font-size: 16px;
+    }
+
+    .contratacao-card-meta {
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .contratacao-card-meta span {
+        font-size: 10px;
+    }
+
+    .contratacao-card-meta strong {
+        font-size: 12px;
+    }
+
+    .contratacao-card-descricao {
+        font-size: 13px;
+    }
+
+    .publicacao-acoes-contratacao {
+        gap: 6px;
+    }
+
+    .publicacao-acoes-contratacao button {
+        min-height: 40px;
+        padding: 6px 7px;
+        font-size: 11px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Modal — celular estreito
+       ---------------------------------------------------------------------- */
+
+    .publicacao-modal-header {
+        padding: 16px;
+    }
+
+    .publicacao-modal-form {
+        padding: 16px;
+    }
+
+    .publicacao-modal-erro {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .publicacao-modal-campo {
+        margin-bottom: 15px;
+    }
+
+    .publicacao-modal-campo input,
+    .publicacao-modal-campo select,
+    .publicacao-modal-campo textarea {
+        padding: 11px 12px;
+        font-size: 14px;
+    }
+
+    .publicacao-modal-campo input[type="date"],
+    .publicacao-modal-campo input[type="time"] {
+        min-height: 44px;
+        padding: 11px 12px;
+    }
+}
+
+
+/* ==========================================================================
+   CELULARES PEQUENOS
+   ========================================================================== */
+
+@media (max-width: 360px) {
+
+    .publicacao-info {
+        grid-template-columns: 1fr;
+    }
+
+    .publicacao-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .publicacao-acoes-contratacao {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-negociacoes-publicacao,
+    .btn-editar-publicacao,
+    .btn-cancelar-publicacao {
+        grid-column: span 1;
+        grid-row: auto;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Modal — aparelhos muito estreitos
+       ---------------------------------------------------------------------- */
+
+    .publicacao-modal {
+        max-height: 92vh;
+    }
+
+    .publicacao-modal-header {
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .publicacao-modal-header h2 {
+        font-size: 18px;
+    }
+
+    .publicacao-modal-header p {
+        font-size: 12px;
+    }
+
+    .publicacao-modal-form {
+        padding: 14px;
+    }
+
+    .publicacao-modal-erro {
+        margin: 12px 14px 0;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .publicacao-modal-campo {
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .publicacao-modal-campo label {
+        font-size: 13px;
+    }
+
+    .publicacao-modal-campo input,
+    .publicacao-modal-campo select,
+    .publicacao-modal-campo textarea {
+        padding: 10px 11px;
+        font-size: 13px;
+    }
+
+    .publicacao-modal-campo input[type="date"],
+    .publicacao-modal-campo input[type="time"] {
+        width: 100%;
+        min-width: 0;
+        min-height: 43px;
+        padding: 10px 11px;
+    }
+
+    .publicacao-modal-acoes {
+        gap: 8px;
+        margin-top: 5px;
+        padding-top: 14px;
+    }
+
+    .publicacao-modal-acoes button {
+        min-height: 42px;
+        padding: 0 14px;
+        font-size: 13px;
+    }
+}

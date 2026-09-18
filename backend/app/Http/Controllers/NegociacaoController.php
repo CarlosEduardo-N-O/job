@@ -447,7 +447,7 @@ class NegociacaoController extends Controller
             $valorTrabalho =
                 $dados['tipo'] === 'PROPOSTA'
                 ? $dados['valor_proposto']
-                : null;
+                : $publicacao->valor_estimado;
 
             $negociacao = Negociacao::create([
                 'id_interessado' =>

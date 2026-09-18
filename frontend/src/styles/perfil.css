@@ -1,0 +1,656 @@
+/* ==========================================================================
+   PERFIL
+   ========================================================================== */
+
+.profile-page {
+    padding-bottom: 110px;
+}
+
+/* ==========================================================================
+   CABEÇALHO
+   ========================================================================== */
+
+.profile-page .page-header {
+    margin-bottom: 20px;
+}
+
+.profile-page .page-header.simple {
+    display: block;
+}
+
+.profile-header {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 22px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 72px;
+    height: 72px;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.profile-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.profile-info h2 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 20px;
+    font-weight: 800;
+
+    line-height: 1.3;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   MENSAGENS
+   ========================================================================== */
+
+.profile-page > .success-message,
+.profile-page > .error-message {
+    margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   FORMULÁRIO
+   ========================================================================== */
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+}
+
+.form-section {
+    width: 100%;
+
+    padding: 22px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.form-section h2 {
+    margin: 0 0 18px;
+
+    color: #111827;
+
+    font-size: 18px;
+    font-weight: 800;
+
+    line-height: 1.3;
+}
+
+/* ==========================================================================
+   CAMPOS
+   ========================================================================== */
+
+.form-section .form-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin: 0 0 18px;
+}
+
+.form-section .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-section .form-group label {
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.3;
+}
+
+.form-section .form-group input,
+.form-section .form-group select {
+    width: 100%;
+
+    min-height: 50px;
+
+    padding: 0 14px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+
+    outline: none;
+
+    background: #ffffff;
+    color: #1f2937;
+
+    font-size: 15px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.form-section .form-group input::placeholder {
+    color: #9ca3af;
+}
+
+.form-section .form-group input:focus,
+.form-section .form-group select:focus {
+    border-color: #111827;
+
+    box-shadow:
+        0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+.form-section .form-group input:disabled,
+.form-section .form-group select:disabled {
+    background: #f3f4f6;
+
+    color: #6b7280;
+
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   LOCALIZAÇÃO
+   ========================================================================== */
+
+.form-row {
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) 130px;
+
+    gap: 16px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+.state-field {
+    min-width: 0;
+}
+
+/* ==========================================================================
+   TEXTOS AUXILIARES
+   ========================================================================== */
+
+.field-help {
+    color: #6b7280;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.form-description {
+    margin: -6px 0 18px;
+
+    color: #6b7280;
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   CATEGORIAS
+   ========================================================================== */
+
+.categories-list {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+.category-item {
+    width: 100%;
+    min-height: 100px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 14px;
+
+    padding: 17px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.category-item:hover {
+    border-color: #cbd5e1;
+
+    background: #f8fafc;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.05);
+
+    transform: translateY(-1px);
+}
+
+.category-item:active {
+    transform: translateY(0);
+}
+
+.category-item.selected {
+    border-color: #2563eb;
+
+    background: #eff6ff;
+
+    box-shadow:
+        0 4px 14px rgba(37, 99, 235, 0.1);
+}
+
+.category-content {
+    flex: 1;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 5px;
+}
+
+.category-content strong {
+    display: block;
+
+    color: #111827;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    line-height: 1.35;
+}
+
+.category-content span {
+    display: block;
+
+    color: #6b7280;
+
+    font-size: 13px;
+    font-weight: 400;
+
+    line-height: 1.45;
+}
+
+.category-item.selected .category-content strong {
+    color: #1d4ed8;
+}
+
+.category-item.selected .category-content span {
+    color: #4b5563;
+}
+
+.category-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 32px;
+    height: 32px;
+
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    color: #9ca3af;
+
+    font-size: 17px;
+    font-weight: 700;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.category-item.selected .category-check {
+    border-color: #2563eb;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    transform: scale(1.05);
+}
+
+.category-item:disabled {
+    opacity: 0.65;
+
+    cursor: wait;
+}
+
+/* ==========================================================================
+   BOTÃO SALVAR
+   ========================================================================== */
+
+.profile-form .primary-button {
+    width: 100%;
+
+    min-height: 54px;
+
+    margin-top: 2px;
+    padding: 0 20px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.1s ease;
+}
+
+.profile-form .primary-button:hover {
+    background: #1f2937;
+
+    box-shadow:
+        0 5px 14px rgba(17, 24, 39, 0.15);
+}
+
+.profile-form .primary-button:active {
+    transform: translateY(1px);
+}
+
+.profile-form .primary-button:focus-visible {
+    outline: 2px solid #111827;
+    outline-offset: 3px;
+}
+
+.profile-form .primary-button:disabled {
+    background: #6b7280;
+
+    opacity: 0.7;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
+}
+
+/* ==========================================================================
+   BOTÃO SAIR
+   ========================================================================== */
+
+.logout-button {
+    width: 100%;
+
+    min-height: 50px;
+
+    margin-top: 16px;
+    margin-bottom: 20px;
+
+    padding: 0 18px;
+
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+
+    background: #ffffff;
+    color: #dc2626;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.1s ease;
+}
+
+.logout-button:hover {
+    background: #fef2f2;
+
+    border-color: #fca5a5;
+}
+
+.logout-button:active {
+    transform: translateY(1px);
+}
+
+.logout-button:focus-visible {
+    outline: 2px solid #dc2626;
+    outline-offset: 3px;
+}
+
+/* ==========================================================================
+   TABLET
+   ========================================================================== */
+
+@media (max-width: 700px) {
+
+    .categories-list {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+    }
+
+    .category-item {
+        min-height: 88px;
+
+        padding: 16px;
+    }
+}
+
+/* ==========================================================================
+   CELULAR
+   ========================================================================== */
+
+@media (max-width: 600px) {
+
+    .profile-page {
+        padding: 18px 14px 110px;
+    }
+
+    .profile-page .page-header {
+        margin-bottom: 16px;
+    }
+
+    .profile-header {
+        gap: 14px;
+
+        padding: 18px;
+
+        border-radius: 16px;
+    }
+
+    .profile-avatar {
+        width: 60px;
+        height: 60px;
+
+        font-size: 21px;
+    }
+
+    .profile-info h2 {
+        font-size: 18px;
+    }
+
+    .profile-form {
+        gap: 12px;
+    }
+
+    .form-section {
+        padding: 18px;
+
+        border-radius: 16px;
+    }
+
+    .form-section h2 {
+        margin-bottom: 16px;
+
+        font-size: 17px;
+    }
+
+    .form-section .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-section .form-group input,
+    .form-section .form-group select {
+        min-height: 50px;
+
+        font-size: 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+
+        gap: 0;
+    }
+
+    .form-row .form-group {
+        margin-bottom: 15px;
+    }
+
+    .category-item {
+        min-height: 84px;
+
+        padding: 15px;
+    }
+
+    .category-content strong {
+        font-size: 15px;
+    }
+
+    .category-content span {
+        font-size: 12px;
+    }
+
+    .category-check {
+        width: 30px;
+        height: 30px;
+    }
+
+    .profile-form .primary-button {
+        min-height: 54px;
+
+        margin-top: 4px;
+
+        font-size: 16px;
+    }
+
+    .logout-button {
+        min-height: 52px;
+
+        margin-top: 14px;
+
+        font-size: 15px;
+    }
+}
+
+/* ==========================================================================
+   CELULARES PEQUENOS
+   ========================================================================== */
+
+@media (max-width: 380px) {
+
+    .profile-page {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .profile-header {
+        padding: 16px;
+    }
+
+    .profile-avatar {
+        width: 54px;
+        height: 54px;
+
+        font-size: 19px;
+    }
+
+    .profile-info h2 {
+        font-size: 16px;
+    }
+
+    .form-section {
+        padding: 15px;
+    }
+
+    .category-item {
+        padding: 13px;
+    }
+}

@@ -3,17 +3,40 @@ import { useState } from 'react';
 import {
     interagirTrabalho,
     TIPOS_INTERACAO_TRABALHO,
-} from '../services/trabalhoService';
+} from '../../services/trabalhoService';
 
-export default function TrabalhoContratacaoCard({
+import {
+    podeConcluirTrabalho,
+    podeDesistirTrabalho,
+    podeConfirmarTrabalho,
+    podeContestarTrabalho,
+} from './TrabalhoControle';
+
+
+export default function TrabalhoInteracao({
     trabalho,
+    papel,
     onAtualizado,
 }) {
-    const [processando, setProcessando] = useState(false);
 
-    const [confirmacao, setConfirmacao] = useState(null);
-    const [mensagemErro, setMensagemErro] = useState('');
-    const [mensagemSucesso, setMensagemSucesso] = useState('');
+    /*
+     * =========================================================
+     * ESTADO
+     * =========================================================
+     */
+
+    const [processando, setProcessando] =
+        useState(false);
+
+    const [confirmacao, setConfirmacao] =
+        useState(null);
+
+    const [mensagemErro, setMensagemErro] =
+        useState('');
+
+    const [mensagemSucesso, setMensagemSucesso] =
+        useState('');
+
 
     /*
      * =========================================================
@@ -21,40 +44,31 @@ export default function TrabalhoContratacaoCard({
      * =========================================================
      */
 
+    const trabalhoId =
+        trabalho?.id_trabalho ??
+        trabalho?.id ??
+        null;
+
+
+    const status =
+        trabalho?.status ?? {};
+
+
     const statusCodigo =
-        trabalho?.status?.codigo ?? '';
+        typeof status === 'object'
+            ? status?.codigo ?? ''
+            : status ?? '';
 
-    const statusNome =
-        trabalho?.status?.nome ||
-        statusCodigo ||
-        'Sem status';
 
-    const publicacao =
-        trabalho?.publicacao ?? {};
+    const papelNormalizado =
+        String(papel)
+            .trim()
+            .toUpperCase();
 
-    const contratado =
-        trabalho?.contratado ?? {};
 
-    /*
-     * =========================================================
-     * REGRAS
-     * =========================================================
-     */
+    const ehContratante =
+        papelNormalizado === 'CONTRATANTE';
 
-    const aguardandoConfirmacao =
-        statusCodigo ===
-        'AGUARDANDO_CONFIRMACAO';
-
-    /*
-     * O contratante pode desistir enquanto
-     * o trabalho estiver pendente ou
-     * aguardando confirmação.
-     */
-
-    const podeDesistir =
-        statusCodigo === 'PENDENTE' ||
-        statusCodigo ===
-            'AGUARDANDO_CONFIRMACAO';
 
     /*
      * =========================================================
@@ -65,61 +79,175 @@ export default function TrabalhoContratacaoCard({
     async function executarInteracao(
         tipo,
         mensagem,
-        sucesso
+        mensagemSucessoAcao
     ) {
-        if (processando) {
+
+        if (
+            processando ||
+            !trabalhoId
+        ) {
             return;
         }
 
+
         try {
+
             setMensagemErro('');
             setMensagemSucesso('');
             setConfirmacao(null);
             setProcessando(true);
 
+
             await interagirTrabalho(
-                trabalho.id_trabalho,
+                trabalhoId,
                 {
                     id_interacao_tipo: tipo,
                     mensagem,
                 }
             );
 
-            setMensagemSucesso(sucesso);
+
+            setMensagemSucesso(
+                mensagemSucessoAcao
+            );
+
 
             await onAtualizado?.();
 
         } catch (error) {
+
             console.error(
-                'Erro ao interagir com contratação:',
+                'Erro ao interagir com trabalho:',
                 error
             );
 
-            const mensagemErro =
+
+            const mensagem =
                 error?.response?.data?.message ||
                 Object.values(
                     error?.response?.data?.errors || {}
                 ).flat()[0] ||
                 'Não foi possível realizar esta ação.';
 
-            setMensagemErro(mensagemErro);
+
+            setMensagemErro(
+                mensagem
+            );
 
         } finally {
+
             setProcessando(false);
+
         }
     }
 
+
     /*
      * =========================================================
-     * CONFIRMAR SERVIÇO
+     * ABRIR CONFIRMAÇÃO
+     * =========================================================
+     */
+
+    function abrirConfirmacao(config) {
+
+        if (processando) {
+            return;
+        }
+
+
+        setMensagemErro('');
+        setMensagemSucesso('');
+
+
+        setConfirmacao(config);
+
+    }
+
+
+    /*
+     * =========================================================
+     * CONTRATADO — CONCLUIR
+     * =========================================================
+     */
+
+    function solicitarConclusao() {
+
+        abrirConfirmacao({
+
+            tipo:
+                TIPOS_INTERACAO_TRABALHO
+                    .SERVICO_CONCLUIDO,
+
+            titulo:
+                'Concluir serviço?',
+
+            mensagem:
+                'Confirme que o serviço foi realizado. O contratante será solicitado a confirmar a conclusão.',
+
+            textoBotao:
+                'Sim, concluir serviço',
+
+            classeBotao:
+                'btn-confirmar-trabalho',
+
+            mensagemEnvio:
+                'Serviço concluído pelo contratado.',
+
+            mensagemSucesso:
+                'Serviço informado como concluído com sucesso.',
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * CONTRATADO — DESISTIR
+     * =========================================================
+     */
+
+    function solicitarDesistenciaContratado() {
+
+        abrirConfirmacao({
+
+            tipo:
+                TIPOS_INTERACAO_TRABALHO
+                    .DESISTENCIA_CONTRATADO,
+
+            titulo:
+                'Desistir do trabalho?',
+
+            mensagem:
+                'Ao confirmar, a desistência será registrada e o trabalho poderá seguir para o próximo fluxo definido pelo sistema.',
+
+            textoBotao:
+                'Sim, desistir',
+
+            classeBotao:
+                'btn-desistir-trabalho',
+
+            mensagemEnvio:
+                'Desistência solicitada pelo contratado.',
+
+            mensagemSucesso:
+                'Desistência registrada com sucesso.',
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * CONTRATANTE — CONFIRMAR
      * =========================================================
      */
 
     function solicitarConfirmacaoServico() {
-        setMensagemErro('');
-        setMensagemSucesso('');
 
-        setConfirmacao({
+        abrirConfirmacao({
+
             tipo:
                 TIPOS_INTERACAO_TRABALHO
                     .SERVICO_CONFIRMADO,
@@ -141,20 +269,22 @@ export default function TrabalhoContratacaoCard({
 
             mensagemSucesso:
                 'Serviço confirmado com sucesso.',
+
         });
+
     }
+
 
     /*
      * =========================================================
-     * CONTESTAR SERVIÇO
+     * CONTRATANTE — CONTESTAR
      * =========================================================
      */
 
     function solicitarContestacaoServico() {
-        setMensagemErro('');
-        setMensagemSucesso('');
 
-        setConfirmacao({
+        abrirConfirmacao({
+
             tipo:
                 TIPOS_INTERACAO_TRABALHO
                     .SERVICO_CONTESTADO,
@@ -176,20 +306,22 @@ export default function TrabalhoContratacaoCard({
 
             mensagemSucesso:
                 'Serviço enviado para avaliação.',
+
         });
+
     }
+
 
     /*
      * =========================================================
-     * DESISTIR
+     * CONTRATANTE — DESISTIR
      * =========================================================
      */
 
-    function solicitarDesistencia() {
-        setMensagemErro('');
-        setMensagemSucesso('');
+    function solicitarDesistenciaContratante() {
 
-        setConfirmacao({
+        abrirConfirmacao({
+
             tipo:
                 TIPOS_INTERACAO_TRABALHO
                     .DESISTENCIA_CONTRATANTE,
@@ -211,16 +343,20 @@ export default function TrabalhoContratacaoCard({
 
             mensagemSucesso:
                 'Desistência registrada com sucesso.',
+
         });
+
     }
+
 
     /*
      * =========================================================
-     * CONFIRMAR AÇÃO DO MODAL
+     * CONFIRMAR AÇÃO
      * =========================================================
      */
 
     async function confirmarAcao() {
+
         if (
             !confirmacao ||
             processando
@@ -228,12 +364,19 @@ export default function TrabalhoContratacaoCard({
             return;
         }
 
+
         await executarInteracao(
+
             confirmacao.tipo,
+
             confirmacao.mensagemEnvio,
+
             confirmacao.mensagemSucesso
+
         );
+
     }
+
 
     /*
      * =========================================================
@@ -242,12 +385,57 @@ export default function TrabalhoContratacaoCard({
      */
 
     function cancelarConfirmacao() {
+
         if (processando) {
             return;
         }
 
+
         setConfirmacao(null);
+
     }
+
+
+    /*
+     * =========================================================
+     * REGRAS DE NEGÓCIO
+     * =========================================================
+     */
+
+    const podeConcluir =
+        !ehContratante &&
+        podeConcluirTrabalho(
+            statusCodigo
+        );
+
+
+    const podeDesistir =
+        podeDesistirTrabalho(
+            statusCodigo,
+            papelNormalizado
+        );
+
+
+    const podeConfirmar =
+        ehContratante &&
+        podeConfirmarTrabalho(
+            statusCodigo
+        );
+
+
+    const podeContestar =
+        ehContratante &&
+        podeContestarTrabalho(
+            statusCodigo
+        );
+
+
+    const possuiAcoes =
+        podeConcluir ||
+        podeDesistir ||
+        podeConfirmar ||
+        podeContestar;
+
 
     /*
      * =========================================================
@@ -256,186 +444,11 @@ export default function TrabalhoContratacaoCard({
      */
 
     return (
-        <article className="contratacao-trabalho-card">
-
-            {/* =================================================
-                CABEÇALHO
-            ================================================== */}
-
-            <header className="contratacao-trabalho-header">
-
-                <div className="trabalho-header-info">
-
-                    <h3>
-                        {publicacao.titulo || 'Contratação'}
-                    </h3>
-
-                    {publicacao?.categoria?.nome && (
-                        <span className="trabalho-categoria">
-                            {publicacao.categoria.nome}
-                        </span>
-                    )}
-
-                </div>
-
-                <span
-                    className={[
-                        'trabalho-status',
-                        `trabalho-status-${String(
-                            statusCodigo || 'sem_status'
-                        ).toLowerCase()}`,
-                    ].join(' ')}
-                >
-                    {statusNome}
-                </span>
-
-            </header>
-
-
-            {/* =================================================
-                INFORMAÇÕES PRINCIPAIS
-            ================================================== */}
-
-            <div className="contratacao-trabalho-meta">
-
-                {/* ---------------------------------------------
-                    VALOR
-                ---------------------------------------------- */}
-
-                <div className="trabalho-meta-item">
-
-                    <span className="trabalho-meta-label">
-                        Valor
-                    </span>
-
-                    <strong className="trabalho-meta-valor">
-                        {formatarValor(
-                            trabalho?.valor ??
-                            publicacao?.valor_estimado
-                        )}
-                    </strong>
-
-                </div>
-
-
-                {/* ---------------------------------------------
-                    DATA
-                ---------------------------------------------- */}
-
-                <div className="trabalho-meta-item">
-
-                    <span className="trabalho-meta-label">
-                        Data
-                    </span>
-
-                    <strong>
-                        {formatarData(
-                            publicacao?.data_inicio ??
-                            trabalho?.data_inicio
-                        )}
-                    </strong>
-
-                </div>
-
-
-                {/* ---------------------------------------------
-                    CONTRATADO
-                ---------------------------------------------- */}
-
-                <div className="trabalho-meta-item">
-
-                    <span className="trabalho-meta-label">
-                        Contratado
-                    </span>
-
-                    <strong>
-                        {contratado?.name ||
-                            'Não informado'}
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            {/* =================================================
-                DESCRIÇÃO
-            ================================================== */}
-
-            <div className="contratacao-trabalho-descricao">
-
-                <span className="trabalho-descricao-label">
-                    Descrição
-                </span>
-
-                <p>
-                    {publicacao?.descricao ||
-                        'Nenhuma descrição informada.'}
-                </p>
-
-            </div>
-
-
-            {/* =================================================
-                LOCAL
-            ================================================== */}
-
-            {(publicacao?.cidade ||
-                publicacao?.estado) && (
-
-                <div className="trabalho-local">
-
-                    <div className="trabalho-local-label">
-
-                        <span>
-                            Local
-                        </span>
-
-                    </div>
-
-                    <strong>
-
-                        {publicacao?.cidade || ''}
-
-                        {publicacao?.cidade &&
-                            publicacao?.estado
-                            ? ' - '
-                            : ''}
-
-                        {publicacao?.estado || ''}
-
-                    </strong>
-
-                </div>
-
-            )}
-
-
-            {/* =================================================
-                AVISO DE CONFIRMAÇÃO
-            ================================================== */}
-
-            {aguardandoConfirmacao && (
-
-                <div className="trabalho-aviso">
-
-                    <strong>
-                        Serviço informado como concluído
-                    </strong>
-
-                    <span>
-                        Verifique o serviço antes de confirmar
-                        ou contestar a conclusão.
-                    </span>
-
-                </div>
-
-            )}
-
+        <>
 
             {/* =================================================
                 MENSAGEM DE SUCESSO
-            ================================================== */}
+            ================================================= */}
 
             {mensagemSucesso && (
 
@@ -456,6 +469,7 @@ export default function TrabalhoContratacaoCard({
 
                     </div>
 
+
                     <button
                         type="button"
                         className="trabalho-feedback-fechar"
@@ -474,7 +488,7 @@ export default function TrabalhoContratacaoCard({
 
             {/* =================================================
                 MENSAGEM DE ERRO
-            ================================================== */}
+            ================================================= */}
 
             {mensagemErro && (
 
@@ -495,6 +509,7 @@ export default function TrabalhoContratacaoCard({
 
                     </div>
 
+
                     <button
                         type="button"
                         className="trabalho-feedback-fechar"
@@ -513,18 +528,42 @@ export default function TrabalhoContratacaoCard({
 
             {/* =================================================
                 AÇÕES
-            ================================================== */}
+            ================================================= */}
 
-            {(aguardandoConfirmacao ||
-                podeDesistir) && (
+            {possuiAcoes && (
 
                 <div className="trabalho-acoes">
 
-                    {/* -----------------------------------------
-                        CONFIRMAR
-                    ------------------------------------------ */}
 
-                    {aguardandoConfirmacao && (
+                    {/* -----------------------------------------
+                        CONTRATADO — CONCLUIR
+                    ----------------------------------------- */}
+
+                    {podeConcluir && (
+
+                        <button
+                            type="button"
+                            className="btn-confirmar-trabalho"
+                            onClick={
+                                solicitarConclusao
+                            }
+                            disabled={processando}
+                        >
+
+                            {processando
+                                ? 'Processando...'
+                                : '✓ Concluir serviço'}
+
+                        </button>
+
+                    )}
+
+
+                    {/* -----------------------------------------
+                        CONTRATANTE — CONFIRMAR
+                    ----------------------------------------- */}
+
+                    {podeConfirmar && (
 
                         <button
                             type="button"
@@ -534,19 +573,21 @@ export default function TrabalhoContratacaoCard({
                             }
                             disabled={processando}
                         >
+
                             {processando
                                 ? 'Processando...'
                                 : '✓ Confirmar serviço'}
+
                         </button>
 
                     )}
 
 
                     {/* -----------------------------------------
-                        CONTESTAR
-                    ------------------------------------------ */}
+                        CONTRATANTE — CONTESTAR
+                    ----------------------------------------- */}
 
-                    {aguardandoConfirmacao && (
+                    {podeContestar && (
 
                         <button
                             type="button"
@@ -556,9 +597,11 @@ export default function TrabalhoContratacaoCard({
                             }
                             disabled={processando}
                         >
+
                             {processando
                                 ? 'Processando...'
                                 : '⚠ Contestar serviço'}
+
                         </button>
 
                     )}
@@ -566,7 +609,7 @@ export default function TrabalhoContratacaoCard({
 
                     {/* -----------------------------------------
                         DESISTIR
-                    ------------------------------------------ */}
+                    ----------------------------------------- */}
 
                     {podeDesistir && (
 
@@ -574,13 +617,17 @@ export default function TrabalhoContratacaoCard({
                             type="button"
                             className="btn-desistir-trabalho"
                             onClick={
-                                solicitarDesistencia
+                                ehContratante
+                                    ? solicitarDesistenciaContratante
+                                    : solicitarDesistenciaContratado
                             }
                             disabled={processando}
                         >
+
                             {processando
                                 ? 'Processando...'
                                 : '✕ Desistir'}
+
                         </button>
 
                     )}
@@ -592,7 +639,7 @@ export default function TrabalhoContratacaoCard({
 
             {/* =================================================
                 MODAL DE CONFIRMAÇÃO
-            ================================================== */}
+            ================================================= */}
 
             {confirmacao && (
 
@@ -616,23 +663,29 @@ export default function TrabalhoContratacaoCard({
                         className="trabalho-confirmacao-modal"
                         role="dialog"
                         aria-modal="true"
-                        aria-labelledby="contratacao-confirmacao-titulo"
+                        aria-labelledby="trabalho-confirmacao-titulo"
                     >
 
                         <div className="trabalho-confirmacao-conteudo">
 
-                            <h4 id="contratacao-confirmacao-titulo">
+                            <h4 id="trabalho-confirmacao-titulo">
+
                                 {confirmacao.titulo}
+
                             </h4>
 
+
                             <p>
+
                                 {confirmacao.mensagem}
+
                             </p>
 
                         </div>
 
 
                         <div className="trabalho-confirmacao-acoes">
+
 
                             <button
                                 type="button"
@@ -642,7 +695,9 @@ export default function TrabalhoContratacaoCard({
                                 }
                                 disabled={processando}
                             >
+
                                 Cancelar
+
                             </button>
 
 
@@ -656,9 +711,11 @@ export default function TrabalhoContratacaoCard({
                                 }
                                 disabled={processando}
                             >
+
                                 {processando
                                     ? 'Processando...'
                                     : confirmacao.textoBotao}
+
                             </button>
 
                         </div>
@@ -669,66 +726,6 @@ export default function TrabalhoContratacaoCard({
 
             )}
 
-        </article>
+        </>
     );
-}
-
-
-/* =========================================================
-   FORMATADORES
-========================================================= */
-
-function formatarValor(valor) {
-
-    if (
-        valor === null ||
-        valor === undefined ||
-        valor === ''
-    ) {
-        return 'Não informado';
-    }
-
-    const numero = Number(valor);
-
-    if (Number.isNaN(numero)) {
-        return valor;
-    }
-
-    return numero.toLocaleString(
-        'pt-BR',
-        {
-            style: 'currency',
-            currency: 'BRL',
-        }
-    );
-}
-
-
-function formatarData(data) {
-
-    if (!data) {
-        return 'Não informada';
-    }
-
-    const valor = String(data);
-
-    /*
-     * Laravel pode retornar:
-     *
-     * 2026-09-18T00:00:00.000000Z
-     */
-
-    const dataParte =
-        valor.split('T')[0];
-
-    const partes =
-        dataParte.split('-');
-
-    if (partes.length === 3) {
-
-        return `${partes[2]}/${partes[1]}/${partes[0]}`;
-
-    }
-
-    return data;
 }

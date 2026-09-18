@@ -9,6 +9,7 @@ import {
 } from '../services/authService';
 
 import { useAuth } from '../contexts/AuthContext';
+import '../styles/perfil.css';
 
 export default function Perfil() {
     const {
@@ -255,39 +256,29 @@ export default function Perfil() {
         <div className="page profile-page">
 
             <header className="page-header simple">
-                <div>
-                    <span className="welcome-text">
-                        Minha conta
-                    </span>
+                <section className="profile-header">
 
-                    <h1>
-                        Perfil
-                    </h1>
-                </div>
+                    <div className="profile-avatar">
+                        {form.foto_url ? (
+                            <img
+                                src={form.foto_url}
+                                alt={`Foto de ${form.name} `}
+                            />
+                        ) : (
+                            form.name
+                                ?.charAt(0)
+                                ?.toUpperCase() || 'U'
+                        )}
+                    </div>
+
+                    <div className="profile-info">
+                        <h2>
+                            {user?.name || 'Usuário'}
+                        </h2>
+                    </div>
+
+                </section>
             </header>
-
-            <section className="profile-header">
-
-                <div className="profile-avatar">
-                    {form.foto_url ? (
-                        <img
-                            src={form.foto_url}
-                            alt={`Foto de ${form.name} `}
-                        />
-                    ) : (
-                        form.name
-                            ?.charAt(0)
-                            ?.toUpperCase() || 'U'
-                    )}
-                </div>
-
-                <div className="profile-info">
-                    <h2>
-                        {user?.name || 'Usuário'}
-                    </h2>
-                </div>
-
-            </section>
 
             {message && (
                 <div className="success-message">

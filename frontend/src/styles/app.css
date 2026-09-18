@@ -1,0 +1,533 @@
+/* ==========================================================================
+   APLICAÇÃO
+   ========================================================================== */
+
+.app-container {
+  min-height: 100vh;
+
+  background: #f5f6f8;
+}
+
+.app-content {
+  width: 100%;
+  min-height: 100vh;
+
+  padding-bottom: 90px;
+}
+
+/* ==========================================================================
+   ESTRUTURA DE PÁGINA
+   ========================================================================== */
+
+.page {
+  width: 100%;
+  max-width: 900px;
+
+  margin: 0 auto;
+  padding: 24px 18px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 24px;
+}
+
+.page-header.simple {
+  justify-content: flex-start;
+}
+
+.welcome-text {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #6b7280;
+
+  font-size: 14px;
+}
+
+.page-header h1 {
+  margin: 0;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+
+  background: #111827;
+  color: #ffffff;
+
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   EMPTY STATE
+   ========================================================================== */
+
+.empty-state {
+  min-height: 350px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+}
+
+.empty-icon {
+  margin-bottom: 16px;
+
+  font-size: 48px;
+}
+
+.empty-state h2 {
+  margin: 0 0 8px;
+
+  font-size: 20px;
+}
+
+.empty-state p {
+  max-width: 320px;
+
+  margin: 0;
+
+  color: #6b7280;
+
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   LOADING
+   ========================================================================== */
+
+.loading-screen {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  background: #f5f6f8;
+
+  color: #6b7280;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+
+  border: 3px solid #e5e7eb;
+  border-top-color: #111827;
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   NAVEGAÇÃO INFERIOR
+   ========================================================================== */
+
+.bottom-nav {
+  position: fixed;
+
+  z-index: 100;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
+  padding: 0 8px;
+
+  background: #ffffff;
+
+  border-top: 1px solid #e5e7eb;
+
+  box-shadow:
+    0 -5px 20px rgba(0, 0, 0, 0.04);
+}
+
+.nav-item {
+  min-width: 80px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  padding: 6px 10px;
+
+  color: #9ca3af;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  border-radius: 10px;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+
+  flex-shrink: 0;
+}
+
+.nav-item span {
+  line-height: 1.2;
+}
+
+.nav-item:hover {
+  color: #374151;
+
+  background: #f9fafb;
+}
+
+.nav-item:active {
+  transform: scale(0.96);
+}
+
+.nav-item.active {
+  color: #111827;
+}
+
+.nav-item.active:hover {
+  color: #111827;
+
+  background: #f3f4f6;
+}
+
+/* ==========================================================================
+   DESKTOP
+   ========================================================================== */
+
+@media (min-width: 768px) {
+
+  .page {
+    padding: 40px 24px;
+  }
+
+  .bottom-nav {
+    left: 50%;
+    right: auto;
+
+    width: 500px;
+
+    transform: translateX(-50%);
+
+    border: 1px solid #e5e7eb;
+    border-bottom: none;
+
+    border-radius: 18px 18px 0 0;
+  }
+}
+
+/* ==========================================================================
+   MOBILE
+   ========================================================================== */
+
+@media (max-width: 480px) {
+
+  .bottom-nav {
+    padding: 0 4px;
+  }
+
+  .nav-item {
+    min-width: 70px;
+
+    padding: 6px 6px;
+
+    font-size: 10px;
+  }
+
+  .nav-item svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  /* =========================================================
+   ESTRUTURA GLOBAL DA APLICAÇÃO
+   ========================================================= */
+
+  /* .app-container */
+  /* .app-content */
+  /* .page */
+  /* .bottom-nav */
+  /* etc. */
+
+
+  /* =========================================================
+   LOGIN
+   ========================================================= */
+
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #f5f6f8;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .login-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .login-header h1 {
+    margin: 0 0 8px;
+  }
+
+  .login-header p {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-weight: 600;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .primary-button,
+  .secondary-button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .primary-button {
+    width: 100%;
+  }
+
+  .secondary-button {
+    background: #e5e7eb;
+  }
+
+  .error-message,
+  .cadastro-error {
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+
+  .login-footer {
+    margin-top: 24px;
+    text-align: center;
+  }
+
+  .link-button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .cadastro-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+  }
+
+  .cadastro-modal {
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .cadastro-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .cadastro-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .cadastro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cadastro-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cadastro-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .cadastro-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+
+  /* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+  @media (max-width: 600px) {
+
+    .login-page {
+      padding: 16px;
+    }
+
+    .login-card {
+      padding: 24px 20px;
+    }
+
+    .cadastro-form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .cadastro-modal {
+      padding: 22px 18px;
+    }
+
+    .cadastro-modal-actions {
+      flex-direction: column;
+    }
+
+    .cadastro-modal-actions button {
+      width: 100%;
+    }
+  }
+
+  /* =========================================================
+   LOGO JOB - LOGIN
+   ========================================================= */
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 24px;
+
+    border-radius: 18px;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+}

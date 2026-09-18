@@ -7,14 +7,16 @@ import {
 
 import { AuthProvider } from './contexts/AuthContext';
 
-import ProtectedRoute from './components/ProtectedRoute';
-import AppLayout from './components/AppLayout';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import AppLayout from './components/common/AppLayout';
 
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Contratacoes from './pages/Contratacoes';
 import Trabalhos from './pages/Trabalhos';
 import Perfil from './pages/Perfil';
+
+import './styles/app.css';
 
 export default function App() {
     return (

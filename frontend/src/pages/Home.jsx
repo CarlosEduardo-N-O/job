@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import PublicacaoCard from '../components/PublicacaoCard';
-import InteracaoModal from '../components/InteracaoModal';
+import PublicacaoCard from '../components/publicacoes/Publicacao';
+import InteracaoModal from '../components/home/HomeInteracao';
 
 import {
     getPublicacoes,
