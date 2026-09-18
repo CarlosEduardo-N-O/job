@@ -8,6 +8,8 @@ use App\Http\Controllers\UserCategoriaController;
 use App\Http\Controllers\PublicacaoController;
 use App\Http\Controllers\NegociacaoController;
 use App\Http\Controllers\NegociacaoPagamentoController;
+use App\Http\Controllers\TrabalhoController;
+use App\Http\Controllers\TrabalhoPagamentoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +29,40 @@ Route::post(
     [UserController::class, 'store']
 );
 
+/*
+|--------------------------------------------------------------------------
+| Pagamento da negociação
+|--------------------------------------------------------------------------
+|
+| Rota pública para simulação/confirmação do pagamento pela plataforma.
+|
+*/
 
+Route::post(
+    '/negociacoes/{negociacao}/pagamento/confirmar',
+    [NegociacaoPagamentoController::class, 'confirmar']
+);
+
+/*
+|--------------------------------------------------------------------------
+| Trabalhos - Pagamentos
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/trabalhos/{trabalho}/pagamento',
+    [TrabalhoPagamentoController::class, 'show']
+);
+
+Route::post(
+    '/trabalhos/{trabalho}/pagamento/confirmar',
+    [TrabalhoPagamentoController::class, 'confirmar']
+);
+
+Route::post(
+    '/trabalhos/{trabalho}/pagamento/recusar',
+    [TrabalhoPagamentoController::class, 'recusar']
+);
 /*
 |--------------------------------------------------------------------------
 | Rotas protegidas pelo Sanctum
@@ -81,8 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Lista todas as categorias e informa
-    // quais pertencem ao usuário logado
+    // Lista todas as categorias e informa quais pertencem ao usuário
     Route::get(
         '/users-categorias/categorias',
         [UserCategoriaController::class, 'categorias']
@@ -106,6 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
         [UserCategoriaController::class, 'destroy']
     );
 
+
     /*
     |--------------------------------------------------------------------------
     | Publicações
@@ -124,10 +159,12 @@ Route::middleware('auth:sanctum')->group(function () {
         'publicacoes' => 'publicacao',
     ]);
 
+    // Inicia uma negociação a partir de uma publicação
     Route::post(
         '/publicacoes/{publicacao}/interacoes',
         [NegociacaoController::class, 'store']
     );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -135,60 +172,88 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    // Negociações do usuário logado
     Route::get(
         '/negociacoes/meus',
         [NegociacaoController::class, 'minhas']
     );
 
+    // Lista negociações
     Route::get(
         '/negociacoes',
         [NegociacaoController::class, 'index']
     );
 
+    // Visualiza uma negociação
     Route::get(
         '/negociacoes/{negociacao}',
         [NegociacaoController::class, 'show']
     );
 
+    // Envia interação na negociação
     Route::post(
         '/negociacoes/{negociacao}/interacoes',
         [NegociacaoController::class, 'interagir']
     );
 
+    // Aceita negociação
     Route::post(
         '/negociacoes/{negociacao}/aceitar',
         [NegociacaoController::class, 'aceitar']
     );
 
+    // Recusa negociação
     Route::post(
         '/negociacoes/{negociacao}/recusar',
         [NegociacaoController::class, 'recusar']
     );
 
+    /*
+    |--------------------------------------------------------------------------
+    | Pagamento da negociação
+    |--------------------------------------------------------------------------
+    */
 
     /*
-|--------------------------------------------------------------------------
-| Pagamentos
-|--------------------------------------------------------------------------
-*/
-
-    Route::get(
-        '/negociacoes/{negociacao}/pagamento',
-        [NegociacaoPagamentoController::class, 'show']
-    );
-
+     * Contratante informa que realizou o pagamento.
+     *
+     * Esta rota PRECISA estar protegida pelo Sanctum,
+     * pois o controller verifica o usuário logado.
+     */
     Route::post(
         '/negociacoes/{negociacao}/pagamento/informar',
         [NegociacaoPagamentoController::class, 'informar']
     );
 
-    Route::post(
-        '/negociacoes/{negociacao}/pagamento/validar',
-        [NegociacaoPagamentoController::class, 'validar']
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trabalhos
+    |--------------------------------------------------------------------------
+    |
+    | Existem somente três operações:
+    |
+    | 1. Trabalhos que o usuário contratou
+    | 2. Trabalhos em que o usuário foi contratado
+    | 3. Interações do trabalho
+    |
+    */
+
+    // Trabalhos contratados pelo usuário
+    Route::get(
+        '/trabalhos/contratacoes',
+        [TrabalhoController::class, 'contratacoes']
     );
 
+    // Trabalhos em que o usuário foi contratado
+    Route::get(
+        '/trabalhos/meus',
+        [TrabalhoController::class, 'meus']
+    );
+
+    // Interage com um trabalho
     Route::post(
-        '/negociacoes/{negociacao}/pagamento/nao-validar',
-        [NegociacaoPagamentoController::class, 'naoValidar']
+        '/trabalhos/{trabalho}/interacoes',
+        [TrabalhoController::class, 'interagir']
     );
 });

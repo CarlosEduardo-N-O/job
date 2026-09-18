@@ -52,6 +52,28 @@ export default function PublicacaoCard({
     onInteracao,
 }) {
 
+    /*
+     * O backend agora retorna o status como objeto:
+     *
+     * status: {
+     *     id: 1,
+     *     codigo: "ATIVO",
+     *     nome: "Ativo"
+     * }
+     *
+     * Por isso usamos codigo para regras
+     * e nome para exibição.
+     */
+
+    const statusCodigo =
+        publicacao.status?.codigo ?? '';
+
+    const statusNome =
+        publicacao.status?.nome ??
+        statusCodigo ??
+        'Sem status';
+
+
     return (
         <article className="publicacao-card">
 
@@ -78,7 +100,7 @@ export default function PublicacaoCard({
 
 
                 <span className="publicacao-status">
-                    {publicacao.status}
+                    {statusNome}
                 </span>
 
             </div>
@@ -198,6 +220,7 @@ export default function PublicacaoCard({
                             'INTERESSE'
                         )
                     }
+                    disabled={statusCodigo !== 'ATIVO'}
                 >
                     ❤️ Interesse
                 </button>
@@ -212,6 +235,7 @@ export default function PublicacaoCard({
                             'DUVIDA'
                         )
                     }
+                    disabled={statusCodigo !== 'ATIVO'}
                 >
                     ❓ Dúvida
                 </button>
@@ -226,6 +250,7 @@ export default function PublicacaoCard({
                             'PROPOSTA'
                         )
                     }
+                    disabled={statusCodigo !== 'ATIVO'}
                 >
                     💰 Proposta
                 </button>

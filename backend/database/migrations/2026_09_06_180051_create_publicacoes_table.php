@@ -22,6 +22,11 @@ return new class extends Migration
                 ->constrained('categorias')
                 ->restrictOnDelete();
 
+            // Status da publicação
+            $table->foreignId('status_id')
+                ->constrained('publicacao_status')
+                ->restrictOnDelete();
+
             $table->string('titulo', 200);
 
             $table->text('descricao');
@@ -53,20 +58,12 @@ return new class extends Migration
             $table->date('data_fim')
                 ->nullable();
 
-            /*
-             * ATIVO
-             * ENCERRADO
-             * CANCELADO
-             */
-            $table->string('status', 30)
-                ->default('ATIVO');
-
             $table->timestamps();
 
             $table->index('contratante_id');
             $table->index('categoria_id');
-            $table->index('status');
-            $table->index(['categoria_id', 'status']);
+            $table->index('status_id');
+            $table->index(['categoria_id', 'status_id']);
         });
     }
 

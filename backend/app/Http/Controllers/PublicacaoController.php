@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publicacao;
+use App\Models\PublicacaoStatus;
 use App\Models\Negociacao;
 use App\Models\NegociacaoStatus;
 use Illuminate\Http\Request;
@@ -42,14 +43,20 @@ class PublicacaoController extends Controller
          * Garante que negociações de publicações
          * já canceladas também estejam CANCELADA.
          */
-
         $this->sincronizarNegociacoesCanceladas();
 
         $publicacoes = Publicacao::with([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
+            'status:id,codigo,nome,descricao',
         ])
-            ->where('status', 'ATIVO')
+            ->whereHas(
+                'status',
+                function ($query) {
+                    $query->where('codigo', 'ATIVO')
+                        ->where('ativo', true);
+                }
+            )
 
             ->whereHas(
                 'categoria',
@@ -125,12 +132,12 @@ class PublicacaoController extends Controller
          * Garante que negociações de publicações
          * canceladas estejam como CANCELADA.
          */
-
         $this->sincronizarNegociacoesCanceladas();
 
         $publicacoes = Publicacao::with([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
+            'status:id,codigo,nome,descricao',
         ])
             ->withCount('negociacoes')
             ->where(
@@ -304,20 +311,29 @@ class PublicacaoController extends Controller
         /*
          * O contratante é sempre o usuário autenticado.
          */
-
         $dados['contratante_id'] = $usuario->id;
 
         /*
          * Toda nova publicação começa como ATIVO.
+         *
+         * O status agora é controlado pela tabela
+         * publicacao_status.
          */
+        $statusAtivo = PublicacaoStatus::where(
+            'codigo',
+            'ATIVO'
+        )
+            ->where('ativo', true)
+            ->firstOrFail();
 
-        $dados['status'] = 'ATIVO';
+        $dados['status_id'] = $statusAtivo->id;
 
         $publicacao = Publicacao::create($dados);
 
         $publicacao->load([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
+            'status:id,codigo,nome,descricao',
         ]);
 
         return response()->json([
@@ -371,12 +387,13 @@ class PublicacaoController extends Controller
     ) {
         $usuario = $request->user();
 
+        $publicacao->loadMissing('status');
+
         /*
          * Se a publicação foi cancelada,
          * garante o cancelamento das negociações.
          */
-
-        if ($publicacao->status === 'CANCELADO') {
+        if ($publicacao->status?->codigo === 'CANCELADO') {
             $this->cancelarNegociacoes($publicacao->id);
         }
 
@@ -384,7 +401,6 @@ class PublicacaoController extends Controller
          * O dono pode visualizar a publicação
          * independentemente do status.
          */
-
         if (
             (int) $publicacao->contratante_id ===
             (int) $usuario->id
@@ -393,6 +409,7 @@ class PublicacaoController extends Controller
             $publicacao->load([
                 'categoria:id,nome,descricao',
                 'contratante:id,name,email,telefone,foto_url,cidade,estado',
+                'status:id,codigo,nome,descricao',
             ]);
 
             return response()->json([
@@ -404,8 +421,7 @@ class PublicacaoController extends Controller
          * Usuários que não são donos:
          * somente publicações ATIVAS.
          */
-
-        if ($publicacao->status !== 'ATIVO') {
+        if ($publicacao->status?->codigo !== 'ATIVO') {
             return response()->json([
                 'message' => 'Publicação não encontrada.'
             ], 404);
@@ -414,7 +430,6 @@ class PublicacaoController extends Controller
         /*
          * Verifica se o usuário possui a categoria.
          */
-
         $possuiCategoria = $usuario
             ->categorias()
             ->where(
@@ -432,6 +447,7 @@ class PublicacaoController extends Controller
         $publicacao->load([
             'categoria:id,nome,descricao',
             'contratante:id,name,foto_url,cidade,estado',
+            'status:id,codigo,nome,descricao',
         ]);
 
         return response()->json([
@@ -449,7 +465,7 @@ class PublicacaoController extends Controller
     #[OA\Put(
         path: '/api/publicacoes/{publicacao}',
         summary: 'Atualiza uma publicação do usuário autenticado',
-        description: 'Atualiza os dados da publicação. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.',
+        description: 'Atualiza os dados da publicação. O status não pode ser alterado através deste endpoint. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.',
         tags: ['Publicações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -520,15 +536,6 @@ class PublicacaoController extends Controller
                         type: 'string',
                         format: 'date',
                         example: '2026-09-20'
-                    ),
-                    new OA\Property(
-                        property: 'status',
-                        type: 'string',
-                        enum: [
-                            'ATIVO',
-                            'ENCERRADO'
-                        ],
-                        example: 'ENCERRADO'
                     )
                 ]
             )
@@ -565,7 +572,6 @@ class PublicacaoController extends Controller
         /*
          * Somente o dono pode alterar.
          */
-
         if (
             (int) $publicacao->contratante_id !==
             (int) $usuario->id
@@ -578,7 +584,7 @@ class PublicacaoController extends Controller
 
         /*
          * Não permitimos alterar o contratante
-         * nem cancelar através do PUT.
+         * nem o status através do PUT.
          *
          * O cancelamento possui endpoint próprio.
          */
@@ -641,30 +647,28 @@ class PublicacaoController extends Controller
                 'date',
                 'after_or_equal:data_inicio'
             ],
-
-            'status' => [
-                'sometimes',
-                'string',
-                'in:ATIVO,ENCERRADO'
-            ],
         ]);
 
         /*
          * Segurança:
-         * nunca permite alterar o contratante.
+         * nunca permite alterar o contratante
+         * nem o status.
          */
-
-        unset($dados['contratante_id']);
+        unset(
+            $dados['contratante_id'],
+            $dados['status'],
+            $dados['status_id']
+        );
 
         /*
          * Atualiza somente os dados permitidos.
          */
-
         $publicacao->update($dados);
 
         $publicacao->load([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
+            'status:id,codigo,nome,descricao',
         ]);
 
         return response()->json([
@@ -679,14 +683,6 @@ class PublicacaoController extends Controller
     |--------------------------------------------------------------------------
     | CANCELAR PUBLICAÇÃO
     |--------------------------------------------------------------------------
-    |
-    | A publicação não é apagada.
-    |
-    | Ao cancelar:
-    | - Publicação -> CANCELADO
-    | - Negociações abertas -> CANCELADA
-    | - Histórico permanece no banco
-    |
     */
 
     #[OA\Patch(
@@ -739,7 +735,6 @@ class PublicacaoController extends Controller
         /*
          * Somente o dono pode cancelar.
          */
-
         if (
             (int) $publicacao->contratante_id !==
             (int) $usuario->id
@@ -750,32 +745,41 @@ class PublicacaoController extends Controller
             ], 403);
         }
 
+        $publicacao->loadMissing('status');
+
         /*
          * Somente uma publicação ATIVA
          * pode ser cancelada.
          */
-
-        if ($publicacao->status !== 'ATIVO') {
+        if ($publicacao->status?->codigo !== 'ATIVO') {
             return response()->json([
                 'message' =>
                 'Somente uma publicação ativa pode ser cancelada.'
             ], 422);
         }
 
-        DB::transaction(function () use ($publicacao) {
+        $statusCancelado = PublicacaoStatus::where(
+            'codigo',
+            'CANCELADO'
+        )
+            ->where('ativo', true)
+            ->firstOrFail();
+
+        DB::transaction(function () use (
+            $publicacao,
+            $statusCancelado
+        ) {
 
             /*
              * Cancela a publicação.
              */
-
             $publicacao->update([
-                'status' => 'CANCELADO'
+                'status_id' => $statusCancelado->id
             ]);
 
             /*
              * Cancela todas as negociações abertas.
              */
-
             $this->cancelarNegociacoes(
                 $publicacao->id
             );
@@ -784,10 +788,10 @@ class PublicacaoController extends Controller
         /*
          * Recarrega os relacionamentos.
          */
-
         $publicacao->load([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
+            'status:id,codigo,nome,descricao',
         ]);
 
         return response()->json([
@@ -802,19 +806,6 @@ class PublicacaoController extends Controller
     |--------------------------------------------------------------------------
     | CANCELAR NEGOCIAÇÕES DA PUBLICAÇÃO
     |--------------------------------------------------------------------------
-    |
-    | Somente negociações que ainda estão abertas
-    | são alteradas.
-    |
-    | FECHADA:
-    | permanece FECHADA.
-    |
-    | ENCERRADA:
-    | permanece ENCERRADA.
-    |
-    | CANCELADA:
-    | permanece CANCELADA.
-    |
     */
 
     private function cancelarNegociacoes(int $publicacaoId): void
@@ -823,7 +814,6 @@ class PublicacaoController extends Controller
          * Busca o status CANCELADA na tabela
          * negociacao_status.
          */
-
         $statusCancelada = NegociacaoStatus::where(
             'codigo',
             'CANCELADA'
@@ -834,19 +824,14 @@ class PublicacaoController extends Controller
         /*
          * Busca os status que ainda estão abertos.
          */
-
         $statusAbertos = [
             'AGUARDANDO_INTERESSADO',
-            'AGUARDANDO_CONTRATANTE'
+            'AGUARDANDO_CONTRATANTE',
         ];
 
         /*
          * Atualiza somente negociações abertas.
-         *
-         * O status da negociação agora é controlado
-         * através da coluna status_id.
          */
-
         Negociacao::where(
             'id_publicacao',
             $publicacaoId
@@ -870,12 +855,6 @@ class PublicacaoController extends Controller
     |--------------------------------------------------------------------------
     | SINCRONIZAR NEGOCIAÇÕES CANCELADAS
     |--------------------------------------------------------------------------
-    |
-    | Segurança adicional:
-    | se uma publicação já estiver CANCELADO,
-    | qualquer negociação ainda aberta será
-    | marcada como CANCELADA.
-    |
     */
 
     private function sincronizarNegociacoesCanceladas(): void
@@ -884,7 +863,6 @@ class PublicacaoController extends Controller
          * Busca o status CANCELADA na tabela
          * negociacao_status.
          */
-
         $statusCancelada = NegociacaoStatus::where(
             'codigo',
             'CANCELADA'
@@ -896,13 +874,17 @@ class PublicacaoController extends Controller
          * Publicações CANCELADO possuem negociações
          * que não podem mais permanecer abertas.
          */
-
         Negociacao::whereHas(
             'publicacao',
             function ($query) {
-                $query->where(
+                $query->whereHas(
                     'status',
-                    'CANCELADO'
+                    function ($statusQuery) {
+                        $statusQuery->where(
+                            'codigo',
+                            'CANCELADO'
+                        );
+                    }
                 );
             }
         )

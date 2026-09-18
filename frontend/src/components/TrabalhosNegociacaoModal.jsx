@@ -41,7 +41,7 @@ export default function TrabalhosNegociacaoModal({
     const [
         tipoResposta,
         setTipoResposta,
-    ] = useState('DUVIDA');
+    ] = useState('');
 
     const [
         valorProposto,
@@ -84,7 +84,7 @@ export default function TrabalhosNegociacaoModal({
 
             setNegociacaoSelecionada(dados);
 
-            limparFormulario();
+            limparFormulario(dados);
 
             /*
              * Sempre que abrir/recarregar a negociação,
@@ -110,14 +110,201 @@ export default function TrabalhosNegociacaoModal({
 
     /*
      * ============================================================
+     * CONTEXTO DA NEGOCIAÇÃO
+     * ============================================================
+     *
+     * O backend é responsável por informar:
+     *
+     * - papel_usuario
+     * - vez
+     * - pode_agir
+     * - ultima_interacao
+     *
+     * Não fazemos mais a regra manualmente pelo status.
+     */
+
+    function obterContexto(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
+        return (
+            negociacaoAtual?.contexto || {
+                papel_usuario: null,
+                vez: null,
+                pode_agir: false,
+                ultima_interacao: null,
+            }
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * AÇÕES
+     * ============================================================
+     *
+     * O backend define quais ações o usuário pode executar.
+     *
+     * Aceita tanto:
+     *
+     * negociacao.acoes
+     *
+     * quanto:
+     *
+     * negociacao.contexto.acoes
+     */
+
+    function obterAcoes(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
+        const contexto =
+            obterContexto(negociacaoAtual);
+
+        const acoes = {
+            ...(contexto?.acoes || {}),
+            ...(negociacaoAtual?.acoes || {}),
+        };
+
+        return {
+            interagir:
+                acoes.interagir === true,
+
+            aceitar:
+                acoes.aceitar === true,
+
+            recusar:
+                acoes.recusar === true,
+
+            pagamento:
+                acoes.pagamento === true ||
+                acoes.pagar === true,
+        };
+    }
+
+
+    /*
+     * ============================================================
+     * INTERAÇÕES PERMITIDAS
+     * ============================================================
+     *
+     * O backend informa quais tipos podem ser enviados.
+     *
+     * Exemplo:
+     *
+     * [
+     *     {
+     *         tipo: "INTERESSE",
+     *         mensagem_obrigatoria: false
+     *     },
+     *     {
+     *         tipo: "PROPOSTA",
+     *         valor_obrigatorio: true
+     *     },
+     *     {
+     *         tipo: "DUVIDA",
+     *         mensagem_obrigatoria: true
+     *     }
+     * ]
+     */
+
+    function obterInteracoesPermitidas(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
+        if (!negociacaoAtual) {
+            return [];
+        }
+
+        const opcoes =
+            negociacaoAtual?.opcoes_interacao ??
+            negociacaoAtual?.contexto?.opcoes_interacao ??
+            negociacaoAtual?.acoes?.opcoes_interacao ??
+            negociacaoAtual?.contexto?.acoes?.opcoes_interacao ??
+            negociacaoAtual?.interacoes_permitidas ??
+            [];
+
+        if (!Array.isArray(opcoes)) {
+            return [];
+        }
+
+        return opcoes.map((item) => ({
+            ...item,
+
+            tipo:
+                String(
+                    item?.tipo ?? ''
+                )
+                    .trim()
+                    .toUpperCase(),
+
+            mensagem_obrigatoria:
+                item?.mensagem_obrigatoria === true ||
+                item?.campos?.mensagem?.obrigatorio === true,
+
+            valor_obrigatorio:
+                item?.valor_obrigatorio === true ||
+                item?.campos?.valor_proposto?.obrigatorio === true,
+        }));
+    }
+
+
+    /*
+     * ============================================================
+     * CONFIGURAÇÃO DO TIPO DE INTERAÇÃO
+     * ============================================================
+     */
+
+    function obterConfiguracaoTipo(
+        tipo,
+        negociacaoAtual = negociacaoSelecionada
+    ) {
+        const tipos =
+            obterInteracoesPermitidas(
+                negociacaoAtual
+            );
+
+        const tipoNormalizado =
+            String(tipo || '')
+                .trim()
+                .toUpperCase();
+
+        return (
+            tipos.find(
+                (item) =>
+                    item.tipo ===
+                    tipoNormalizado
+            ) || null
+        );
+    }
+
+
+    /*
+     * ============================================================
      * FORMULÁRIO
      * ============================================================
      */
 
-    function limparFormulario() {
+    function limparFormulario(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
         setMensagem('');
         setValorProposto('');
-        setTipoResposta('DUVIDA');
+
+        const tipos =
+            obterInteracoesPermitidas(
+                negociacaoAtual
+            );
+
+        if (
+            tipos.length > 0 &&
+            tipos[0]?.tipo
+        ) {
+            setTipoResposta(
+                String(
+                    tipos[0].tipo
+                ).toUpperCase()
+            );
+        } else {
+            setTipoResposta('');
+        }
     }
 
 
@@ -127,7 +314,9 @@ export default function TrabalhosNegociacaoModal({
      * ============================================================
      */
 
-    function obterCodigoStatus(negociacaoAtual) {
+    function obterCodigoStatus(
+        negociacaoAtual
+    ) {
         if (!negociacaoAtual) {
             return null;
         }
@@ -136,17 +325,23 @@ export default function TrabalhosNegociacaoModal({
             typeof negociacaoAtual.status ===
             'string'
         ) {
-            return negociacaoAtual.status;
+            return negociacaoAtual.status
+                .trim()
+                .toUpperCase();
         }
 
         return (
-            negociacaoAtual.status?.codigo ||
+            negociacaoAtual.status?.codigo
+                ?.trim()
+                ?.toUpperCase() ||
             null
         );
     }
 
 
-    function obterNomeStatus(negociacaoAtual) {
+    function obterNomeStatus(
+        negociacaoAtual
+    ) {
         if (!negociacaoAtual) {
             return 'Não informado';
         }
@@ -194,8 +389,13 @@ export default function TrabalhosNegociacaoModal({
                 'Cancelada',
         };
 
+        const codigo =
+            typeof status === 'string'
+                ? status.trim().toUpperCase()
+                : status;
+
         return (
-            statusMap[status] ||
+            statusMap[codigo] ||
             status ||
             'Não informado'
         );
@@ -257,13 +457,29 @@ export default function TrabalhosNegociacaoModal({
 
     function formatarTipo(tipo) {
         const tipos = {
-            INTERESSE: 'Interesse',
-            PROPOSTA: 'Proposta',
-            DUVIDA: 'Dúvida',
+            INTERESSE:
+                'Interesse',
+
+            PROPOSTA:
+                'Proposta',
+
+            DUVIDA:
+                'Dúvida',
+
+            RESPOSTA:
+                'Resposta',
+
+            ACEITE:
+                'Aceite',
         };
 
+        const tipoNormalizado =
+            typeof tipo === 'string'
+                ? tipo.trim().toUpperCase()
+                : tipo;
+
         return (
-            tipos[tipo] ||
+            tipos[tipoNormalizado] ||
             tipo ||
             'Interação'
         );
@@ -276,129 +492,129 @@ export default function TrabalhosNegociacaoModal({
      * ============================================================
      */
 
-    function obterUltimaInteracao() {
+    function obterInteracoes(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
         const interacoes =
-            negociacaoSelecionada?.interacoes ||
-            [];
+            negociacaoAtual?.interacoes;
+
+        if (Array.isArray(interacoes)) {
+            return interacoes;
+        }
+
+        if (
+            Array.isArray(
+                interacoes?.data
+            )
+        ) {
+            return interacoes.data;
+        }
+
+        return [];
+    }
+
+
+    function obterUltimaInteracao(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
+        const interacoes =
+            obterInteracoes(
+                negociacaoAtual
+            );
 
         if (interacoes.length === 0) {
             return null;
         }
 
+        /*
+         * Ordena por created_at para não depender
+         * da ordem enviada pelo backend.
+         */
+        const ordenadas = [
+            ...interacoes,
+        ].sort(
+            (a, b) => {
+                const dataA =
+                    new Date(
+                        a?.interacao?.created_at ||
+                        a?.created_at ||
+                        0
+                    ).getTime();
+
+                const dataB =
+                    new Date(
+                        b?.interacao?.created_at ||
+                        b?.created_at ||
+                        0
+                    ).getTime();
+
+                return dataA - dataB;
+            }
+        );
+
         return (
-            interacoes[
-                interacoes.length - 1
-            ]
+            ordenadas[
+                ordenadas.length - 1
+            ] || null
         );
     }
 
 
-    function obterTipoUltimaInteracao() {
+    function obterTipoUltimaInteracao(
+        negociacaoAtual = negociacaoSelecionada
+    ) {
+        /*
+         * Primeiro confia no contexto enviado pelo backend.
+         */
+        const ultimaInformada =
+            negociacaoAtual
+                ?.contexto
+                ?.ultima_interacao;
+
+        if (
+            typeof ultimaInformada ===
+            'string'
+        ) {
+            return ultimaInformada
+                .trim()
+                .toUpperCase();
+        }
+
+        if (
+            ultimaInformada &&
+            typeof ultimaInformada ===
+            'object' &&
+            ultimaInformada.tipo
+        ) {
+            return String(
+                ultimaInformada.tipo
+            )
+                .trim()
+                .toUpperCase();
+        }
+
+        /*
+         * Fallback para o histórico.
+         */
         const ultima =
-            obterUltimaInteracao();
-
-        return (
-            ultima
-                ?.interacao
-                ?.tipo
-                ?.tipo ||
-            null
-        );
-    }
-
-
-    /*
-     * ============================================================
-     * REGRAS DO INTERESSADO
-     * ============================================================
-     *
-     * O interessado somente pode agir quando:
-     *
-     * AGUARDANDO_INTERESSADO
-     *
-     * Quando recebe uma PROPOSTA:
-     *
-     * - aceitar
-     * - recusar
-     * - nova proposta
-     * - dúvida
-     *
-     * Quando recebe uma DÚVIDA:
-     *
-     * - responder dúvida
-     *
-     * Quando a última interação for INTERESSE:
-     *
-     * - não há nova ação
-     *
-     * ============================================================
-     */
-
-    function podeResponder() {
-        if (!negociacaoSelecionada) {
-            return false;
-        }
-
-        return (
-            obterCodigoStatus(
-                negociacaoSelecionada
-            ) ===
-            'AGUARDANDO_INTERESSADO'
-        );
-    }
-
-
-    function obterAcoesDisponiveis() {
-        if (!podeResponder()) {
-            return {
-                aceitar: false,
-                recusar: false,
-                responder: false,
-            };
-        }
+            obterUltimaInteracao(
+                negociacaoAtual
+            );
 
         const tipo =
-            obterTipoUltimaInteracao();
+            ultima?.interacao?.tipo?.tipo ||
+            ultima?.tipo?.tipo ||
+            ultima?.interacao?.tipo ||
+            ultima?.tipo ||
+            null;
 
-        /*
-         * O contratante enviou uma proposta.
-         */
-        if (tipo === 'PROPOSTA') {
-            return {
-                aceitar: true,
-                recusar: true,
-                responder: true,
-            };
+        if (!tipo) {
+            return null;
         }
 
-        /*
-         * O contratante enviou uma dúvida.
-         */
-        if (tipo === 'DUVIDA') {
-            return {
-                aceitar: false,
-                recusar: false,
-                responder: true,
-            };
-        }
-
-        /*
-         * Interesse não gera nova ação
-         * para o próprio interessado.
-         */
-        if (tipo === 'INTERESSE') {
-            return {
-                aceitar: false,
-                recusar: false,
-                responder: false,
-            };
-        }
-
-        return {
-            aceitar: false,
-            recusar: false,
-            responder: false,
-        };
+        return String(tipo)
+            .trim()
+            .toUpperCase();
     }
 
 
@@ -423,7 +639,7 @@ export default function TrabalhosNegociacaoModal({
 
         setNegociacaoSelecionada(dados);
 
-        limparFormulario();
+        limparFormulario(dados);
     }
 
 
@@ -438,6 +654,19 @@ export default function TrabalhosNegociacaoModal({
             !negociacaoSelecionada ||
             processando
         ) {
+            return;
+        }
+
+        const acoes =
+            obterAcoes(
+                negociacaoSelecionada
+            );
+
+        if (!acoes.aceitar) {
+            setErro(
+                'Você não pode aceitar esta negociação neste momento.'
+            );
+
             return;
         }
 
@@ -481,6 +710,19 @@ export default function TrabalhosNegociacaoModal({
             return;
         }
 
+        const acoes =
+            obterAcoes(
+                negociacaoSelecionada
+            );
+
+        if (!acoes.recusar) {
+            setErro(
+                'Você não pode recusar esta negociação neste momento.'
+            );
+
+            return;
+        }
+
         const confirmar =
             window.confirm(
                 'Deseja recusar esta negociação?'
@@ -518,7 +760,7 @@ export default function TrabalhosNegociacaoModal({
 
     /*
      * ============================================================
-     * RESPONDER
+     * RESPONDER / INTERAGIR
      * ============================================================
      */
 
@@ -530,16 +772,73 @@ export default function TrabalhosNegociacaoModal({
             return;
         }
 
-        if (!mensagem.trim()) {
+        setErro('');
+
+        const acoes =
+            obterAcoes(
+                negociacaoSelecionada
+            );
+
+        if (!acoes.interagir) {
             setErro(
-                'Digite uma mensagem para responder.'
+                'Você não pode interagir com esta negociação neste momento.'
+            );
+
+            return;
+        }
+
+        const tipo =
+            String(
+                tipoResposta || ''
+            )
+                .trim()
+                .toUpperCase();
+
+        if (!tipo) {
+            setErro(
+                'Selecione o tipo de interação.'
+            );
+
+            return;
+        }
+
+        /*
+         * Confirma que o tipo escolhido está entre
+         * as opções realmente liberadas pelo backend.
+         */
+        const configuracao =
+            obterConfiguracaoTipo(
+                tipo,
+                negociacaoSelecionada
+            );
+
+        if (!configuracao) {
+            setErro(
+                'Este tipo de interação não está disponível para esta negociação.'
+            );
+
+            return;
+        }
+
+        const mensagemObrigatoria =
+            configuracao.mensagem_obrigatoria === true;
+
+        const valorObrigatorio =
+            configuracao.valor_obrigatorio === true;
+
+        if (
+            mensagemObrigatoria &&
+            !mensagem.trim()
+        ) {
+            setErro(
+                'Digite uma mensagem para continuar.'
             );
 
             return;
         }
 
         if (
-            tipoResposta === 'PROPOSTA' &&
+            valorObrigatorio &&
             (
                 valorProposto === '' ||
                 Number(valorProposto) <= 0
@@ -554,16 +853,20 @@ export default function TrabalhosNegociacaoModal({
 
         try {
             setProcessando(true);
-            setErro('');
 
             const dados = {
-                tipo: tipoResposta,
-                mensagem: mensagem.trim(),
+                tipo,
+                mensagem:
+                    mensagem.trim() || null,
             };
 
+            /*
+             * Envia valor somente quando a configuração
+             * do backend indicar que ele é necessário.
+             */
             if (
-                tipoResposta ===
-                'PROPOSTA'
+                valorObrigatorio ||
+                tipo === 'PROPOSTA'
             ) {
                 dados.valor_proposto =
                     Number(valorProposto);
@@ -584,7 +887,7 @@ export default function TrabalhosNegociacaoModal({
 
             setErro(
                 error?.response?.data?.message ||
-                'Não foi possível enviar a resposta.'
+                'Não foi possível enviar a interação.'
             );
         } finally {
             setProcessando(false);
@@ -594,15 +897,29 @@ export default function TrabalhosNegociacaoModal({
 
     /*
      * ============================================================
-     * AÇÕES DISPONÍVEIS
+     * DADOS PARA RENDERIZAÇÃO
      * ============================================================
      */
 
+    const contexto =
+        obterContexto(
+            negociacaoSelecionada
+        );
+
     const acoes =
-        obterAcoesDisponiveis();
+        obterAcoes(
+            negociacaoSelecionada
+        );
+
+    const tiposPermitidos =
+        obterInteracoesPermitidas(
+            negociacaoSelecionada
+        );
 
     const tipoUltimaInteracao =
-        obterTipoUltimaInteracao();
+        obterTipoUltimaInteracao(
+            negociacaoSelecionada
+        );
 
 
     /*
@@ -835,10 +1152,8 @@ export default function TrabalhosNegociacaoModal({
                                     </h3>
 
 
-                                    {(
+                                    {obterInteracoes(
                                         negociacaoSelecionada
-                                            .interacoes ||
-                                        []
                                     ).length === 0 ? (
 
                                         <p className="negociacao-sem-interacoes">
@@ -847,21 +1162,22 @@ export default function TrabalhosNegociacaoModal({
 
                                     ) : (
 
-                                        (
+                                        obterInteracoes(
                                             negociacaoSelecionada
-                                                .interacoes ||
-                                            []
                                         ).map(
                                             (item) => {
 
                                                 const interacao =
-                                                    item.interacao;
+                                                    item?.interacao ||
+                                                    item;
 
                                                 return (
 
                                                     <article
                                                         key={
-                                                            item.id_negociacao_interacao
+                                                            item?.id_negociacao_interacao ||
+                                                            interacao?.id_interacao ||
+                                                            Math.random()
                                                         }
                                                         className="negociacao-interacao"
                                                     >
@@ -895,6 +1211,8 @@ export default function TrabalhosNegociacaoModal({
                                                             {formatarTipo(
                                                                 interacao
                                                                     ?.tipo
+                                                                    ?.tipo ||
+                                                                interacao
                                                                     ?.tipo
                                                             )}
 
@@ -952,14 +1270,16 @@ export default function TrabalhosNegociacaoModal({
 
                             {(acoes.aceitar ||
                                 acoes.recusar ||
-                                acoes.responder) && (
+                                acoes.interagir) && (
 
                                 <div className="negociacao-acoes">
 
                                     <div className="negociacao-acoes-titulo">
 
                                         <h3>
-                                            Sua vez
+                                            {contexto?.pode_agir
+                                                ? 'Sua vez'
+                                                : 'Ações disponíveis'}
                                         </h3>
 
                                         <span>
@@ -1028,10 +1348,11 @@ export default function TrabalhosNegociacaoModal({
 
 
                                     {/* ==================================================
-                                        RESPOSTA
+                                        INTERAÇÃO
                                     ================================================== */}
 
-                                    {acoes.responder && (
+                                    {acoes.interagir &&
+                                        tiposPermitidos.length > 0 && (
 
                                         <div className="negociacao-resposta">
 
@@ -1041,9 +1362,8 @@ export default function TrabalhosNegociacaoModal({
                                                 <div className="negociacao-resposta-aviso">
 
                                                     O contratante enviou uma proposta.
-                                                    Você pode aceitar, recusar,
-                                                    enviar uma nova proposta
-                                                    ou tirar uma dúvida.
+                                                    As opções disponíveis foram definidas
+                                                    pela negociação.
 
                                                 </div>
 
@@ -1056,8 +1376,23 @@ export default function TrabalhosNegociacaoModal({
                                                 <div className="negociacao-resposta-aviso">
 
                                                     O contratante enviou uma dúvida.
-                                                    Envie uma resposta para continuar
-                                                    a negociação.
+                                                    Escolha uma das opções disponíveis
+                                                    para continuar a negociação.
+
+                                                </div>
+
+                                            )}
+
+
+                                            {tipoUltimaInteracao ===
+                                                'RESPOSTA' && (
+
+                                                <div className="negociacao-resposta-aviso">
+
+                                                    O contratante respondeu à sua
+                                                    interação. Você pode continuar
+                                                    a negociação usando as opções
+                                                    disponíveis abaixo.
 
                                                 </div>
 
@@ -1068,7 +1403,7 @@ export default function TrabalhosNegociacaoModal({
 
                                                 <label htmlFor="tipo-resposta-interessado">
 
-                                                    Tipo da resposta
+                                                    Tipo da interação
 
                                                 </label>
 
@@ -1082,13 +1417,26 @@ export default function TrabalhosNegociacaoModal({
                                                         event
                                                     ) => {
 
+                                                        const novoTipo =
+                                                            event.target.value;
+
                                                         setTipoResposta(
-                                                            event.target.value
+                                                            novoTipo
                                                         );
 
+                                                        const configuracao =
+                                                            obterConfiguracaoTipo(
+                                                                novoTipo,
+                                                                negociacaoSelecionada
+                                                            );
+
+                                                        /*
+                                                         * Se o novo tipo não usa
+                                                         * valor, limpamos o valor anterior.
+                                                         */
                                                         if (
-                                                            event.target.value !==
-                                                            'PROPOSTA'
+                                                            !configuracao?.valor_obrigatorio &&
+                                                            novoTipo !== 'PROPOSTA'
                                                         ) {
                                                             setValorProposto('');
                                                         }
@@ -1101,100 +1449,161 @@ export default function TrabalhosNegociacaoModal({
                                                     }
                                                 >
 
-                                                    {tipoUltimaInteracao ===
-                                                        'PROPOSTA' && (
+                                                    {tiposPermitidos.map(
+                                                        (item) => (
 
-                                                        <option value="PROPOSTA">
-                                                            Nova proposta
-                                                        </option>
+                                                            <option
+                                                                key={
+                                                                    item.tipo
+                                                                }
+                                                                value={
+                                                                    item.tipo
+                                                                }
+                                                            >
+                                                                {item.tipo ===
+                                                                    'INTERESSE'
+                                                                    ? 'Demonstrar interesse'
+                                                                    : item.tipo ===
+                                                                        'PROPOSTA'
+                                                                        ? 'Enviar proposta'
+                                                                        : item.tipo ===
+                                                                            'DUVIDA'
+                                                                            ? 'Nova dúvida'
+                                                                            : item.tipo ===
+                                                                                'RESPOSTA'
+                                                                                ? 'Responder dúvida'
+                                                                                : formatarTipo(
+                                                                                    item.tipo
+                                                                                )}
+                                                            </option>
 
+                                                        )
                                                     )}
-
-                                                    <option value="DUVIDA">
-                                                        Dúvida
-                                                    </option>
 
                                                 </select>
 
                                             </div>
 
 
-                                            {tipoResposta ===
-                                                'PROPOSTA' && (
+                                            {(() => {
+                                                const configuracao =
+                                                    obterConfiguracaoTipo(
+                                                        tipoResposta,
+                                                        negociacaoSelecionada
+                                                    );
 
-                                                <div className="negociacao-form-grupo">
+                                                const mostrarValor =
+                                                    tipoResposta ===
+                                                        'PROPOSTA' ||
+                                                    configuracao
+                                                        ?.campos
+                                                        ?.valor_proposto
+                                                        ?.visivel === true ||
+                                                    configuracao
+                                                        ?.valor_obrigatorio === true;
 
-                                                    <label htmlFor="valor-proposto-interessado">
+                                                if (!mostrarValor) {
+                                                    return null;
+                                                }
 
-                                                        Novo valor
+                                                return (
 
-                                                    </label>
+                                                    <div className="negociacao-form-grupo">
 
+                                                        <label htmlFor="valor-proposto-interessado">
 
-                                                    <input
-                                                        id="valor-proposto-interessado"
-                                                        type="number"
-                                                        min="0.01"
-                                                        step="0.01"
-                                                        value={
-                                                            valorProposto
-                                                        }
-                                                        onChange={(
-                                                            event
-                                                        ) => {
+                                                            Novo valor
 
-                                                            setValorProposto(
-                                                                event.target.value
-                                                            );
-
-                                                            setErro('');
-
-                                                        }}
-                                                        placeholder="R$ 0,00"
-                                                        disabled={
-                                                            processando
-                                                        }
-                                                    />
-
-                                                </div>
-
-                                            )}
+                                                        </label>
 
 
-                                            <div className="negociacao-form-grupo">
+                                                        <input
+                                                            id="valor-proposto-interessado"
+                                                            type="number"
+                                                            min="0.01"
+                                                            step="0.01"
+                                                            value={
+                                                                valorProposto
+                                                            }
+                                                            onChange={(
+                                                                event
+                                                            ) => {
 
-                                                <label htmlFor="mensagem-resposta-interessado">
+                                                                setValorProposto(
+                                                                    event.target.value
+                                                                );
 
-                                                    Mensagem
+                                                                setErro('');
 
-                                                </label>
+                                                            }}
+                                                            placeholder="R$ 0,00"
+                                                            disabled={
+                                                                processando
+                                                            }
+                                                        />
+
+                                                    </div>
+
+                                                );
+                                            })()}
 
 
-                                                <textarea
-                                                    id="mensagem-resposta-interessado"
-                                                    value={
-                                                        mensagem
-                                                    }
-                                                    onChange={(
-                                                        event
-                                                    ) => {
+                                            {(() => {
+                                                const configuracao =
+                                                    obterConfiguracaoTipo(
+                                                        tipoResposta,
+                                                        negociacaoSelecionada
+                                                    );
 
-                                                        setMensagem(
-                                                            event.target.value
-                                                        );
+                                                const mostrarMensagem =
+                                                    configuracao
+                                                        ?.campos
+                                                        ?.mensagem
+                                                        ?.visivel !== false;
 
-                                                        setErro('');
+                                                if (!mostrarMensagem) {
+                                                    return null;
+                                                }
 
-                                                    }}
-                                                    placeholder="Digite sua resposta..."
-                                                    rows="4"
-                                                    maxLength="5000"
-                                                    disabled={
-                                                        processando
-                                                    }
-                                                />
+                                                return (
 
-                                            </div>
+                                                    <div className="negociacao-form-grupo">
+
+                                                        <label htmlFor="mensagem-resposta-interessado">
+
+                                                            Mensagem
+
+                                                        </label>
+
+
+                                                        <textarea
+                                                            id="mensagem-resposta-interessado"
+                                                            value={
+                                                                mensagem
+                                                            }
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+
+                                                                setMensagem(
+                                                                    event.target.value
+                                                                );
+
+                                                                setErro('');
+
+                                                            }}
+                                                            placeholder="Digite sua resposta..."
+                                                            rows="4"
+                                                            maxLength="5000"
+                                                            disabled={
+                                                                processando
+                                                            }
+                                                        />
+
+                                                    </div>
+
+                                                );
+                                            })()}
 
 
                                             <button
@@ -1204,12 +1613,13 @@ export default function TrabalhosNegociacaoModal({
                                                     handleResponder
                                                 }
                                                 disabled={
-                                                    processando
+                                                    processando ||
+                                                    !tipoResposta
                                                 }
                                             >
                                                 {processando
                                                     ? 'Enviando...'
-                                                    : 'Enviar resposta'}
+                                                    : 'Enviar interação'}
                                             </button>
 
                                         </div>
@@ -1227,7 +1637,7 @@ export default function TrabalhosNegociacaoModal({
 
                             {!acoes.aceitar &&
                                 !acoes.recusar &&
-                                !acoes.responder && (
+                                !acoes.interagir && (
 
                                     <div className="negociacao-sem-acoes">
 
@@ -1241,6 +1651,28 @@ export default function TrabalhosNegociacaoModal({
                                             A negociação pode ser visualizada,
                                             mas não há ações disponíveis
                                             para você neste momento.
+                                        </span>
+
+                                    </div>
+
+                                )}
+
+
+                            {acoes.interagir &&
+                                tiposPermitidos.length === 0 && (
+
+                                    <div className="negociacao-sem-acoes">
+
+                                        <strong>
+                                            {obterNomeStatus(
+                                                negociacaoSelecionada
+                                            )}
+                                        </strong>
+
+                                        <span>
+                                            A negociação permite interação,
+                                            mas nenhuma opção de interação
+                                            foi informada pelo servidor.
                                         </span>
 
                                     </div>

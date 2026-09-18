@@ -111,8 +111,31 @@
                     "Negociações"
                 ],
                 "summary": "Lista as negociações do usuário autenticado",
-                "description": "Retorna as negociações em que o usuário participa como interessado ou contratante.",
+                "description": "Retorna as negociações em que o usuário participa como interessado ou contratante, incluindo as ações disponíveis para o usuário.",
                 "operationId": "e5946a1778f9dff10056a3d6597e1e81",
+                "responses": {
+                    "200": {
+                        "description": "Lista de negociações"
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/negociacoes/meus": {
+            "get": {
+                "tags": [
+                    "Negociações"
+                ],
+                "summary": "Lista minhas negociações",
+                "description": "Retorna somente as negociações em que o usuário autenticado é interessado.",
+                "operationId": "2b53870e5f415c0211bf693c91181b76",
                 "responses": {
                     "200": {
                         "description": "Lista de negociações"
@@ -134,7 +157,7 @@
                     "Negociações"
                 ],
                 "summary": "Exibe uma negociação",
-                "description": "Retorna a negociação e todo o histórico de interações entre os participantes.",
+                "description": "Retorna a negociação completa, histórico e ações disponíveis para o usuário autenticado.",
                 "operationId": "80a3499ec119ef1b1c953031b39a7e94",
                 "parameters": [
                     {
@@ -172,7 +195,7 @@
                     "Negociações"
                 ],
                 "summary": "Inicia uma negociação com uma publicação",
-                "description": "Cria a primeira interação do usuário com uma publicação e cria automaticamente uma negociação. Não permite iniciar uma nova negociação quando já existe uma negociação FECHADA para a publicação.",
+                "description": "Cria a primeira interação e cria automaticamente a negociação.",
                 "operationId": "b429f8cca8ceedebbf7a3d793de9a25d",
                 "parameters": [
                     {
@@ -196,7 +219,6 @@
                                 ],
                                 "properties": {
                                     "tipo": {
-                                        "description": "Tipo da primeira interação",
                                         "type": "string",
                                         "example": "PROPOSTA",
                                         "enum": [
@@ -206,13 +228,10 @@
                                         ]
                                     },
                                     "mensagem": {
-                                        "description": "Mensagem da interação",
                                         "type": "string",
-                                        "example": "Consigo realizar o serviço por este valor.",
                                         "nullable": true
                                     },
                                     "valor_proposto": {
-                                        "description": "Valor da proposta. Obrigatório quando o tipo for PROPOSTA.",
                                         "type": "number",
                                         "format": "float",
                                         "example": 320,
@@ -226,16 +245,16 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Negociação criada com sucesso"
+                        "description": "Negociação criada"
                     },
                     "401": {
                         "description": "Usuário não autenticado"
                     },
                     "403": {
-                        "description": "Usuário não pode interagir com esta publicação"
+                        "description": "Usuário não pode interagir"
                     },
                     "422": {
-                        "description": "Dados inválidos, negociação já existente ou a publicação já possui uma negociação fechada"
+                        "description": "Dados inválidos"
                     }
                 },
                 "security": [
@@ -250,8 +269,8 @@
                 "tags": [
                     "Negociações"
                 ],
-                "summary": "Recusa uma manifestação de interesse ou proposta",
-                "description": "Interações do tipo INTERESSE ou PROPOSTA podem ser recusadas diretamente. DUVIDA deve ser respondida com uma nova interação.",
+                "summary": "Adiciona uma nova interação",
+                "description": "Adiciona uma interação respeitando as regras da negociação.",
                 "operationId": "c579e8e628506baa8e04fe987b9625aa",
                 "parameters": [
                     {
@@ -260,8 +279,7 @@
                         "description": "ID da negociação",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 1
+                            "type": "integer"
                         }
                     }
                 ],
@@ -275,26 +293,21 @@
                                 ],
                                 "properties": {
                                     "tipo": {
-                                        "description": "Tipo da nova interação. O tipo permitido depende da última interação da negociação.",
                                         "type": "string",
-                                        "example": "PROPOSTA",
                                         "enum": [
                                             "INTERESSE",
                                             "PROPOSTA",
-                                            "DUVIDA"
+                                            "DUVIDA",
+                                            "RESPOSTA"
                                         ]
                                     },
                                     "mensagem": {
-                                        "description": "Mensagem da interação",
                                         "type": "string",
-                                        "example": "Consigo fazer por R$ 340.",
                                         "nullable": true
                                     },
                                     "valor_proposto": {
-                                        "description": "Valor da nova proposta. Obrigatório quando o tipo for PROPOSTA.",
                                         "type": "number",
                                         "format": "float",
-                                        "example": 340,
                                         "nullable": true
                                     }
                                 },
@@ -305,13 +318,13 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Interação enviada com sucesso"
+                        "description": "Interação enviada"
                     },
                     "403": {
-                        "description": "Usuário não participa da negociação"
+                        "description": "Usuário não participa"
                     },
                     "422": {
-                        "description": "Não é a vez do usuário, o tipo de interação não é permitido para o estado atual da negociação ou os dados são inválidos"
+                        "description": "Interação não permitida"
                     }
                 },
                 "security": [
@@ -327,7 +340,7 @@
                     "Negociações"
                 ],
                 "summary": "Aceita a última interação",
-                "description": "Somente o contratante pode aceitar. INTERESSE e PROPOSTA podem ser aceitos quando a última interação foi enviada pelo interessado. DUVIDA não pode ser aceita diretamente e deve ser respondida. Ao fechar uma negociação, as demais negociações abertas da mesma publicação são encerradas.",
+                "description": "Aceita uma manifestação de interesse ou proposta recebida.",
                 "operationId": "4e7e488352cb180fee4e99c64063fc4c",
                 "parameters": [
                     {
@@ -336,17 +349,16 @@
                         "description": "ID da negociação",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 1
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Negociação fechada com sucesso"
+                        "description": "Interação aceita"
                     },
                     "403": {
-                        "description": "Usuário não participa da negociação ou não é o contratante"
+                        "description": "Usuário não pode aceitar"
                     },
                     "422": {
                         "description": "Negociação não pode ser aceita"
@@ -364,9 +376,46 @@
                 "tags": [
                     "Negociações"
                 ],
-                "summary": "Recusa uma manifestação de interesse",
-                "description": "Somente uma interação do tipo INTERESSE pode ser recusada diretamente. PROPOSTA deve ser aceita ou respondida com uma nova proposta. DUVIDA deve ser respondida com uma nova interação.",
+                "summary": "Recusa a última interação",
+                "description": "Recusa uma manifestação de interesse ou proposta recebida.",
                 "operationId": "9917306ca9457f9c9d0e1b45733aa130",
+                "parameters": [
+                    {
+                        "name": "negociacao",
+                        "in": "path",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Negociação encerrada"
+                    },
+                    "403": {
+                        "description": "Usuário não pode recusar"
+                    },
+                    "422": {
+                        "description": "Interação não pode ser recusada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/negociacoes/{negociacao}/pagamento": {
+            "get": {
+                "tags": [
+                    "Negociações - Pagamentos"
+                ],
+                "summary": "Exibe o pagamento da negociação",
+                "description": "Retorna os dados do pagamento vinculado à negociação.",
+                "operationId": "0891f652ebc0318e06e9e5714994ac9e",
                 "parameters": [
                     {
                         "name": "negociacao",
@@ -381,13 +430,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Negociação encerrada com sucesso"
+                        "description": "Pagamento encontrado"
                     },
                     "403": {
                         "description": "Usuário não participa da negociação"
                     },
-                    "422": {
-                        "description": "A interação não pode ser recusada"
+                    "404": {
+                        "description": "Pagamento não encontrado"
                     }
                 },
                 "security": [
@@ -395,6 +444,95 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/negociacoes/{negociacao}/pagamento/informar": {
+            "post": {
+                "tags": [
+                    "Negociações - Pagamentos"
+                ],
+                "summary": "Informa que o pagamento foi realizado",
+                "description": "Permite ao contratante informar que realizou o pagamento. O pagamento passa para AGUARDANDO_PROCESSAMENTO e a negociação para PROCESSANDO_PAGAMENTO.",
+                "operationId": "97fe5c02a31366dfb0e7cc1c44dbedb3",
+                "parameters": [
+                    {
+                        "name": "negociacao",
+                        "in": "path",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "observacao": {
+                                        "description": "Observação opcional sobre o pagamento.",
+                                        "type": "string",
+                                        "example": "Pagamento realizado via Pix.",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pagamento informado com sucesso"
+                    },
+                    "403": {
+                        "description": "Somente o contratante pode informar o pagamento"
+                    },
+                    "422": {
+                        "description": "Pagamento não pode ser informado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/negociacoes/{negociacao}/pagamento/confirmar": {
+            "post": {
+                "tags": [
+                    "Negociações - Pagamentos"
+                ],
+                "summary": "Confirma o pagamento pela plataforma",
+                "description": "Confirma, para fins de demonstração, que o pagamento foi identificado e validado. A negociação passa para FECHADA, a publicação passa para ENCERRADO, as demais negociações da mesma publicação são encerradas e um trabalho é criado para o contratado.",
+                "operationId": "8959dec15a65a52fa73ff8e208b50931",
+                "parameters": [
+                    {
+                        "name": "negociacao",
+                        "in": "path",
+                        "description": "ID da negociação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pagamento validado, negociação fechada, publicação encerrada e trabalho criado"
+                    },
+                    "404": {
+                        "description": "Pagamento ou status não encontrado"
+                    },
+                    "422": {
+                        "description": "Pagamento não está aguardando processamento"
+                    }
+                }
             }
         },
         "/api/publicacoes": {
@@ -567,7 +705,7 @@
                     "Publicações"
                 ],
                 "summary": "Atualiza uma publicação do usuário autenticado",
-                "description": "Atualiza os dados da publicação. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.",
+                "description": "Atualiza os dados da publicação. O status não pode ser alterado através deste endpoint. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.",
                 "operationId": "463d90bd10e9ef6779cb03655246db1b",
                 "parameters": [
                     {
@@ -629,14 +767,6 @@
                                         "type": "string",
                                         "format": "date",
                                         "example": "2026-09-20"
-                                    },
-                                    "status": {
-                                        "type": "string",
-                                        "example": "ENCERRADO",
-                                        "enum": [
-                                            "ATIVO",
-                                            "ENCERRADO"
-                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -710,6 +840,234 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/trabalhos/contratacoes": {
+            "get": {
+                "tags": [
+                    "Trabalhos"
+                ],
+                "summary": "Lista trabalhos contratados pelo usuário",
+                "description": "Retorna os trabalhos em que o usuário autenticado é o contratante.",
+                "operationId": "05cc069494050b329fd827e5cdcf0a10",
+                "responses": {
+                    "200": {
+                        "description": "Lista de trabalhos contratados"
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/trabalhos/meus": {
+            "get": {
+                "tags": [
+                    "Trabalhos"
+                ],
+                "summary": "Lista trabalhos em que o usuário foi contratado",
+                "description": "Retorna os trabalhos em que o usuário autenticado é o contratado.",
+                "operationId": "f03135babf16aa2779d943b9d12efe58",
+                "responses": {
+                    "200": {
+                        "description": "Lista de trabalhos do contratado"
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/trabalhos/{trabalho}/interacoes": {
+            "post": {
+                "tags": [
+                    "Trabalhos"
+                ],
+                "summary": "Interage com um trabalho",
+                "description": "Permite ao contratado concluir ou desistir e ao contratante confirmar, contestar ou desistir conforme o status atual do trabalho.",
+                "operationId": "ea911a03a93e800e791b92621c1689b2",
+                "parameters": [
+                    {
+                        "name": "trabalho",
+                        "in": "path",
+                        "description": "ID do trabalho",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_interacao_tipo"
+                                ],
+                                "properties": {
+                                    "id_interacao_tipo": {
+                                        "description": "ID do tipo de interação. O tipo precisa pertencer ao contexto TRABALHO.",
+                                        "type": "integer",
+                                        "example": 6,
+                                        "enum": [
+                                            6,
+                                            7,
+                                            8,
+                                            9,
+                                            10
+                                        ]
+                                    },
+                                    "mensagem": {
+                                        "type": "string",
+                                        "example": "Serviço concluído conforme combinado.",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Interação registrada"
+                    },
+                    "403": {
+                        "description": "Usuário não autorizado"
+                    },
+                    "422": {
+                        "description": "Interação não permitida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/trabalhos/{trabalho}/pagamento": {
+            "get": {
+                "tags": [
+                    "Trabalhos - Pagamentos"
+                ],
+                "summary": "Consulta o pagamento do trabalho",
+                "description": "Retorna o pagamento atual e o histórico de pagamentos relacionados ao trabalho.",
+                "operationId": "d713416018ef0590f95056322866f927",
+                "parameters": [
+                    {
+                        "name": "trabalho",
+                        "in": "path",
+                        "description": "ID do trabalho",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pagamentos encontrados"
+                    },
+                    "403": {
+                        "description": "Usuário não participa do trabalho"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/trabalhos/{trabalho}/pagamento/confirmar": {
+            "post": {
+                "tags": [
+                    "Trabalhos - Pagamentos"
+                ],
+                "summary": "Confirma o pagamento do trabalho",
+                "description": "Confirma, para fins de demonstração, que a plataforma realizou o pagamento ao contratado.",
+                "operationId": "c3235962feb4a719896497bee9b57cea",
+                "parameters": [
+                    {
+                        "name": "trabalho",
+                        "in": "path",
+                        "description": "ID do trabalho",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pagamento confirmado"
+                    },
+                    "422": {
+                        "description": "Pagamento não pode ser confirmado"
+                    }
+                }
+            }
+        },
+        "/api/trabalhos/{trabalho}/pagamento/recusar": {
+            "post": {
+                "tags": [
+                    "Trabalhos - Pagamentos"
+                ],
+                "summary": "Recusa o pagamento do trabalho",
+                "description": "Recusa, para fins de demonstração, o processamento do pagamento ao contratado.",
+                "operationId": "aceb77689637aaecdf8b6368e2c8f49c",
+                "parameters": [
+                    {
+                        "name": "trabalho",
+                        "in": "path",
+                        "description": "ID do trabalho",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "observacao": {
+                                        "type": "string",
+                                        "example": "Pagamento recusado para análise da plataforma.",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pagamento recusado"
+                    },
+                    "422": {
+                        "description": "Pagamento não pode ser recusado"
+                    }
+                }
             }
         },
         "/api/users-categorias/categorias": {
@@ -1028,8 +1386,20 @@
             "description": "Negociações"
         },
         {
+            "name": "Negociações - Pagamentos",
+            "description": "Negociações - Pagamentos"
+        },
+        {
             "name": "Publicações",
             "description": "Publicações"
+        },
+        {
+            "name": "Trabalhos",
+            "description": "Trabalhos"
+        },
+        {
+            "name": "Trabalhos - Pagamentos",
+            "description": "Trabalhos - Pagamentos"
         },
         {
             "name": "Usuário-Categorias",

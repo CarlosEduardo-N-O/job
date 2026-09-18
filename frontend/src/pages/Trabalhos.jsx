@@ -4,18 +4,27 @@ import {
     getMinhasNegociacoes,
 } from '../services/negociacaoService';
 
+import {
+    getMeusTrabalhos,
+} from '../services/trabalhoService';
+
 import TrabalhosNegociacaoModal
     from '../components/TrabalhosNegociacaoModal';
+
+import TrabalhoCard
+    from '../components/TrabalhoCard';
 
 import '../styles/contratacoes.css';
 
 export default function Trabalhos() {
 
+    /* ============================================================
+       NEGOCIAÇÕES
+       Mantido o funcionamento original
+       ============================================================ */
+
     const [negociacoes, setNegociacoes] =
         useState([]);
-
-    const [aba, setAba] =
-        useState('negociacoes');
 
     const [carregando, setCarregando] =
         useState(true);
@@ -29,10 +38,59 @@ export default function Trabalhos() {
     ] = useState(null);
 
 
+    /* ============================================================
+       TRABALHOS
+       Usuário como CONTRATADO
+       ============================================================ */
+
+    const [trabalhos, setTrabalhos] =
+        useState([]);
+
+    const [carregandoTrabalhos, setCarregandoTrabalhos] =
+        useState(false);
+
+    const [erroTrabalhos, setErroTrabalhos] =
+        useState('');
+
+
+    /* ============================================================
+       ABA
+       ============================================================ */
+
+    const [aba, setAba] =
+        useState('negociacoes');
+
+
+    /* ============================================================
+       CARREGAMENTO INICIAL
+       Mantém exatamente o comportamento anterior
+       ============================================================ */
+
     useEffect(() => {
+
         carregarNegociacoes();
+
     }, []);
 
+
+    /* ============================================================
+       CARREGAR TRABALHOS SOMENTE QUANDO ABRIR A ABA
+       ============================================================ */
+
+    useEffect(() => {
+
+        if (aba === 'trabalhos') {
+
+            carregarTrabalhos();
+
+        }
+
+    }, [aba]);
+
+
+    /* ============================================================
+       NEGOCIAÇÕES
+       ============================================================ */
 
     async function carregarNegociacoes() {
 
@@ -73,6 +131,91 @@ export default function Trabalhos() {
     }
 
 
+    /* ============================================================
+       TRABALHOS
+       GET /api/trabalhos/meus
+       Usuário é o CONTRATADO
+       ============================================================ */
+
+    async function carregarTrabalhos() {
+
+        try {
+
+            setCarregandoTrabalhos(true);
+            setErroTrabalhos('');
+
+            const response =
+                await getMeusTrabalhos();
+
+
+            /*
+             * A API pode retornar diretamente:
+             *
+             * [
+             *     {...},
+             *     {...}
+             * ]
+             *
+             * ou:
+             *
+             * {
+             *     data: [...]
+             * }
+             *
+             * Aceitamos os dois formatos.
+             */
+
+            let dados =
+                response?.data ??
+                response;
+
+
+            if (
+                dados &&
+                !Array.isArray(dados) &&
+                Array.isArray(dados.data)
+            ) {
+
+                dados =
+                    dados.data;
+
+            }
+
+
+            setTrabalhos(
+                Array.isArray(dados)
+                    ? dados
+                    : []
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Erro ao carregar trabalhos:',
+                error
+            );
+
+            setErroTrabalhos(
+                error?.response?.data?.message ||
+                Object.values(
+                    error?.response?.data?.errors || {}
+                ).flat()[0] ||
+                'Não foi possível carregar seus trabalhos.'
+            );
+
+        } finally {
+
+            setCarregandoTrabalhos(false);
+
+        }
+    }
+
+
+    /* ============================================================
+       MODAL DE NEGOCIAÇÃO
+       Mantido o funcionamento original
+       ============================================================ */
+
     function abrirNegociacao(
         negociacao
     ) {
@@ -80,6 +223,7 @@ export default function Trabalhos() {
         if (
             !negociacao?.id_negociacao
         ) {
+
             console.error(
                 'Negociação inválida:',
                 negociacao
@@ -101,8 +245,14 @@ export default function Trabalhos() {
         );
 
         carregarNegociacoes();
+
     }
 
+
+    /* ============================================================
+       FORMATAÇÃO
+       Mantida para a aba Negociações
+       ============================================================ */
 
     function formatarValor(valor) {
 
@@ -145,12 +295,19 @@ export default function Trabalhos() {
         if (
             partes.length === 3
         ) {
+
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
+
         }
 
         return data;
     }
 
+
+    /* ============================================================
+       STATUS DA NEGOCIAÇÃO
+       Mantido para não alterar o funcionamento existente
+       ============================================================ */
 
     function obterNomeStatus(
         negociacao
@@ -216,60 +373,67 @@ export default function Trabalhos() {
     }
 
 
+    /* ============================================================
+       RENDER
+       ============================================================ */
+
     return (
 
         <main className="contratacoes-page">
 
+            {/* ====================================================
+            CABEÇALHO
+           ==================================================== */}
+
             <header className="contratacoes-header">
 
-                <div>
+                {/* ====================================================
+            ABAS
+           ==================================================== */}
 
-                    <h1>
+                <div className="contratacoes-tabs">
+
+                    <button
+                        type="button"
+                        className={
+                            aba === 'negociacoes'
+                                ? 'tab active'
+                                : 'tab'
+                        }
+                        onClick={() =>
+                            setAba('negociacoes')
+                        }
+                    >
+                        Negociações
+                    </button>
+
+
+                    <button
+                        type="button"
+                        className={
+                            aba === 'trabalhos'
+                                ? 'tab active'
+                                : 'tab'
+                        }
+                        onClick={() =>
+                            setAba('trabalhos')
+                        }
+                    >
                         Trabalhos
-                    </h1>
-
-                    <p>
-                        Gerencie suas negociações e trabalhos
-                    </p>
+                    </button>
 
                 </div>
 
             </header>
 
 
-            <div className="contratacoes-tabs">
-
-                <button
-                    type="button"
-                    className={
-                        aba === 'negociacoes'
-                            ? 'tab active'
-                            : 'tab'
-                    }
-                    onClick={() =>
-                        setAba('negociacoes')
-                    }
-                >
-                    Negociações
-                </button>
 
 
-                <button
-                    type="button"
-                    className={
-                        aba === 'trabalhos'
-                            ? 'tab active'
-                            : 'tab'
-                    }
-                    onClick={() =>
-                        setAba('trabalhos')
-                    }
-                >
-                    Trabalhos
-                </button>
 
-            </div>
-
+            {/* ====================================================
+            ABA NEGOCIAÇÕES
+            NÃO ALTERADA
+           ==================================================== */}
 
             {aba === 'negociacoes' && (
 
@@ -306,7 +470,9 @@ export default function Trabalhos() {
                     {carregando && (
 
                         <div className="contratacoes-loading">
+
                             Carregando negociações...
+
                         </div>
 
                     )}
@@ -316,7 +482,9 @@ export default function Trabalhos() {
                         erro && (
 
                             <div className="contratacoes-error">
+
                                 {erro}
+
                             </div>
 
                         )}
@@ -502,30 +670,142 @@ export default function Trabalhos() {
             )}
 
 
+            {/* ====================================================
+            ABA TRABALHOS
+            USUÁRIO É O CONTRATADO
+           ==================================================== */}
+
             {aba === 'trabalhos' && (
 
                 <section className="contratacoes-content">
 
-                    <div className="contratacoes-empty">
+                    <div className="section-title">
 
-                        <div className="empty-icon">
-                            🔨
+                        <div>
+
+                            <h2>
+                                Meus trabalhos
+                            </h2>
+
+                            <p>
+                                Serviços que você foi contratado para realizar
+                            </p>
+
                         </div>
 
-                        <h2>
-                            Nenhum trabalho
-                        </h2>
 
-                        <p>
-                            Seus trabalhos aparecerão aqui quando uma negociação for aceita.
-                        </p>
+                        <div className="section-title-acoes">
+
+                            <span className="count">
+                                {
+                                    trabalhos.length
+                                }
+                            </span>
+
+                        </div>
 
                     </div>
+
+
+                    {/* =================================================
+                    CARREGANDO
+                   ================================================= */}
+
+                    {carregandoTrabalhos && (
+
+                        <div className="contratacoes-loading">
+
+                            Carregando trabalhos...
+
+                        </div>
+
+                    )}
+
+
+                    {/* =================================================
+                    ERRO
+                   ================================================= */}
+
+                    {!carregandoTrabalhos &&
+                        erroTrabalhos && (
+
+                            <div className="contratacoes-error">
+
+                                {erroTrabalhos}
+
+                            </div>
+
+                        )}
+
+
+                    {/* =================================================
+                    VAZIO
+                   ================================================= */}
+
+                    {!carregandoTrabalhos &&
+                        !erroTrabalhos &&
+                        trabalhos.length === 0 && (
+
+                            <div className="contratacoes-empty">
+
+                                <div className="empty-icon">
+                                    🔨
+                                </div>
+
+                                <h2>
+                                    Nenhum trabalho
+                                </h2>
+
+                                <p>
+                                    Seus trabalhos aparecerão aqui quando uma negociação for aceita.
+                                </p>
+
+                            </div>
+
+                        )}
+
+
+                    {/* =================================================
+                    LISTA DE TRABALHOS
+                   ================================================= */}
+
+                    {!carregandoTrabalhos &&
+                        !erroTrabalhos &&
+                        trabalhos.length > 0 && (
+
+                            <div className="contratacoes-list">
+
+                                {trabalhos.map(
+                                    (trabalho) => (
+
+                                        <TrabalhoCard
+                                            key={
+                                                trabalho.id_trabalho
+                                            }
+                                            trabalho={
+                                                trabalho
+                                            }
+                                            onAtualizado={
+                                                carregarTrabalhos
+                                            }
+                                        />
+
+                                    )
+                                )}
+
+                            </div>
+
+                        )}
 
                 </section>
 
             )}
 
+
+            {/* ====================================================
+            MODAL DE NEGOCIAÇÃO
+            Mantido igual
+           ==================================================== */}
 
             {negociacaoSelecionada && (
 
@@ -542,4 +822,5 @@ export default function Trabalhos() {
 
         </main>
     );
+
 }

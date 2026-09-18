@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Models\negociacaoInteracao;
 
 class Interacao extends Model
 {
@@ -45,6 +44,15 @@ class Interacao extends Model
     {
         return $this->hasOne(
             NegociacaoInteracao::class,
+            'id_interacao',
+            'id_interacao'
+        );
+    }
+
+    public function trabalhoInteracao(): HasOne
+    {
+        return $this->hasOne(
+            TrabalhoInteracao::class,
             'id_interacao',
             'id_interacao'
         );

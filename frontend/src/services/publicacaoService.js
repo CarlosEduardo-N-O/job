@@ -20,7 +20,7 @@ export async function criarPublicacao(dados) {
         dados
     );
 
-    return response.data;
+    return response.data.data;
 }
 
 export async function getPublicacao(id) {
@@ -40,7 +40,7 @@ export async function atualizarPublicacao(
         dados
     );
 
-    return response.data;
+    return response.data.data;
 }
 
 export async function cancelarPublicacao(id) {

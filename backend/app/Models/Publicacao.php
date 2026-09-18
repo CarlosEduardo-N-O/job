@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\PublicacaoStatus;
 
 class Publicacao extends Model
 {
@@ -22,7 +23,7 @@ class Publicacao extends Model
         'data_inicio',
         'horario_inicio',
         'data_fim',
-        'status',
+        'status_id',
     ];
 
     protected $casts = [
@@ -53,6 +54,14 @@ class Publicacao extends Model
             Negociacao::class,
             'id_publicacao',
             'id'
+        );
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(
+            PublicacaoStatus::class,
+            'status_id'
         );
     }
 }
