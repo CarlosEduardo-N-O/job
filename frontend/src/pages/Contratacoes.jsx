@@ -10,14 +10,12 @@ import {
 } from '../services/trabalhoService';
 
 import Publicacao from '../components/publicacoes/Publicacao';
-
 import NegociacoesModal from '../components/negociacoes/Negociacoes';
-
 import Trabalhos from '../components/trabalhos/Trabalhos';
+import MinhasPublicacoes from '../components/publicacoes/MinhasPublicacoes';
 
 import '../styles/publicacoes.css';
 import '../styles/negociacoes.css';
-import '../styles/trabalhos.css';
 import '../styles/trabalhos.css';
 import '../styles/contratacoes.css';
 
@@ -28,16 +26,14 @@ export default function Contratacoes() {
        PUBLICAÇÕES
     ===================================================== */
 
-    const [publicacoes, setPublicacoes] =
-        useState([]);
+    const [publicacoes, setPublicacoes] = useState([]);
 
 
     /* =====================================================
        TRABALHOS / CONTRATAÇÕES
     ===================================================== */
 
-    const [trabalhos, setTrabalhos] =
-        useState([]);
+    const [trabalhos, setTrabalhos] = useState([]);
 
     const [carregandoTrabalhos, setCarregandoTrabalhos] =
         useState(false);
@@ -50,23 +46,28 @@ export default function Contratacoes() {
        ABA ATUAL
     ===================================================== */
 
-    const [aba, setAba] =
-        useState('publicacoes');
+    const [aba, setAba] = useState('publicacoes');
 
 
     /* =====================================================
        ESTADO DAS PUBLICAÇÕES
     ===================================================== */
 
-    const [carregando, setCarregando] =
-        useState(true);
+    const [carregando, setCarregando] = useState(true);
 
-    const [erro, setErro] =
-        useState('');
+    const [erro, setErro] = useState('');
 
 
     /* =====================================================
-       MODAL DE EDIÇÃO
+       CONTROLE GERAL DE ATUALIZAÇÃO
+    ===================================================== */
+
+    const [atualizandoTudo, setAtualizandoTudo] =
+        useState(false);
+
+
+    /* =====================================================
+       MODAL DE EDIÇÃO / CRIAÇÃO
     ===================================================== */
 
     const [
@@ -112,7 +113,7 @@ export default function Contratacoes() {
 
 
     /* =====================================================
-       PUBLICAÇÕES
+       CARREGAR PUBLICAÇÕES
     ===================================================== */
 
     async function carregarPublicacoes() {
@@ -120,7 +121,6 @@ export default function Contratacoes() {
         try {
 
             setCarregando(true);
-
             setErro('');
 
 
@@ -128,8 +128,28 @@ export default function Contratacoes() {
                 await getMinhasPublicacoes();
 
 
-            const dados =
+            let dados =
                 response?.data ?? response;
+
+
+            /*
+             * Caso venha uma estrutura adicional:
+             *
+             * {
+             *     data: {
+             *         data: [...]
+             *     }
+             */
+
+            if (
+                dados &&
+                !Array.isArray(dados) &&
+                Array.isArray(dados.data)
+            ) {
+
+                dados = dados.data;
+
+            }
 
 
             setPublicacoes(
@@ -161,11 +181,12 @@ export default function Contratacoes() {
             setCarregando(false);
 
         }
+
     }
 
 
     /* =====================================================
-       TRABALHOS / CONTRATAÇÕES
+       CARREGAR TRABALHOS / CONTRATAÇÕES
     ===================================================== */
 
     async function carregarTrabalhos() {
@@ -173,7 +194,6 @@ export default function Contratacoes() {
         try {
 
             setCarregandoTrabalhos(true);
-
             setErroTrabalhos('');
 
 
@@ -181,30 +201,17 @@ export default function Contratacoes() {
                 await getContratacoes();
 
 
-            /*
-             * O controller retorna:
-             *
-             * {
-             *     data: [...]
-             * }
-             *
-             * Então normalmente response.data
-             * já será o array.
-             */
-
             let dados =
                 response?.data ?? response;
 
 
             /*
-             * Caso o service/axios retorne uma
-             * estrutura adicional:
+             * Caso venha uma estrutura adicional:
              *
              * {
              *     data: {
              *         data: [...]
              *     }
-             * }
              */
 
             if (
@@ -213,8 +220,7 @@ export default function Contratacoes() {
                 Array.isArray(dados.data)
             ) {
 
-                dados =
-                    dados.data;
+                dados = dados.data;
 
             }
 
@@ -245,15 +251,58 @@ export default function Contratacoes() {
                 'Não foi possível carregar suas contratações.';
 
 
-            setErroTrabalhos(
-                mensagem
-            );
+            setErroTrabalhos(mensagem);
 
         } finally {
 
             setCarregandoTrabalhos(false);
 
         }
+
+    }
+
+
+    /* =====================================================
+       RECARREGAR TUDO
+    ===================================================== */
+
+    async function recarregarTudo() {
+
+        /*
+         * Evita disparar várias atualizações
+         * simultaneamente.
+         */
+
+        if (atualizandoTudo) {
+
+            return;
+
+        }
+
+
+        try {
+
+            setAtualizandoTudo(true);
+
+
+            await Promise.all([
+                carregarPublicacoes(),
+                carregarTrabalhos(),
+            ]);
+
+        } catch (error) {
+
+            console.error(
+                'Erro ao atualizar as listas:',
+                error
+            );
+
+        } finally {
+
+            setAtualizandoTudo(false);
+
+        }
+
     }
 
 
@@ -274,20 +323,33 @@ export default function Contratacoes() {
 
     function abrirEdicao(publicacao) {
 
-        setPublicacaoEditando(
-            publicacao
-        );
+        setPublicacaoEditando(publicacao);
 
     }
 
 
     /* =====================================================
-       FECHAR EDIÇÃO
+       FECHAR FORMULÁRIO
     ===================================================== */
 
-    function fecharEdicao() {
+    async function fecharEdicao() {
+
+        /*
+         * Fecha o modal imediatamente.
+         */
 
         setPublicacaoEditando(null);
+
+
+        /*
+         * Atualiza as listas ao voltar do formulário.
+         *
+         * Isso garante que qualquer alteração feita
+         * na publicação, inclusive anexos, seja refletida
+         * na tela.
+         */
+
+        await recarregarTudo();
 
     }
 
@@ -298,9 +360,7 @@ export default function Contratacoes() {
 
     function abrirNegociacoes(publicacao) {
 
-        setPublicacaoNegociacoes(
-            publicacao
-        );
+        setPublicacaoNegociacoes(publicacao);
 
     }
 
@@ -320,66 +380,41 @@ export default function Contratacoes() {
        PUBLICAÇÃO SALVA
     ===================================================== */
 
-    function handlePublicacaoSalva(
-        publicacaoSalva
-    ) {
+    async function handlePublicacaoSalva() {
 
-        /*
-         * Se o modal não retornar a publicação,
-         * simplesmente recarregamos.
-         */
+        try {
 
-        if (!publicacaoSalva) {
+            /*
+             * O formulário já concluiu o salvamento.
+             *
+             * Buscamos novamente os dados diretamente
+             * do backend para garantir que:
+             *
+             * - publicação nova apareça;
+             * - edição seja atualizada;
+             * - anexos sejam considerados;
+             * - status e relacionamentos estejam atualizados.
+             */
 
-            carregarPublicacoes();
+            await recarregarTudo();
 
-            return;
+        } catch (error) {
+
+            console.error(
+                'Erro ao atualizar listas após salvar publicação:',
+                error
+            );
+
+        } finally {
+
+            /*
+             * Garante que o modal seja fechado mesmo
+             * depois do salvamento.
+             */
+
+            setPublicacaoEditando(null);
 
         }
-
-
-        setPublicacoes(
-            (anterior) => {
-
-                const existe =
-                    anterior.some(
-                        (publicacao) =>
-                            publicacao.id ===
-                            publicacaoSalva.id
-                    );
-
-
-                /*
-                 * Nova publicação
-                 */
-
-                if (!existe) {
-
-                    return [
-                        publicacaoSalva,
-                        ...anterior,
-                    ];
-
-                }
-
-
-                /*
-                 * Publicação existente
-                 */
-
-                return anterior.map(
-                    (publicacao) =>
-
-                        publicacao.id ===
-                            publicacaoSalva.id
-
-                            ? publicacaoSalva
-
-                            : publicacao
-                );
-
-            }
-        );
 
     }
 
@@ -388,9 +423,7 @@ export default function Contratacoes() {
        CANCELAR PUBLICAÇÃO
     ===================================================== */
 
-    async function cancelarPublicacaoHandler(
-        publicacao
-    ) {
+    async function cancelarPublicacaoHandler(publicacao) {
 
         const confirmar =
             window.confirm(
@@ -413,41 +446,14 @@ export default function Contratacoes() {
 
 
             /*
-             * O backend retorna o status
-             * como relacionamento.
+             * Depois do cancelamento, buscamos novamente
+             * as publicações no backend.
              *
-             * status: {
-             *     codigo: "CANCELADO",
-             *     nome: "Cancelado"
-             * }
+             * Isso evita manter informações antigas
+             * no estado local.
              */
 
-            setPublicacoes(
-                (anterior) =>
-
-                    anterior.map(
-                        (item) =>
-
-                            item.id ===
-                                publicacao.id
-
-                                ? {
-                                    ...item,
-
-                                    status: {
-                                        ...item.status,
-
-                                        codigo:
-                                            'CANCELADO',
-
-                                        nome:
-                                            'Cancelado',
-                                    },
-                                }
-
-                                : item
-                    )
-            );
+            await recarregarTudo();
 
         } catch (error) {
 
@@ -485,16 +491,11 @@ export default function Contratacoes() {
 
             <header className="contratacoes-header">
 
-                {/* =================================================
-               ABAS
-            ================================================= */}
-
                 <div className="contratacoes-tabs">
 
-
-                    {/* ---------------------------------------------
-                   MINHAS PUBLICAÇÕES
-                --------------------------------------------- */}
+                    {/* =============================================
+                       MINHAS PUBLICAÇÕES
+                    ============================================= */}
 
                     <button
                         type="button"
@@ -504,18 +505,16 @@ export default function Contratacoes() {
                                 : 'tab'
                         }
                         onClick={() =>
-                            setAba(
-                                'publicacoes'
-                            )
+                            setAba('publicacoes')
                         }
                     >
                         Minhas publicações
                     </button>
 
 
-                    {/* ---------------------------------------------
-                   CONTRATAÇÕES
-                --------------------------------------------- */}
+                    {/* =============================================
+                       CONTRATAÇÕES
+                    ============================================= */}
 
                     <button
                         type="button"
@@ -525,9 +524,7 @@ export default function Contratacoes() {
                                 : 'tab'
                         }
                         onClick={() =>
-                            setAba(
-                                'contratacoes'
-                            )
+                            setAba('contratacoes')
                         }
                     >
                         Contratações
@@ -547,9 +544,9 @@ export default function Contratacoes() {
                 <section className="contratacoes-content">
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        TÍTULO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     <div className="section-title">
 
@@ -569,13 +566,36 @@ export default function Contratacoes() {
                         <div className="section-title-acoes">
 
                             <span className="count">
-
-                                {
-                                    publicacoes.length
-                                }
-
+                                {publicacoes.length}
                             </span>
 
+
+                            {/* =====================================
+                               ATUALIZAR
+                            ===================================== */}
+
+                            <button
+                                type="button"
+                                className="btn-atualizar"
+                                onClick={recarregarTudo}
+                                disabled={
+                                    atualizandoTudo ||
+                                    carregando ||
+                                    carregandoTrabalhos
+                                }
+                                title="Atualizar listas"
+                            >
+
+                                {atualizandoTudo
+                                    ? '↻ Atualizando...'
+                                    : '↻ Atualizar'}
+
+                            </button>
+
+
+                            {/* =====================================
+                               NOVA PUBLICAÇÃO
+                            ===================================== */}
 
                             <button
                                 type="button"
@@ -598,9 +618,9 @@ export default function Contratacoes() {
                     </div>
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        LOADING
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {carregando && (
 
@@ -613,32 +633,37 @@ export default function Contratacoes() {
                     )}
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        ERRO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
-                    {!carregando &&
-                        erro && (
+                    {!carregando && erro && (
 
-                            <div className="contratacoes-error">
+                        <div className="contratacoes-error">
 
-                                {erro}
+                            {erro}
 
-                            </div>
+                            <button
+                                type="button"
+                                onClick={carregarPublicacoes}
+                            >
+                                Tentar novamente
+                            </button>
 
-                        )}
+                        </div>
+
+                    )}
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        VAZIO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {!carregando &&
                         !erro &&
                         publicacoes.length === 0 && (
 
                             <div className="contratacoes-empty">
-
 
                                 <div className="empty-icon">
                                     📋
@@ -676,226 +701,22 @@ export default function Contratacoes() {
                         )}
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        LISTA DE PUBLICAÇÕES
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {!carregando &&
                         !erro &&
                         publicacoes.length > 0 && (
 
-                            <div className="contratacoes-list">
-
-                                {publicacoes.map(
-                                    (publicacao) => {
-
-
-                                        const codigoStatus =
-                                            publicacao.status?.codigo ??
-                                            '';
-
-
-                                        const nomeStatus =
-                                            publicacao.status?.nome ??
-                                            codigoStatus ??
-                                            'Sem status';
-
-
-                                        return (
-
-                                            <article
-                                                key={
-                                                    publicacao.id
-                                                }
-                                                className="contratacao-publicacao-card"
-                                            >
-
-
-                                                {/* CABEÇALHO */}
-
-                                                <div className="contratacao-card-header">
-
-                                                    <div>
-
-                                                        <h3>
-                                                            {
-                                                                publicacao.titulo
-                                                            }
-                                                        </h3>
-
-
-                                                        {publicacao.categoria && (
-
-                                                            <span className="publicacao-categoria">
-
-                                                                {
-                                                                    publicacao
-                                                                        .categoria
-                                                                        .nome
-                                                                }
-
-                                                            </span>
-
-                                                        )}
-
-                                                    </div>
-
-
-                                                    <span className="publicacao-status">
-
-                                                        {
-                                                            nomeStatus
-                                                        }
-
-                                                    </span>
-
-                                                </div>
-
-
-                                                {/* META */}
-
-                                                <div className="contratacao-card-meta">
-
-
-                                                    <div>
-
-                                                        <span>
-                                                            Valor
-                                                        </span>
-
-                                                        <strong>
-
-                                                            {
-                                                                formatarValor(
-                                                                    publicacao.valor_estimado
-                                                                )
-                                                            }
-
-                                                        </strong>
-
-                                                    </div>
-
-
-                                                    <div>
-
-                                                        <span>
-                                                            Data
-                                                        </span>
-
-                                                        <strong>
-
-                                                            {
-                                                                formatarData(
-                                                                    publicacao.data_inicio
-                                                                )
-                                                            }
-
-                                                        </strong>
-
-                                                    </div>
-
-
-                                                    <div>
-
-                                                        <span>
-                                                            Negociações
-                                                        </span>
-
-                                                        <strong>
-
-                                                            {
-                                                                publicacao
-                                                                    .negociacoes_count ??
-                                                                0
-                                                            }
-
-                                                        </strong>
-
-                                                    </div>
-
-                                                </div>
-
-
-                                                {/* DESCRIÇÃO */}
-
-                                                <div className="contratacao-card-descricao">
-
-                                                    {
-                                                        publicacao.descricao
-                                                    }
-
-                                                </div>
-
-
-                                                {/* AÇÕES */}
-
-                                                <div className="publicacao-acoes-contratacao">
-
-
-                                                    <button
-                                                        type="button"
-                                                        className="btn-editar-publicacao"
-                                                        onClick={() =>
-                                                            abrirEdicao(
-                                                                publicacao
-                                                            )
-                                                        }
-                                                    >
-                                                        ✏️ Editar
-                                                    </button>
-
-
-                                                    <button
-                                                        type="button"
-                                                        className="btn-negociacoes-publicacao"
-                                                        onClick={() =>
-                                                            abrirNegociacoes(
-                                                                publicacao
-                                                            )
-                                                        }
-                                                    >
-
-                                                        🤝 Negociações
-
-                                                        <span>
-
-                                                            {
-                                                                publicacao
-                                                                    .negociacoes_count ??
-                                                                0
-                                                            }
-
-                                                        </span>
-
-                                                    </button>
-
-
-                                                    <button
-                                                        type="button"
-                                                        className="btn-cancelar-publicacao"
-                                                        onClick={() =>
-                                                            cancelarPublicacaoHandler(
-                                                                publicacao
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            codigoStatus !==
-                                                            'ATIVO'
-                                                        }
-                                                    >
-                                                        ✕ Cancelar
-                                                    </button>
-
-                                                </div>
-
-                                            </article>
-
-                                        );
-
-                                    }
-                                )}
-
-                            </div>
+                            <MinhasPublicacoes
+                                publicacoes={publicacoes}
+                                onEditar={abrirEdicao}
+                                onNegociacoes={abrirNegociacoes}
+                                onCancelar={
+                                    cancelarPublicacaoHandler
+                                }
+                            />
 
                         )}
 
@@ -913,9 +734,9 @@ export default function Contratacoes() {
                 <section className="contratacoes-content">
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        TÍTULO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     <div className="section-title">
 
@@ -935,21 +756,40 @@ export default function Contratacoes() {
                         <div className="section-title-acoes">
 
                             <span className="count">
-
-                                {
-                                    trabalhos.length
-                                }
-
+                                {trabalhos.length}
                             </span>
+
+
+                            {/* =====================================
+                               ATUALIZAR
+                            ===================================== */}
+
+                            <button
+                                type="button"
+                                className="btn-atualizar"
+                                onClick={recarregarTudo}
+                                disabled={
+                                    atualizandoTudo ||
+                                    carregando ||
+                                    carregandoTrabalhos
+                                }
+                                title="Atualizar listas"
+                            >
+
+                                {atualizandoTudo
+                                    ? '↻ Atualizando...'
+                                    : '↻ Atualizar'}
+
+                            </button>
 
                         </div>
 
                     </div>
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        CARREGANDO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {carregandoTrabalhos && (
 
@@ -962,9 +802,9 @@ export default function Contratacoes() {
                     )}
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        ERRO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {!carregandoTrabalhos &&
                         erroTrabalhos && (
@@ -995,16 +835,15 @@ export default function Contratacoes() {
                         )}
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        NENHUMA CONTRATAÇÃO
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {!carregandoTrabalhos &&
                         !erroTrabalhos &&
                         trabalhos.length === 0 && (
 
                             <div className="contratacoes-empty">
-
 
                                 <div className="empty-icon">
                                     🤝
@@ -1028,9 +867,9 @@ export default function Contratacoes() {
                         )}
 
 
-                    {/* -----------------------------------------
+                    {/* =========================================
                        LISTA DE CONTRATAÇÕES
-                    ----------------------------------------- */}
+                    ========================================= */}
 
                     {!carregandoTrabalhos &&
                         !erroTrabalhos &&
@@ -1039,7 +878,9 @@ export default function Contratacoes() {
                             <Trabalhos
                                 trabalhos={trabalhos}
                                 papel="CONTRATANTE"
-                                onAtualizado={carregarTrabalhos}
+                                onAtualizado={
+                                    carregarTrabalhos
+                                }
                             />
 
                         )}
@@ -1056,7 +897,6 @@ export default function Contratacoes() {
             {publicacaoEditando !== null && (
 
                 <Publicacao
-
                     modo="form"
 
                     publicacao={
@@ -1072,7 +912,6 @@ export default function Contratacoes() {
                     onSaved={
                         handlePublicacaoSalva
                     }
-
                 />
 
             )}
@@ -1085,7 +924,6 @@ export default function Contratacoes() {
             {publicacaoNegociacoes !== null && (
 
                 <NegociacoesModal
-
                     publicacao={
                         publicacaoNegociacoes
                     }
@@ -1093,98 +931,12 @@ export default function Contratacoes() {
                     onClose={
                         fecharNegociacoes
                     }
-
                 />
 
             )}
 
         </main>
+
     );
-}
 
-
-/* =============================================================
-   FORMATAR VALOR
-============================================================= */
-
-function formatarValor(valor) {
-
-    if (
-        valor === null ||
-        valor === undefined ||
-        valor === ''
-    ) {
-
-        return 'Não informado';
-
-    }
-
-
-    const numero =
-        Number(valor);
-
-
-    if (
-        Number.isNaN(numero)
-    ) {
-
-        return valor;
-
-    }
-
-
-    return numero.toLocaleString(
-        'pt-BR',
-        {
-            style: 'currency',
-            currency: 'BRL',
-        }
-    );
-}
-
-
-/* =============================================================
-   FORMATAR DATA
-============================================================= */
-
-function formatarData(data) {
-
-    if (!data) {
-
-        return 'Não informada';
-
-    }
-
-
-    const valor =
-        String(data);
-
-
-    /*
-     * Laravel pode retornar:
-     *
-     * 2026-09-18T00:00:00.000000Z
-     *
-     * Pegamos somente a parte
-     * referente à data.
-     */
-
-    const dataParte =
-        valor.split('T')[0];
-
-
-    const partes =
-        dataParte.split('-');
-
-
-    if (
-        partes.length === 3
-    ) {
-
-        return `${partes[2]}/${partes[1]}/${partes[0]}`;
-
-    }
-
-
-    return data;
 }

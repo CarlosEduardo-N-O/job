@@ -10,6 +10,8 @@ use App\Http\Controllers\NegociacaoController;
 use App\Http\Controllers\NegociacaoPagamentoController;
 use App\Http\Controllers\TrabalhoController;
 use App\Http\Controllers\TrabalhoPagamentoController;
+use App\Http\Controllers\PublicacaoAnexoController;
+use App\Http\Controllers\OnboardingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +29,12 @@ Route::post(
 Route::post(
     '/users',
     [UserController::class, 'store']
+);
+
+// Lista categorias disponíveis
+Route::get(
+    '/categorias',
+    [UserCategoriaController::class, 'categorias']
 );
 
 /*
@@ -119,7 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Lista todas as categorias e informa quais pertencem ao usuário
     Route::get(
         '/users-categorias/categorias',
-        [UserCategoriaController::class, 'categorias']
+        [UserCategoriaController::class, 'categoriasUsuario']
     );
 
     // Lista os vínculos do usuário logado
@@ -165,6 +173,33 @@ Route::middleware('auth:sanctum')->group(function () {
         [NegociacaoController::class, 'store']
     );
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Anexos das Publicações
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::get(
+        '/publicacoes/{publicacao}/anexos',
+        [PublicacaoAnexoController::class, 'index']
+    );
+
+    Route::post(
+        '/publicacoes/{publicacao}/anexos',
+        [PublicacaoAnexoController::class, 'store']
+    );
+
+    Route::get(
+        '/publicacoes/{publicacao}/anexos/{anexo}',
+        [PublicacaoAnexoController::class, 'show']
+    );
+
+    Route::delete(
+        '/publicacoes/{publicacao}/anexos/{anexo}',
+        [PublicacaoAnexoController::class, 'destroy']
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -256,4 +291,20 @@ Route::middleware('auth:sanctum')->group(function () {
         '/trabalhos/{trabalho}/interacoes',
         [TrabalhoController::class, 'interagir']
     );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Onboarding
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/onboarding', [
+        OnboardingController::class,
+        'show'
+    ]);
+
+    Route::post('/onboarding/concluir', [
+        OnboardingController::class,
+        'concluir'
+    ]);
 });

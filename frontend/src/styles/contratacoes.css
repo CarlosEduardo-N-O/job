@@ -4,12 +4,13 @@
 
 .contratacoes-page {
     width: 100%;
-    max-width: 1000px;
+    max-width: 900px;
 
     margin: 0 auto;
 
     padding: 24px 18px 110px;
 }
+
 
 /* ==========================================================================
    CABEÇALHO
@@ -20,6 +21,7 @@
 
     margin-bottom: 24px;
 }
+
 
 /* ==========================================================================
    ABAS
@@ -76,6 +78,7 @@
         0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
+
 /* ==========================================================================
    CONTEÚDO
    ========================================================================== */
@@ -83,6 +86,7 @@
 .contratacoes-content {
     width: 100%;
 }
+
 
 /* ==========================================================================
    TÍTULO DA SEÇÃO
@@ -123,6 +127,7 @@
     line-height: 1.4;
 }
 
+
 /* ==========================================================================
    AÇÕES DO TÍTULO
    ========================================================================== */
@@ -154,6 +159,7 @@
     font-size: 13px;
     font-weight: 700;
 }
+
 
 /* ==========================================================================
    BOTÃO NOVA PUBLICAÇÃO
@@ -189,7 +195,6 @@
 
 .btn-nova-publicacao span {
     font-size: 20px;
-
     font-weight: 400;
 
     line-height: 1;
@@ -211,6 +216,7 @@
     outline-offset: 3px;
 }
 
+
 /* ==========================================================================
    LISTA
    ========================================================================== */
@@ -224,20 +230,6 @@
     width: 100%;
 }
 
-/*
- * IMPORTANTE:
- *
- * Os estilos visuais dos cards NÃO ficam aqui.
- *
- * Publicação:
- *   publicacoes.css
- *
- * Trabalho/contratação:
- *   trabalhos.css
- *
- * Este arquivo controla somente a organização
- * da lista dentro da página.
- */
 
 /* ==========================================================================
    LOADING
@@ -245,7 +237,6 @@
 
 .contratacoes-loading {
     width: 100%;
-
     min-height: 180px;
 
     display: flex;
@@ -264,6 +255,7 @@
     font-size: 14px;
 }
 
+
 /* ==========================================================================
    ERRO
    ========================================================================== */
@@ -281,7 +273,6 @@
     color: #991b1b;
 
     font-size: 14px;
-
     line-height: 1.5;
 }
 
@@ -303,6 +294,7 @@
     min-height: 40px;
 
     margin-top: 14px;
+
     padding: 0 14px;
 
     border: 1px solid #fca5a5;
@@ -332,13 +324,13 @@
     outline-offset: 2px;
 }
 
+
 /* ==========================================================================
    ESTADO VAZIO
    ========================================================================== */
 
 .contratacoes-empty {
     width: 100%;
-
     min-height: 360px;
 
     display: flex;
@@ -390,7 +382,6 @@
     color: #6b7280;
 
     font-size: 14px;
-
     line-height: 1.6;
 }
 
@@ -398,14 +389,482 @@
     margin-top: 2px;
 }
 
+
 /* ==========================================================================
-   RESPONSIVIDADE
+   ANEXOS - MINHAS PUBLICAÇÕES
+   ========================================================================== */
+
+.minhas-publicacoes-anexos {
+    position: relative;
+
+    width: 100%;
+
+    margin: 18px 0 8px;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+}
+
+
+/* ==========================================================================
+   CARROSSEL
+   ========================================================================== */
+
+.anexo-carrossel {
+    display: flex;
+
+    width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.anexo-carrossel::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* ==========================================================================
+   SLIDE
+   ========================================================================== */
+
+.anexo-slide {
+    position: relative;
+
+    flex: 0 0 100%;
+
+    width: 100%;
+    min-width: 100%;
+    height: 320px;
+
+    scroll-snap-align: start;
+}
+
+
+/* ==========================================================================
+   IMAGEM
+   ========================================================================== */
+
+.anexo-imagem-card {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 0;
+    margin: 0;
+
+    border: 0;
+    border-radius: 0;
+
+    background: #f5f5f5;
+
+    cursor: pointer;
+
+    overflow: hidden;
+}
+
+.anexo-imagem-card img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+
+    object-fit: cover;
+
+    transition: transform 0.25s ease;
+}
+
+.anexo-imagem-card:hover img {
+    transform: scale(1.02);
+}
+
+
+/* ==========================================================================
+   LOADING DA IMAGEM
+   ========================================================================== */
+
+.anexo-carregando {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    color: #666;
+
+    font-size: 14px;
+
+    background: #f5f5f5;
+}
+
+
+/* ==========================================================================
+   VÍDEO / PDF
+   ========================================================================== */
+
+.anexo-arquivo-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    gap: 18px;
+
+    margin: 0;
+    padding: 30px;
+
+    border: 0;
+    border-radius: 0;
+
+    background: #f5f5f5;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        background-color 0.2s ease;
+}
+
+.anexo-arquivo-card:hover {
+    background: #eeeeee;
+}
+
+.anexo-arquivo-card:disabled {
+    cursor: wait;
+
+    opacity: 0.7;
+}
+
+.anexo-arquivo-icone {
+    flex-shrink: 0;
+
+    font-size: 56px;
+}
+
+.anexo-arquivo-card > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    min-width: 0;
+}
+
+.anexo-arquivo-card strong {
+    color: #111827;
+
+    font-size: 18px;
+}
+
+.anexo-arquivo-card span {
+    overflow: hidden;
+
+    color: #374151;
+
+    font-size: 14px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.anexo-arquivo-card small {
+    color: #666;
+}
+
+
+/* ==========================================================================
+   SETAS
+   ========================================================================== */
+
+.anexo-carrossel-seta {
+    position: absolute;
+
+    z-index: 5;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.anexo-carrossel-seta:hover {
+    background: rgba(0, 0, 0, 0.75);
+
+    transform: translateY(-50%) scale(1.05);
+}
+
+.anexo-carrossel-esquerda {
+    left: 12px;
+}
+
+.anexo-carrossel-direita {
+    right: 12px;
+}
+
+
+/* ==========================================================================
+   INDICADOR
+   ========================================================================== */
+
+.anexos-indicador {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 7px 4px 2px;
+
+    color: #777;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================================
+   LOCAL / CIDADE / ENDEREÇO
+   ========================================================================== */
+
+.contratacao-card-local {
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr);
+
+    gap: 10px;
+
+    margin-top: 16px;
+    padding-top: 16px;
+
+    border-top: 1px solid #eee;
+}
+
+.contratacao-card-local > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    min-width: 0;
+}
+
+.contratacao-card-local span {
+    color: #777;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.02em;
+}
+
+.contratacao-card-local strong {
+    display: block;
+
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.5;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* ==========================================================================
+   MODAL DO ANEXO
+   ========================================================================== */
+
+.minha-publicacao-anexo-modal {
+    position: fixed;
+
+    z-index: 9999;
+
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.minha-publicacao-anexo-modal-conteudo {
+    width: min(1000px, 100%);
+    height: min(90vh, 800px);
+
+    display: flex;
+    flex-direction: column;
+
+    background: #ffffff;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+}
+
+.minha-publicacao-anexo-modal-header {
+    min-height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 12px 18px;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.minha-publicacao-anexo-modal-header strong {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.minha-publicacao-anexo-modal-header button {
+    width: 34px;
+    height: 34px;
+
+    border: 0;
+
+    background: transparent;
+
+    font-size: 28px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.minha-publicacao-anexo-modal-body {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111111;
+}
+
+.minha-publicacao-anexo-modal-body img {
+    display: block;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    object-fit: contain;
+}
+
+.minha-publicacao-anexo-modal-body video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    max-height: 100%;
+
+    object-fit: contain;
+}
+
+.minha-publicacao-anexo-modal-body iframe {
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+
+    background: #ffffff;
+}
+
+
+/* ==========================================================================
+   RESPONSIVIDADE DOS ANEXOS
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    .anexo-slide {
+        height: 250px;
+    }
+
+    .anexo-carrossel-seta {
+        width: 34px;
+        height: 34px;
+
+        font-size: 26px;
+    }
+
+    .anexos-indicador {
+        font-size: 11px;
+    }
+
+    .anexo-arquivo-card {
+        padding: 20px;
+    }
+
+    .anexo-arquivo-icone {
+        font-size: 42px;
+    }
+
+    .minha-publicacao-anexo-modal {
+        padding: 10px;
+    }
+
+    .contratacao-card-local {
+        gap: 12px;
+    }
+}
+
+
+/* ==========================================================================
+   RESPONSIVIDADE DA PÁGINA
    ========================================================================== */
 
 @media (max-width: 700px) {
 
     .contratacoes-page {
-        padding: 18px 14px 110px;
+        padding: 18px 16px 110px;
     }
 
     .section-title {
@@ -439,6 +898,7 @@
     }
 }
 
+
 /* ==========================================================================
    CELULAR
    ========================================================================== */
@@ -446,7 +906,7 @@
 @media (max-width: 520px) {
 
     .contratacoes-page {
-        padding: 14px 10px 105px;
+        padding: 18px 16px 105px;
     }
 
     .contratacoes-header {
@@ -467,7 +927,6 @@
 
     .section-title {
         flex-direction: column;
-
         align-items: stretch;
 
         margin-bottom: 16px;
@@ -514,7 +973,39 @@
 
         border-radius: 14px;
     }
+
+    .anexo-slide {
+        height: 220px;
+    }
+
+    .anexo-arquivo-card {
+        gap: 12px;
+
+        padding: 16px;
+    }
+
+    .anexo-arquivo-icone {
+        font-size: 38px;
+    }
+
+    .anexo-arquivo-card strong {
+        font-size: 15px;
+    }
+
+    .anexo-arquivo-card span {
+        font-size: 12px;
+    }
+
+    .anexo-arquivo-card small {
+        font-size: 11px;
+    }
+
+    .contratacao-card-local {
+        margin-top: 14px;
+        padding-top: 14px;
+    }
 }
+
 
 /* ==========================================================================
    CELULARES PEQUENOS
@@ -523,8 +1014,8 @@
 @media (max-width: 380px) {
 
     .contratacoes-page {
-        padding-left: 8px;
-        padding-right: 8px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .contratacoes-tabs .tab {
@@ -541,5 +1032,24 @@
 
     .btn-nova-publicacao {
         font-size: 12px;
+    }
+
+    .anexo-slide {
+        height: 200px;
+    }
+
+    .anexo-carrossel-seta {
+        width: 30px;
+        height: 30px;
+
+        font-size: 23px;
+    }
+
+    .anexos-indicador {
+        font-size: 10px;
+    }
+
+    .contratacao-card-local strong {
+        font-size: 13px;
     }
 }

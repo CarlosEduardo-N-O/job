@@ -17,13 +17,17 @@ class TrabalhoPagamento extends Model
         'id_trabalho',
         'status_id',
         'tipo',
-        'valor',
+        'valor_trabalho',
+        'valor_taxa',
+        'valor_total',
         'data_processamento',
         'observacao',
     ];
 
     protected $casts = [
-        'valor' => 'decimal:2',
+        'valor_trabalho' => 'decimal:2',
+        'valor_taxa' => 'decimal:2',
+        'valor_total' => 'decimal:2',
         'data_processamento' => 'datetime',
     ];
 

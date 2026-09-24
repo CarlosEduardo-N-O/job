@@ -7,7 +7,6 @@ const api = axios.create({
         import.meta.env.VITE_API_URL ||
         `http://${apiHost}:8000/api`,
     headers: {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
     },
 });

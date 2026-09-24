@@ -449,6 +449,18 @@ class NegociacaoController extends Controller
                 ? $dados['valor_proposto']
                 : $publicacao->valor_estimado;
 
+            /*
+             * Calcula os valores financeiros da negociação.
+             *
+             * Para INTERESSE ou DUVIDA, utiliza o valor estimado
+             * da publicação.
+             *
+             * Para PROPOSTA, utiliza o valor informado pelo interessado.
+             */
+            $valoresFinanceiros = $this->calcularValoresFinanceiros(
+                $valorTrabalho
+            );
+
             $negociacao = Negociacao::create([
                 'id_interessado' =>
                 $usuario->id,
@@ -464,6 +476,15 @@ class NegociacaoController extends Controller
 
                 'valor_trabalho' =>
                 $valorTrabalho,
+
+                'taxa_percentual' =>
+                $valoresFinanceiros['taxa_percentual'],
+
+                'valor_taxa' =>
+                $valoresFinanceiros['valor_taxa'],
+
+                'valor_total' =>
+                $valoresFinanceiros['valor_total'],
             ]);
 
             $negociacao->interacoes()->create([
@@ -809,13 +830,41 @@ class NegociacaoController extends Controller
                 $novoStatus
             );
 
-            $negociacao->update([
+            /*
+             * A taxa somente precisa ser recalculada quando
+             * o valor do serviço realmente muda, ou seja,
+             * quando existe uma nova PROPOSTA.
+             *
+             * Para DUVIDA e RESPOSTA, mantemos os valores
+             * financeiros atuais da negociação.
+             */
+            $dadosAtualizacao = [
                 'status_id' =>
                 $status->id,
 
                 'valor_trabalho' =>
                 $valorTrabalho,
-            ]);
+            ];
+
+            if ($dados['tipo'] === 'PROPOSTA') {
+                $valoresFinanceiros =
+                    $this->calcularValoresFinanceiros(
+                        $valorTrabalho
+                    );
+
+                $dadosAtualizacao['taxa_percentual'] =
+                    $valoresFinanceiros['taxa_percentual'];
+
+                $dadosAtualizacao['valor_taxa'] =
+                    $valoresFinanceiros['valor_taxa'];
+
+                $dadosAtualizacao['valor_total'] =
+                    $valoresFinanceiros['valor_total'];
+            }
+
+            $negociacao->update(
+                $dadosAtualizacao
+            );
 
             $negociacao->interacoes()->create([
                 'id_interacao' =>
@@ -996,6 +1045,11 @@ class NegociacaoController extends Controller
             ]);
         }
 
+        /*
+         * O cálculo definitivo da taxa será realizado novamente
+         * no fechamento da negociação para garantir que o valor
+         * cobrado seja baseado no valor final aceito.
+         */
         return $this->fecharNegociacaoParaPagamento(
             $negociacao,
             $valorTrabalho,
@@ -1020,6 +1074,17 @@ class NegociacaoController extends Controller
             $valorTrabalho,
             $usuario
         ) {
+            /*
+             * Recalcula a taxa no momento em que a negociação
+             * é efetivamente aceita.
+             *
+             * Esse é o snapshot financeiro definitivo.
+             */
+            $valoresFinanceiros =
+                $this->calcularValoresFinanceiros(
+                    $valorTrabalho
+                );
+
             $statusNegociacao =
                 $this->buscarStatusNegociacao(
                     'AGUARDANDO_PAGAMENTO'
@@ -1036,8 +1101,23 @@ class NegociacaoController extends Controller
 
                 'valor_trabalho' =>
                 $valorTrabalho,
+
+                'taxa_percentual' =>
+                $valoresFinanceiros['taxa_percentual'],
+
+                'valor_taxa' =>
+                $valoresFinanceiros['valor_taxa'],
+
+                'valor_total' =>
+                $valoresFinanceiros['valor_total'],
             ]);
 
+            /*
+             * O valor do pagamento representa o valor total
+             * que será cobrado do contratante:
+             *
+             * valor do serviço + taxa de intermediação.
+             */
             NegociacaoPagamento::create([
                 'id_negociacao' =>
                 $negociacao->id_negociacao,
@@ -1046,7 +1126,7 @@ class NegociacaoController extends Controller
                 $statusPagamento->id,
 
                 'valor' =>
-                $valorTrabalho,
+                $valoresFinanceiros['valor_total'],
             ]);
 
             /*
@@ -1267,8 +1347,6 @@ class NegociacaoController extends Controller
     | CONTEXTO PARA O FRONTEND
     |--------------------------------------------------------------------------
     |
-    | Esta é a principal mudança.
-    |
     | O backend determina:
     | - quem é o usuário
     | - qual o papel dele
@@ -1283,18 +1361,18 @@ class NegociacaoController extends Controller
         User $usuario
     ): void {
         /*
-    |--------------------------------------------------------------------------
-    | STATUS
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | STATUS
+        |--------------------------------------------------------------------------
+        */
 
         $status = $negociacao->status?->codigo;
 
         /*
-    |--------------------------------------------------------------------------
-    | PAPEL DO USUÁRIO
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | PAPEL DO USUÁRIO
+        |--------------------------------------------------------------------------
+        */
 
         if ($usuario->id == $negociacao->id_interessado) {
             $papelUsuario = 'INTERESSADO';
@@ -1305,10 +1383,10 @@ class NegociacaoController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | DE QUEM É A VEZ
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | DE QUEM É A VEZ
+        |--------------------------------------------------------------------------
+        */
 
         $vez = match ($status) {
             'AGUARDANDO_INTERESSADO' => 'INTERESSADO',
@@ -1317,14 +1395,10 @@ class NegociacaoController extends Controller
         };
 
         /*
-    |--------------------------------------------------------------------------
-    | ÚLTIMA INTERAÇÃO
-    |--------------------------------------------------------------------------
-    |
-    | Não dependemos mais da coleção carregada pelo Eloquent.
-    | Buscamos diretamente a última interação da negociação.
-    |
-    */
+        |--------------------------------------------------------------------------
+        | ÚLTIMA INTERAÇÃO
+        |--------------------------------------------------------------------------
+        */
 
         $ultimaInteracao = $negociacao
             ->interacoes()
@@ -1345,10 +1419,10 @@ class NegociacaoController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | USUÁRIO PODE AGIR?
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | USUÁRIO PODE AGIR?
+        |--------------------------------------------------------------------------
+        */
 
         $podeAgir = (
             $vez !== null &&
@@ -1356,10 +1430,10 @@ class NegociacaoController extends Controller
         );
 
         /*
-    |--------------------------------------------------------------------------
-    | AÇÕES
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | AÇÕES
+        |--------------------------------------------------------------------------
+        */
 
         $acoes = [
             'interagir' => false,
@@ -1369,30 +1443,30 @@ class NegociacaoController extends Controller
         ];
 
         /*
-    |--------------------------------------------------------------------------
-    | OPÇÕES DE INTERAÇÃO
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | OPÇÕES DE INTERAÇÃO
+        |--------------------------------------------------------------------------
+        */
 
         $opcoesInteracao = [];
 
         /*
-    |--------------------------------------------------------------------------
-    | NEGOCIAÇÃO EM ANDAMENTO
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | NEGOCIAÇÃO EM ANDAMENTO
+        |--------------------------------------------------------------------------
+        */
 
         if ($podeAgir) {
 
             /*
-        |--------------------------------------------------------------------------
-        | INTERESSE
-        |--------------------------------------------------------------------------
-        |
-        | O interessado enviou interesse.
-        | O contratante pode aceitar ou recusar.
-        |
-        */
+            |--------------------------------------------------------------------------
+            | INTERESSE
+            |--------------------------------------------------------------------------
+            |
+            | O interessado enviou interesse.
+            | O contratante pode aceitar ou recusar.
+            |
+            */
 
             if ($tipoUltimaInteracao === 'INTERESSE') {
 
@@ -1401,18 +1475,20 @@ class NegociacaoController extends Controller
             }
 
             /*
-        |--------------------------------------------------------------------------
-        | PROPOSTA
-        |--------------------------------------------------------------------------
-        |
-        | Quem recebeu a proposta pode:
-        |
-        | - aceitar
-        | - recusar
-        | - enviar nova proposta
-        | - fazer dúvida
-        |
-        */ elseif ($tipoUltimaInteracao === 'PROPOSTA') {
+            |--------------------------------------------------------------------------
+            | PROPOSTA
+            |--------------------------------------------------------------------------
+            |
+            | Quem recebeu a proposta pode:
+            |
+            | - aceitar
+            | - recusar
+            | - enviar nova proposta
+            | - fazer dúvida
+            |
+            */
+
+            elseif ($tipoUltimaInteracao === 'PROPOSTA') {
 
                 $acoes['aceitar'] = true;
                 $acoes['recusar'] = true;
@@ -1434,13 +1510,15 @@ class NegociacaoController extends Controller
             }
 
             /*
-        |--------------------------------------------------------------------------
-        | DÚVIDA
-        |--------------------------------------------------------------------------
-        |
-        | A dúvida obrigatoriamente deve ser respondida.
-        |
-        */ elseif ($tipoUltimaInteracao === 'DUVIDA') {
+            |--------------------------------------------------------------------------
+            | DÚVIDA
+            |--------------------------------------------------------------------------
+            |
+            | A dúvida obrigatoriamente deve ser respondida.
+            |
+            */
+
+            elseif ($tipoUltimaInteracao === 'DUVIDA') {
 
                 $acoes['interagir'] = true;
 
@@ -1454,26 +1532,19 @@ class NegociacaoController extends Controller
             }
 
             /*
-        |--------------------------------------------------------------------------
-        | RESPOSTA
-        |--------------------------------------------------------------------------
-        |
-        | IMPORTANTE:
-        |
-        | Se o CONTRATANTE respondeu uma dúvida,
-        | o status passa para AGUARDANDO_INTERESSADO.
-        |
-        | Portanto, quando o INTERESSADO consultar a negociação:
-        |
-        | $podeAgir = true
-        |
-        | e estas opções devem aparecer:
-        |
-        | INTERESSE
-        | PROPOSTA
-        | DUVIDA
-        |
-        */ elseif ($tipoUltimaInteracao === 'RESPOSTA') {
+            |--------------------------------------------------------------------------
+            | RESPOSTA
+            |--------------------------------------------------------------------------
+            |
+            | Após uma resposta, o interessado pode:
+            |
+            | - demonstrar interesse
+            | - enviar proposta
+            | - fazer nova dúvida
+            |
+            */
+
+            elseif ($tipoUltimaInteracao === 'RESPOSTA') {
 
                 $acoes['interagir'] = true;
 
@@ -1500,13 +1571,13 @@ class NegociacaoController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | PAGAMENTO
-    |--------------------------------------------------------------------------
-    |
-    | Somente o CONTRATANTE deve pagar.
-    |
-    */
+        |--------------------------------------------------------------------------
+        | PAGAMENTO
+        |--------------------------------------------------------------------------
+        |
+        | Somente o CONTRATANTE deve pagar.
+        |
+        */
 
         if (
             $status === 'AGUARDANDO_PAGAMENTO' &&
@@ -1516,10 +1587,10 @@ class NegociacaoController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | CONTEXTO
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | CONTEXTO
+        |--------------------------------------------------------------------------
+        */
 
         $negociacao->setAttribute(
             'contexto',
@@ -1532,10 +1603,10 @@ class NegociacaoController extends Controller
         );
 
         /*
-    |--------------------------------------------------------------------------
-    | AÇÕES
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | AÇÕES
+        |--------------------------------------------------------------------------
+        */
 
         $negociacao->setAttribute(
             'acoes',
@@ -1543,10 +1614,10 @@ class NegociacaoController extends Controller
         );
 
         /*
-    |--------------------------------------------------------------------------
-    | OPÇÕES
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | OPÇÕES
+        |--------------------------------------------------------------------------
+        */
 
         $negociacao->setAttribute(
             'opcoes_interacao',
@@ -1575,6 +1646,59 @@ class NegociacaoController extends Controller
 
             'valor_obrigatorio' =>
             $valorObrigatorio,
+        ];
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CÁLCULO DA TAXA DE INTERMEDIAÇÃO
+    |--------------------------------------------------------------------------
+    |
+    | A taxa é calculada sobre o valor do serviço.
+    |
+    | Até R$ 500,00        -> 12%
+    | R$ 500,01 - 1.000,00 -> 10%
+    | R$ 1.000,01 - 2.000  -> 9%
+    | R$ 2.000,01 - 5.000  -> 8%
+    | Acima de R$ 5.000    -> 7%
+    |
+    */
+
+    private function calcularValoresFinanceiros(
+        $valorTrabalho
+    ): array {
+        $valorTrabalho = round(
+            (float) $valorTrabalho,
+            2
+        );
+
+        if ($valorTrabalho <= 500) {
+            $percentual = 12.00;
+        } elseif ($valorTrabalho <= 1000) {
+            $percentual = 10.00;
+        } elseif ($valorTrabalho <= 2000) {
+            $percentual = 9.00;
+        } elseif ($valorTrabalho <= 5000) {
+            $percentual = 8.00;
+        } else {
+            $percentual = 7.00;
+        }
+
+        $valorTaxa = round(
+            $valorTrabalho * ($percentual / 100),
+            2
+        );
+
+        $valorTotal = round(
+            $valorTrabalho + $valorTaxa,
+            2
+        );
+
+        return [
+            'taxa_percentual' => $percentual,
+            'valor_taxa' => $valorTaxa,
+            'valor_total' => $valorTotal,
         ];
     }
 

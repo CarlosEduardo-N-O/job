@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -12,14 +12,20 @@ export default function Login() {
         isAuthenticated,
     } = useAuth();
 
-    // Login
+    // =========================
+    // LOGIN
+    // =========================
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Modal cadastro
+    // =========================
+    // MODAL CADASTRO
+    // =========================
+
     const [mostrarCadastro, setMostrarCadastro] = useState(false);
 
     const [cadastro, setCadastro] = useState({
@@ -30,10 +36,21 @@ export default function Login() {
         telefone: '',
         cidade: '',
         estado: '',
+        categoria_ids: [],
     });
 
-    const [cadastroError, setCadastroError] = useState('');
-    const [cadastroLoading, setCadastroLoading] = useState(false);
+    const [categorias, setCategorias] = useState([]);
+    const [categoriasLoading, setCategoriasLoading] =
+        useState(false);
+
+    const [cadastroError, setCadastroError] =
+        useState('');
+
+    const [cadastroLoading, setCadastroLoading] =
+        useState(false);
+
+    // Referência para navegação horizontal das categorias
+    const categoriasContainerRef = useRef(null);
 
     if (isAuthenticated) {
         return <Navigate to="/" replace />;
@@ -80,6 +97,33 @@ export default function Login() {
     // CADASTRO
     // =========================
 
+    async function carregarCategorias() {
+        setCategoriasLoading(true);
+        setCadastroError('');
+
+        try {
+            const response =
+                await api.get('/categorias');
+
+            setCategorias(
+                response.data?.data || []
+            );
+        } catch (error) {
+            console.error(
+                'Erro ao carregar categorias:',
+                error
+            );
+
+            setCategorias([]);
+
+            setCadastroError(
+                'Não foi possível carregar as categorias.'
+            );
+        } finally {
+            setCategoriasLoading(false);
+        }
+    }
+
     function abrirCadastro() {
         setCadastroError('');
 
@@ -91,9 +135,12 @@ export default function Login() {
             telefone: '',
             cidade: '',
             estado: '',
+            categoria_ids: [],
         });
 
         setMostrarCadastro(true);
+
+        carregarCategorias();
     }
 
     function fecharCadastro() {
@@ -104,7 +151,10 @@ export default function Login() {
     }
 
     function handleCadastroChange(event) {
-        const { name, value } = event.target;
+        const {
+            name,
+            value,
+        } = event.target;
 
         setCadastro((prev) => ({
             ...prev,
@@ -112,12 +162,81 @@ export default function Login() {
         }));
     }
 
+    // =========================
+    // SELEÇÃO DE CATEGORIAS
+    // =========================
+
+    function selecionarCategoria(categoriaId) {
+        if (cadastroLoading) {
+            return;
+        }
+
+        setCadastro((prev) => {
+            const id = Number(categoriaId);
+
+            const jaSelecionada =
+                prev.categoria_ids.includes(id);
+
+            const novosIds = jaSelecionada
+                ? prev.categoria_ids.filter(
+                      (item) => item !== id
+                  )
+                : [
+                      ...prev.categoria_ids,
+                      id,
+                  ];
+
+            return {
+                ...prev,
+                categoria_ids: novosIds,
+            };
+        });
+
+        setCadastroError('');
+    }
+
+    function navegarCategorias(direcao) {
+        const container =
+            categoriasContainerRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        const deslocamento =
+            container.clientWidth * 0.85;
+
+        container.scrollBy({
+            left:
+                direcao === 'direita'
+                    ? deslocamento
+                    : -deslocamento,
+            behavior: 'smooth',
+        });
+    }
+
+    // =========================
+    // ENVIAR CADASTRO
+    // =========================
+
     async function handleCadastro(event) {
         event.preventDefault();
 
         setCadastroError('');
 
-        // Validação local
+        // Validação das categorias
+        if (
+            !cadastro.categoria_ids ||
+            cadastro.categoria_ids.length === 0
+        ) {
+            setCadastroError(
+                'Selecione pelo menos uma categoria.'
+            );
+
+            return;
+        }
+
+        // Validação local das senhas
         if (
             cadastro.password !==
             cadastro.password_confirmation
@@ -140,39 +259,42 @@ export default function Login() {
         setCadastroLoading(true);
 
         try {
-            // Cadastro
             await api.post('/users', {
                 name: cadastro.name,
                 email: cadastro.email,
                 password: cadastro.password,
-                telefone: cadastro.telefone || null,
-                cidade: cadastro.cidade || null,
+                telefone:
+                    cadastro.telefone || null,
+                cidade:
+                    cadastro.cidade || null,
                 estado: cadastro.estado
                     ? cadastro.estado.toUpperCase()
                     : null,
+
+                /*
+                 * Agora enviamos todas as categorias
+                 * selecionadas.
+                 */
+                categoria_ids:
+                    cadastro.categoria_ids,
             });
 
             /*
              * Cadastro realizado.
              *
-             * Como o endpoint de cadastro ainda não
-             * retorna um token, fazemos o login
-             * automaticamente usando as credenciais
-             * recém-criadas.
+             * Faz login automaticamente usando
+             * as credenciais recém-criadas.
              */
             await login(
                 cadastro.email,
                 cadastro.password
             );
 
-            // Fecha o modal
             setMostrarCadastro(false);
 
-            // Entra na aplicação
             navigate('/', {
                 replace: true,
             });
-
         } catch (error) {
             console.error(error);
 
@@ -188,17 +310,18 @@ export default function Login() {
 
                     setCadastroError(
                         primeiraMensagem ||
-                        'Verifique os dados informados.'
+                            'Verifique os dados informados.'
                     );
                 } else {
                     setCadastroError(
                         error.response?.data?.message ||
-                        'Verifique os dados informados.'
+                            'Verifique os dados informados.'
                     );
                 }
             } else {
                 setCadastroError(
-                    'Não foi possível criar a conta.'
+                    error.response?.data?.message ||
+                        'Não foi possível criar a conta.'
                 );
             }
         } finally {
@@ -216,7 +339,9 @@ export default function Login() {
                     </div>
 
                     <div className="login-header">
-                        <h1>Bem-vindo ao JOB</h1>
+                        <h1>
+                            Bem-vindo ao JOB
+                        </h1>
 
                         <p>
                             Encontre profissionais ou encontre
@@ -239,7 +364,9 @@ export default function Login() {
                                 placeholder="seu@email.com"
                                 value={email}
                                 onChange={(event) =>
-                                    setEmail(event.target.value)
+                                    setEmail(
+                                        event.target.value
+                                    )
                                 }
                                 required
                                 autoComplete="email"
@@ -257,7 +384,9 @@ export default function Login() {
                                 placeholder="Digite sua senha"
                                 value={password}
                                 onChange={(event) =>
-                                    setPassword(event.target.value)
+                                    setPassword(
+                                        event.target.value
+                                    )
                                 }
                                 required
                                 autoComplete="current-password"
@@ -307,7 +436,8 @@ export default function Login() {
                     className="cadastro-modal-overlay"
                     onMouseDown={(event) => {
                         if (
-                            event.target === event.currentTarget &&
+                            event.target ===
+                                event.currentTarget &&
                             !cadastroLoading
                         ) {
                             fecharCadastro();
@@ -336,7 +466,9 @@ export default function Login() {
                                 type="button"
                                 className="cadastro-modal-close"
                                 onClick={fecharCadastro}
-                                disabled={cadastroLoading}
+                                disabled={
+                                    cadastroLoading
+                                }
                                 aria-label="Fechar"
                             >
                                 ×
@@ -358,8 +490,12 @@ export default function Login() {
                                     name="name"
                                     type="text"
                                     placeholder="Seu nome"
-                                    value={cadastro.name}
-                                    onChange={handleCadastroChange}
+                                    value={
+                                        cadastro.name
+                                    }
+                                    onChange={
+                                        handleCadastroChange
+                                    }
                                     required
                                     autoComplete="name"
                                 />
@@ -375,8 +511,12 @@ export default function Login() {
                                     name="email"
                                     type="email"
                                     placeholder="seu@email.com"
-                                    value={cadastro.email}
-                                    onChange={handleCadastroChange}
+                                    value={
+                                        cadastro.email
+                                    }
+                                    onChange={
+                                        handleCadastroChange
+                                    }
                                     required
                                     autoComplete="email"
                                 />
@@ -394,8 +534,12 @@ export default function Login() {
                                         name="telefone"
                                         type="tel"
                                         placeholder="(47) 99999-9999"
-                                        value={cadastro.telefone}
-                                        onChange={handleCadastroChange}
+                                        value={
+                                            cadastro.telefone
+                                        }
+                                        onChange={
+                                            handleCadastroChange
+                                        }
                                         autoComplete="tel"
                                     />
                                 </div>
@@ -408,40 +552,98 @@ export default function Login() {
                                     <select
                                         id="cadastro-estado"
                                         name="estado"
-                                        value={cadastro.estado}
-                                        onChange={handleCadastroChange}
+                                        value={
+                                            cadastro.estado
+                                        }
+                                        onChange={
+                                            handleCadastroChange
+                                        }
                                     >
                                         <option value="">
                                             UF
                                         </option>
 
-                                        <option value="AC">AC</option>
-                                        <option value="AL">AL</option>
-                                        <option value="AP">AP</option>
-                                        <option value="AM">AM</option>
-                                        <option value="BA">BA</option>
-                                        <option value="CE">CE</option>
-                                        <option value="DF">DF</option>
-                                        <option value="ES">ES</option>
-                                        <option value="GO">GO</option>
-                                        <option value="MA">MA</option>
-                                        <option value="MT">MT</option>
-                                        <option value="MS">MS</option>
-                                        <option value="MG">MG</option>
-                                        <option value="PA">PA</option>
-                                        <option value="PB">PB</option>
-                                        <option value="PR">PR</option>
-                                        <option value="PE">PE</option>
-                                        <option value="PI">PI</option>
-                                        <option value="RJ">RJ</option>
-                                        <option value="RN">RN</option>
-                                        <option value="RS">RS</option>
-                                        <option value="RO">RO</option>
-                                        <option value="RR">RR</option>
-                                        <option value="SC">SC</option>
-                                        <option value="SP">SP</option>
-                                        <option value="SE">SE</option>
-                                        <option value="TO">TO</option>
+                                        <option value="AC">
+                                            AC
+                                        </option>
+                                        <option value="AL">
+                                            AL
+                                        </option>
+                                        <option value="AP">
+                                            AP
+                                        </option>
+                                        <option value="AM">
+                                            AM
+                                        </option>
+                                        <option value="BA">
+                                            BA
+                                        </option>
+                                        <option value="CE">
+                                            CE
+                                        </option>
+                                        <option value="DF">
+                                            DF
+                                        </option>
+                                        <option value="ES">
+                                            ES
+                                        </option>
+                                        <option value="GO">
+                                            GO
+                                        </option>
+                                        <option value="MA">
+                                            MA
+                                        </option>
+                                        <option value="MT">
+                                            MT
+                                        </option>
+                                        <option value="MS">
+                                            MS
+                                        </option>
+                                        <option value="MG">
+                                            MG
+                                        </option>
+                                        <option value="PA">
+                                            PA
+                                        </option>
+                                        <option value="PB">
+                                            PB
+                                        </option>
+                                        <option value="PR">
+                                            PR
+                                        </option>
+                                        <option value="PE">
+                                            PE
+                                        </option>
+                                        <option value="PI">
+                                            PI
+                                        </option>
+                                        <option value="RJ">
+                                            RJ
+                                        </option>
+                                        <option value="RN">
+                                            RN
+                                        </option>
+                                        <option value="RS">
+                                            RS
+                                        </option>
+                                        <option value="RO">
+                                            RO
+                                        </option>
+                                        <option value="RR">
+                                            RR
+                                        </option>
+                                        <option value="SC">
+                                            SC
+                                        </option>
+                                        <option value="SP">
+                                            SP
+                                        </option>
+                                        <option value="SE">
+                                            SE
+                                        </option>
+                                        <option value="TO">
+                                            TO
+                                        </option>
                                     </select>
                                 </div>
 
@@ -457,10 +659,176 @@ export default function Login() {
                                     name="cidade"
                                     type="text"
                                     placeholder="Sua cidade"
-                                    value={cadastro.cidade}
-                                    onChange={handleCadastroChange}
+                                    value={
+                                        cadastro.cidade
+                                    }
+                                    onChange={
+                                        handleCadastroChange
+                                    }
                                     autoComplete="address-level2"
                                 />
+                            </div>
+
+                            {/* =========================
+                                CATEGORIAS
+                            ========================= */}
+
+                            <div className="cadastro-form-group cadastro-categoria-group">
+
+                                <div className="cadastro-categoria-header">
+                                    <div>
+                                        <label>
+                                            Categorias
+                                        </label>
+
+                                        <p>
+                                            Selecione uma ou mais
+                                            categorias de serviços
+                                            que você pode realizar.
+                                        </p>
+                                    </div>
+
+                                    {categorias.length >
+                                        6 && (
+                                        <div className="cadastro-categoria-navigation">
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    navegarCategorias(
+                                                        'esquerda'
+                                                    )
+                                                }
+                                                disabled={
+                                                    categoriasLoading ||
+                                                    cadastroLoading
+                                                }
+                                                aria-label="Ver categorias anteriores"
+                                            >
+                                                ‹
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    navegarCategorias(
+                                                        'direita'
+                                                    )
+                                                }
+                                                disabled={
+                                                    categoriasLoading ||
+                                                    cadastroLoading
+                                                }
+                                                aria-label="Ver mais categorias"
+                                            >
+                                                ›
+                                            </button>
+
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="cadastro-categorias-wrapper">
+
+                                    {categoriasLoading ? (
+                                        <div className="cadastro-categorias-loading">
+                                            <div className="loading-spinner" />
+
+                                            <span>
+                                                Carregando
+                                                categorias...
+                                            </span>
+                                        </div>
+                                    ) : categorias.length ===
+                                      0 ? (
+                                        <p className="cadastro-categorias-empty">
+                                            Nenhuma categoria
+                                            disponível.
+                                        </p>
+                                    ) : (
+                                        <div
+                                            className="cadastro-categories-list"
+                                            ref={
+                                                categoriasContainerRef
+                                            }
+                                        >
+                                            {categorias.map(
+                                                (
+                                                    categoria
+                                                ) => {
+                                                    const selecionada =
+                                                        cadastro.categoria_ids.includes(
+                                                            Number(
+                                                                categoria.id
+                                                            )
+                                                        );
+
+                                                    return (
+                                                        <button
+                                                            key={
+                                                                categoria.id
+                                                            }
+                                                            type="button"
+                                                            className={
+                                                                selecionada
+                                                                    ? 'category-item selected'
+                                                                    : 'category-item'
+                                                            }
+                                                            onClick={() =>
+                                                                selecionarCategoria(
+                                                                    categoria.id
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                cadastroLoading
+                                                            }
+                                                        >
+                                                            <div className="category-content">
+                                                                <strong>
+                                                                    {
+                                                                        categoria.nome
+                                                                    }
+                                                                </strong>
+
+                                                                {categoria.descricao && (
+                                                                    <span>
+                                                                        {
+                                                                            categoria.descricao
+                                                                        }
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="category-check">
+                                                                {selecionada
+                                                                    ? '✓'
+                                                                    : '+'}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                }
+                                            )}
+                                        </div>
+                                    )}
+
+                                </div>
+
+                                {cadastro.categoria_ids.length >
+                                    0 && (
+                                    <div className="cadastro-categorias-selecionadas">
+                                        {
+                                            cadastro
+                                                .categoria_ids
+                                                .length
+                                        }{' '}
+                                        {cadastro
+                                            .categoria_ids
+                                            .length === 1
+                                            ? 'categoria selecionada'
+                                            : 'categorias selecionadas'}
+                                    </div>
+                                )}
+
                             </div>
 
                             <div className="cadastro-form-row">
@@ -475,8 +843,12 @@ export default function Login() {
                                         name="password"
                                         type="password"
                                         placeholder="Mínimo 6 caracteres"
-                                        value={cadastro.password}
-                                        onChange={handleCadastroChange}
+                                        value={
+                                            cadastro.password
+                                        }
+                                        onChange={
+                                            handleCadastroChange
+                                        }
                                         required
                                         minLength={6}
                                         autoComplete="new-password"
@@ -493,8 +865,12 @@ export default function Login() {
                                         name="password_confirmation"
                                         type="password"
                                         placeholder="Repita sua senha"
-                                        value={cadastro.password_confirmation}
-                                        onChange={handleCadastroChange}
+                                        value={
+                                            cadastro.password_confirmation
+                                        }
+                                        onChange={
+                                            handleCadastroChange
+                                        }
                                         required
                                         minLength={6}
                                         autoComplete="new-password"
@@ -514,8 +890,12 @@ export default function Login() {
                                 <button
                                     type="button"
                                     className="secondary-button"
-                                    onClick={fecharCadastro}
-                                    disabled={cadastroLoading}
+                                    onClick={
+                                        fecharCadastro
+                                    }
+                                    disabled={
+                                        cadastroLoading
+                                    }
                                 >
                                     Voltar
                                 </button>
@@ -523,7 +903,12 @@ export default function Login() {
                                 <button
                                     type="submit"
                                     className="primary-button"
-                                    disabled={cadastroLoading}
+                                    disabled={
+                                        cadastroLoading ||
+                                        categoriasLoading ||
+                                        categorias.length ===
+                                            0
+                                    }
                                 >
                                     {cadastroLoading
                                         ? 'Criando conta...'

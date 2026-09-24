@@ -1,1560 +1,1785 @@
- /* ============================================================
-    NEGOCIAÇÕES
-    Estilos dos componentes do domínio de negociações
- ============================================================ */
+/* ============================================================
+   NEGOCIAÇÕES
+   Estilos dos componentes do domínio de negociações
+============================================================ */
 
 
- /* ============================================================
+/* ============================================================
    OVERLAY
 ============================================================ */
 
- .negociacoes-modal-overlay {
-     position: fixed;
-     inset: 0;
-     z-index: 1000;
+.negociacoes-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
 
-     display: flex;
-     align-items: center;
-     justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-     padding: 24px;
+    padding: 24px;
 
-     background: rgba(15, 23, 42, 0.62);
+    background: rgba(15, 23, 42, 0.62);
 
-     backdrop-filter: blur(3px);
-     -webkit-backdrop-filter: blur(3px);
- }
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
 
 
- /* ============================================================
+/* ============================================================
    MODAL PRINCIPAL
 ============================================================ */
 
- .negociacoes-modal {
-     width: 100%;
-     max-width: 820px;
-     max-height: 92vh;
+.negociacoes-modal {
+    width: 100%;
+    max-width: 820px;
+    max-height: 92vh;
 
-     overflow-y: auto;
+    overflow-y: auto;
 
-     background: #ffffff;
+    background: #ffffff;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
 
-     box-shadow:
-         0 25px 60px rgba(0, 0, 0, 0.25);
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.25);
 
-     animation: negociacoesModalEntrada 0.2s ease-out;
- }
+    animation: negociacoesModalEntrada 0.2s ease-out;
+}
 
- @keyframes negociacoesModalEntrada {
-     from {
-         opacity: 0;
-         transform: translateY(10px) scale(0.98);
-     }
+@keyframes negociacoesModalEntrada {
 
-     to {
-         opacity: 1;
-         transform: translateY(0) scale(1);
-     }
- }
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
 
- /* ============================================================
+/* ============================================================
    SCROLLBAR
 ============================================================ */
 
- .negociacoes-modal::-webkit-scrollbar {
-     width: 7px;
- }
+.negociacoes-modal::-webkit-scrollbar {
+    width: 7px;
+}
 
- .negociacoes-modal::-webkit-scrollbar-track {
-     background: transparent;
- }
+.negociacoes-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
 
- .negociacoes-modal::-webkit-scrollbar-thumb {
-     background: #d1d5db;
-     border-radius: 10px;
- }
+.negociacoes-modal::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
 
- .negociacoes-modal::-webkit-scrollbar-thumb:hover {
-     background: #9ca3af;
- }
+.negociacoes-modal::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
 
 
- /* ============================================================
+/* ============================================================
    HEADER
 ============================================================ */
 
- .negociacoes-modal-header {
-     position: sticky;
-     top: 0;
-     z-index: 5;
+.negociacoes-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
 
-     display: flex;
-     align-items: flex-start;
-     justify-content: space-between;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
-     gap: 20px;
+    gap: 20px;
 
-     padding: 20px 24px;
+    padding: 20px 24px;
 
-     background: #ffffff;
+    background: #ffffff;
 
-     border-bottom: 1px solid #e5e7eb;
- }
+    border-bottom: 1px solid #e5e7eb;
+}
 
- .negociacoes-modal-header h2 {
-     margin: 0;
+.negociacoes-modal-header h2 {
+    margin: 0;
 
-     color: #111827;
+    color: #111827;
 
-     font-size: 22px;
-     font-weight: 700;
-     line-height: 1.3;
- }
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+}
 
- .negociacoes-modal-header p {
-     margin: 5px 0 0;
+.negociacoes-modal-header p {
+    margin: 5px 0 0;
 
-     color: #6b7280;
+    color: #6b7280;
 
-     font-size: 14px;
-     line-height: 1.4;
- }
+    font-size: 14px;
+    line-height: 1.4;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO FECHAR
 ============================================================ */
 
- .negociacoes-modal-fechar {
-     flex-shrink: 0;
+.negociacoes-modal-fechar {
+    flex-shrink: 0;
 
-     width: 38px;
-     height: 38px;
+    width: 38px;
+    height: 38px;
 
-     display: flex;
-     align-items: center;
-     justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 9px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
 
-     background: #f9fafb;
-     color: #374151;
+    background: #f9fafb;
+    color: #374151;
 
-     font-size: 25px;
-     line-height: 1;
+    font-size: 25px;
+    line-height: 1;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     transition:
-         background-color 0.2s ease,
-         border-color 0.2s ease,
-         color 0.2s ease,
-         transform 0.1s ease;
- }
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.1s ease;
+}
 
- .negociacoes-modal-fechar:hover {
-     background: #f3f4f6;
-     border-color: #d1d5db;
-     color: #111827;
- }
+.negociacoes-modal-fechar:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #111827;
+}
 
- .negociacoes-modal-fechar:active {
-     transform: scale(0.95);
- }
+.negociacoes-modal-fechar:active {
+    transform: scale(0.95);
+}
 
 
- /* ============================================================
+/* ============================================================
    LISTA
 ============================================================ */
 
- .negociacoes-lista {
-     padding: 24px;
- }
+.negociacoes-lista {
+    padding: 24px;
+}
 
- .negociacoes-cards {
-     display: flex;
-     flex-direction: column;
-     gap: 14px;
- }
+.negociacoes-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
 
 
- /* ============================================================
+/* ============================================================
    CARD DE NEGOCIAÇÃO
 ============================================================ */
 
- .negociacao-card {
-     padding: 18px;
+.negociacao-card {
+    padding: 18px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 
-     background: #ffffff;
+    background: #ffffff;
 
-     transition:
-         border-color 0.2s ease,
-         box-shadow 0.2s ease,
-         transform 0.15s ease;
- }
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+}
 
- .negociacao-card:hover {
-     border-color: #d1d5db;
+.negociacao-card:hover {
+    border-color: #d1d5db;
 
-     box-shadow:
-         0 6px 18px rgba(0, 0, 0, 0.07);
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.07);
 
-     transform: translateY(-1px);
- }
+    transform: translateY(-1px);
+}
 
 
- /* ============================================================
+/* ============================================================
    CABEÇALHO DO CARD
 ============================================================ */
 
- .negociacao-card-header {
-     display: flex;
-     align-items: flex-start;
-     justify-content: space-between;
+.negociacao-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
-     gap: 16px;
- }
+    gap: 16px;
+}
 
- .negociacao-card-header h3 {
-     margin: 0 0 4px;
+.negociacao-card-header h3 {
+    margin: 0 0 4px;
 
-     color: #111827;
+    color: #111827;
 
-     font-size: 16px;
-     font-weight: 700;
- }
+    font-size: 16px;
+    font-weight: 700;
+}
 
- .negociacao-card-header>div>span {
-     color: #6b7280;
-     font-size: 13px;
- }
+.negociacao-card-header>div>span {
+    color: #6b7280;
+    font-size: 13px;
+}
 
 
- /* ============================================================
+/* ============================================================
    STATUS
 ============================================================ */
 
- .negociacao-status {
-     flex-shrink: 0;
+.negociacao-status {
+    flex-shrink: 0;
 
-     padding: 6px 10px;
+    padding: 6px 10px;
 
-     border-radius: 20px;
+    border-radius: 20px;
 
-     background: #f3f4f6;
-     color: #374151 !important;
+    background: #f3f4f6;
+    color: #374151 !important;
 
-     font-size: 12px !important;
-     font-weight: 600;
+    font-size: 12px !important;
+    font-weight: 600;
 
-     white-space: nowrap;
- }
+    white-space: nowrap;
+}
 
 
- /* ============================================================
+/* ============================================================
    INFORMAÇÕES DO CARD
 ============================================================ */
 
- .negociacao-card-info {
-     display: grid;
+.negociacao-card-info {
+    display: grid;
 
-     grid-template-columns:
-         repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
-     gap: 12px;
+    gap: 12px;
 
-     margin: 18px 0;
- }
+    margin: 18px 0;
+}
 
- .negociacao-card-info div {
-     display: flex;
-     flex-direction: column;
+.negociacao-card-info div {
+    display: flex;
+    flex-direction: column;
 
-     gap: 4px;
+    gap: 4px;
 
-     padding: 11px 12px;
+    padding: 11px 12px;
 
-     border-radius: 9px;
+    border-radius: 9px;
 
-     background: #f9fafb;
- }
+    background: #f9fafb;
+}
 
- .negociacao-card-info span,
- .negociacao-resumo span {
-     color: #6b7280;
+.negociacao-card-info span,
+.negociacao-resumo span {
+    color: #6b7280;
 
-     font-size: 12px;
- }
+    font-size: 12px;
+}
 
- .negociacao-card-info strong,
- .negociacao-resumo strong {
-     color: #111827;
+.negociacao-card-info strong,
+.negociacao-resumo strong {
+    color: #111827;
 
-     font-size: 14px;
- }
+    font-size: 14px;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO ABRIR NEGOCIAÇÃO
 ============================================================ */
 
- .btn-abrir-negociacao {
-     width: 100%;
-     min-height: 42px;
+.btn-abrir-negociacao {
+    width: 100%;
+    min-height: 42px;
 
-     border: 0;
-     border-radius: 9px;
+    border: 0;
+    border-radius: 9px;
 
-     background: #111827;
-     color: #ffffff;
+    background: #111827;
+    color: #ffffff;
 
-     font-family: inherit;
-     font-size: 14px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     transition:
-         background-color 0.2s ease,
-         transform 0.1s ease;
- }
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
+}
 
- .btn-abrir-negociacao:hover {
-     background: #1f2937;
- }
+.btn-abrir-negociacao:hover {
+    background: #1f2937;
+}
 
- .btn-abrir-negociacao:active {
-     transform: scale(0.98);
- }
+.btn-abrir-negociacao:active {
+    transform: scale(0.98);
+}
 
 
- /* ============================================================
+/* ============================================================
    LOADING / ERRO / VAZIO
 ============================================================ */
 
- .negociacoes-loading,
- .negociacoes-error,
- .negociacoes-empty {
-     padding: 45px 20px;
+.negociacoes-loading,
+.negociacoes-error,
+.negociacoes-empty {
+    padding: 45px 20px;
 
-     text-align: center;
- }
+    text-align: center;
+}
 
- .negociacoes-loading {
-     color: #6b7280;
- }
+.negociacoes-loading {
+    color: #6b7280;
+}
 
- .negociacoes-error {
-     color: #b91c1c;
- }
+.negociacoes-error {
+    color: #b91c1c;
+}
 
- .negociacoes-empty>div {
-     margin-bottom: 12px;
+.negociacoes-empty>div {
+    margin-bottom: 12px;
 
-     font-size: 38px;
- }
+    font-size: 38px;
+}
 
- .negociacoes-empty h3 {
-     margin: 0 0 7px;
+.negociacoes-empty h3 {
+    margin: 0 0 7px;
 
-     color: #111827;
- }
+    color: #111827;
+}
 
- .negociacoes-empty p {
-     margin: 0;
+.negociacoes-empty p {
+    margin: 0;
 
-     color: #6b7280;
+    color: #6b7280;
 
-     font-size: 14px;
- }
+    font-size: 14px;
+}
 
 
- /* ============================================================
+/* ============================================================
    DETALHES
 ============================================================ */
 
- .negociacao-detalhes {
-     padding: 24px;
- }
+.negociacao-detalhes {
+    padding: 24px;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO VOLTAR
 ============================================================ */
 
- .negociacao-voltar {
-     display: inline-flex;
-     align-items: center;
+.negociacao-voltar {
+    display: inline-flex;
+    align-items: center;
 
-     margin-bottom: 20px;
-     padding: 0;
+    margin-bottom: 20px;
+    padding: 0;
 
-     border: 0;
+    border: 0;
 
-     background: transparent;
-     color: #374151;
+    background: transparent;
+    color: #374151;
 
-     font-family: inherit;
-     font-size: 14px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     transition: color 0.2s ease;
- }
+    transition: color 0.2s ease;
+}
 
- .negociacao-voltar:hover {
-     color: #111827;
- }
+.negociacao-voltar:hover {
+    color: #111827;
+}
 
 
- /* ============================================================
+/* ============================================================
    RESUMO
 ============================================================ */
 
- .negociacao-resumo {
-     display: grid;
+.negociacao-resumo {
+    display: grid;
 
-     grid-template-columns:
-         repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 
-     gap: 12px;
+    gap: 12px;
 
-     margin-bottom: 26px;
- }
+    margin-bottom: 26px;
+}
 
- .negociacao-resumo div {
-     display: flex;
-     flex-direction: column;
+.negociacao-resumo div {
+    display: flex;
+    flex-direction: column;
 
-     gap: 5px;
+    gap: 5px;
 
-     padding: 14px;
+    padding: 14px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 
-     background: #f9fafb;
- }
+    background: #f9fafb;
+}
 
 
- /* ============================================================
+/* ============================================================
    HISTÓRICO
 ============================================================ */
 
- .negociacao-historico {
-     padding: 18px;
+.negociacao-historico {
+    padding: 18px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 
-     background: #f9fafb;
- }
+    background: #f9fafb;
+}
 
- .negociacao-historico h3 {
-     margin: 0 0 16px;
+.negociacao-historico h3 {
+    margin: 0 0 16px;
 
-     color: #111827;
+    color: #111827;
 
-     font-size: 16px;
-     font-weight: 700;
- }
+    font-size: 16px;
+    font-weight: 700;
+}
 
 
- /* ============================================================
+/* ============================================================
    INTERAÇÕES
 ============================================================ */
 
- .negociacao-interacao {
-     margin-bottom: 12px;
-     padding: 15px;
+.negociacao-interacao {
+    margin-bottom: 12px;
+    padding: 15px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 
-     background: #ffffff;
- }
+    background: #ffffff;
+}
 
- .negociacao-interacao:last-child {
-     margin-bottom: 0;
- }
+.negociacao-interacao:last-child {
+    margin-bottom: 0;
+}
 
- .negociacao-interacao-header {
-     display: flex;
-     align-items: center;
-     justify-content: space-between;
+.negociacao-interacao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-     gap: 12px;
+    gap: 12px;
 
-     margin-bottom: 9px;
- }
+    margin-bottom: 9px;
+}
 
- .negociacao-interacao-header strong {
-     color: #111827;
+.negociacao-interacao-header strong {
+    color: #111827;
 
-     font-size: 14px;
- }
+    font-size: 14px;
+}
 
- .negociacao-interacao-header span {
-     color: #6b7280;
+.negociacao-interacao-header span {
+    color: #6b7280;
 
-     font-size: 11px;
-     white-space: nowrap;
- }
+    font-size: 11px;
+    white-space: nowrap;
+}
 
- .negociacao-interacao-tipo {
-     display: inline-flex;
+.negociacao-interacao-tipo {
+    display: inline-flex;
 
-     margin-bottom: 8px;
-     padding: 5px 8px;
+    margin-bottom: 8px;
+    padding: 5px 8px;
 
-     border-radius: 6px;
+    border-radius: 6px;
 
-     background: #f3f4f6;
-     color: #374151;
+    background: #f3f4f6;
+    color: #374151;
 
-     font-size: 11px;
-     font-weight: 600;
- }
+    font-size: 11px;
+    font-weight: 600;
+}
 
- .negociacao-interacao p {
-     margin: 5px 0 10px;
+.negociacao-interacao p {
+    margin: 5px 0 10px;
 
-     color: #374151;
+    color: #374151;
 
-     font-size: 14px;
-     line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.5;
 
-     white-space: pre-wrap;
- }
+    white-space: pre-wrap;
+}
 
- .negociacao-interacao-valor {
-     color: #111827;
+.negociacao-interacao-valor {
+    color: #111827;
 
-     font-size: 13px;
- }
+    font-size: 13px;
+}
 
- .negociacao-sem-interacoes {
-     margin: 0;
+.negociacao-sem-interacoes {
+    margin: 0;
 
-     color: #6b7280;
+    color: #6b7280;
 
-     font-size: 14px;
- }
+    font-size: 14px;
+}
 
 
- /* ============================================================
+/* ============================================================
    ÁREA DE AÇÕES
 ============================================================ */
 
- .negociacao-acoes {
-     margin-top: 22px;
-     padding: 20px;
+.negociacao-acoes {
+    margin-top: 22px;
+    padding: 20px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 
-     background: #ffffff;
+    background: #ffffff;
 
-     box-shadow:
-         0 3px 10px rgba(0, 0, 0, 0.04);
- }
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.04);
+}
 
- .negociacao-acoes-titulo {
-     display: flex;
-     flex-direction: column;
+.negociacao-acoes-titulo {
+    display: flex;
+    flex-direction: column;
 
-     gap: 5px;
+    gap: 5px;
 
-     margin-bottom: 16px;
- }
+    margin-bottom: 16px;
+}
 
- .negociacao-acoes-titulo h3 {
-     margin: 0;
+.negociacao-acoes-titulo h3 {
+    margin: 0;
 
-     color: #111827;
+    color: #111827;
 
-     font-size: 17px;
-     font-weight: 700;
- }
+    font-size: 17px;
+    font-weight: 700;
+}
 
- .negociacao-acoes-titulo span {
-     color: #6b7280;
+.negociacao-acoes-titulo span {
+    color: #6b7280;
 
-     font-size: 12px;
- }
+    font-size: 12px;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÕES PRINCIPAIS
 ============================================================ */
 
- .negociacao-botoes-principais {
-     display: grid;
+.negociacao-botoes-principais {
+    display: grid;
 
-     grid-template-columns:
-         repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
-     gap: 10px;
+    gap: 10px;
 
-     margin-bottom: 16px;
- }
+    margin-bottom: 16px;
+}
 
- .btn-negociacao-aceitar,
- .btn-negociacao-recusar {
-     min-height: 44px;
+.btn-negociacao-aceitar,
+.btn-negociacao-recusar {
+    min-height: 44px;
 
-     padding: 0 14px;
+    padding: 0 14px;
 
-     border-radius: 9px;
+    border-radius: 9px;
 
-     font-family: inherit;
-     font-size: 13px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     transition:
-         background-color 0.2s ease,
-         border-color 0.2s ease,
-         transform 0.1s ease;
- }
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.1s ease;
+}
 
- .btn-negociacao-aceitar {
-     border: 1px solid #bbf7d0;
+.btn-negociacao-aceitar {
+    border: 1px solid #bbf7d0;
 
-     background: #f0fdf4;
-     color: #166534;
- }
+    background: #f0fdf4;
+    color: #166534;
+}
 
- .btn-negociacao-aceitar:hover {
-     background: #dcfce7;
-     border-color: #86efac;
- }
+.btn-negociacao-aceitar:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+}
 
- .btn-negociacao-recusar {
-     border: 1px solid #fecaca;
+.btn-negociacao-recusar {
+    border: 1px solid #fecaca;
 
-     background: #ffffff;
-     color: #b91c1c;
- }
+    background: #ffffff;
+    color: #b91c1c;
+}
 
- .btn-negociacao-recusar:hover {
-     background: #fef2f2;
-     border-color: #fca5a5;
- }
+.btn-negociacao-recusar:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
 
- .btn-negociacao-aceitar:active,
- .btn-negociacao-recusar:active {
-     transform: scale(0.98);
- }
+.btn-negociacao-aceitar:active,
+.btn-negociacao-recusar:active {
+    transform: scale(0.98);
+}
 
 
- /* ============================================================
+/* ============================================================
    RESPOSTA
 ============================================================ */
 
- .negociacao-resposta {
-     display: flex;
-     flex-direction: column;
+.negociacao-resposta {
+    display: flex;
+    flex-direction: column;
 
-     gap: 13px;
+    gap: 13px;
 
-     padding-top: 16px;
+    padding-top: 16px;
 
-     border-top: 1px solid #e5e7eb;
- }
+    border-top: 1px solid #e5e7eb;
+}
 
- .negociacao-resposta-aviso {
-     padding: 12px 13px;
+.negociacao-resposta-aviso {
+    padding: 12px 13px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 9px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
 
-     background: #f9fafb;
-     color: #6b7280;
+    background: #f9fafb;
+    color: #6b7280;
 
-     font-size: 13px;
-     line-height: 1.5;
- }
+    font-size: 13px;
+    line-height: 1.5;
+}
 
 
- /* ============================================================
+/* ============================================================
    FORMULÁRIO
 ============================================================ */
 
- .negociacao-form-grupo {
-     display: flex;
-     flex-direction: column;
+.negociacao-form-grupo {
+    display: flex;
+    flex-direction: column;
 
-     gap: 6px;
- }
+    gap: 6px;
+}
 
- .negociacao-form-grupo label {
-     color: #111827;
+.negociacao-form-grupo label {
+    color: #111827;
 
-     font-size: 12px;
-     font-weight: 600;
- }
+    font-size: 12px;
+    font-weight: 600;
+}
 
- .negociacao-form-grupo select,
- .negociacao-form-grupo input,
- .negociacao-form-grupo textarea {
-     width: 100%;
+.negociacao-form-grupo select,
+.negociacao-form-grupo input,
+.negociacao-form-grupo textarea {
+    width: 100%;
 
-     box-sizing: border-box;
+    box-sizing: border-box;
 
-     border: 1px solid #d1d5db;
-     border-radius: 9px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
 
-     background: #ffffff;
-     color: #111827;
+    background: #ffffff;
+    color: #111827;
 
-     font-family: inherit;
-     font-size: 13px;
+    font-family: inherit;
+    font-size: 13px;
 
-     transition:
-         border-color 0.2s ease,
-         box-shadow 0.2s ease;
- }
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
 
- .negociacao-form-grupo select,
- .negociacao-form-grupo input {
-     min-height: 43px;
+.negociacao-form-grupo select,
+.negociacao-form-grupo input {
+    min-height: 43px;
 
-     padding: 0 12px;
- }
+    padding: 0 12px;
+}
 
- .negociacao-form-grupo textarea {
-     min-height: 105px;
+.negociacao-form-grupo textarea {
+    min-height: 105px;
 
-     padding: 10px 12px;
+    padding: 10px 12px;
 
-     resize: vertical;
+    resize: vertical;
 
-     line-height: 1.5;
- }
+    line-height: 1.5;
+}
 
- .negociacao-form-grupo select:focus,
- .negociacao-form-grupo input:focus,
- .negociacao-form-grupo textarea:focus {
-     outline: none;
+.negociacao-form-grupo select:focus,
+.negociacao-form-grupo input:focus,
+.negociacao-form-grupo textarea:focus {
+    outline: none;
 
-     border-color: #2563eb;
+    border-color: #2563eb;
 
-     box-shadow:
-         0 0 0 3px rgba(37, 99, 235, 0.10);
- }
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.10);
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO RESPONDER
 ============================================================ */
 
- .btn-negociacao-responder {
-     width: 100%;
-     min-height: 44px;
+.btn-negociacao-responder {
+    width: 100%;
+    min-height: 44px;
 
-     padding: 0 14px;
+    padding: 0 14px;
 
-     border: none;
-     border-radius: 9px;
+    border: none;
+    border-radius: 9px;
 
-     background: #2563eb;
-     color: #ffffff;
+    background: #2563eb;
+    color: #ffffff;
 
-     font-family: inherit;
-     font-size: 13px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     transition:
-         background-color 0.2s ease,
-         transform 0.1s ease;
- }
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
+}
 
- .btn-negociacao-responder:hover {
-     background: #1d4ed8;
- }
+.btn-negociacao-responder:hover {
+    background: #1d4ed8;
+}
 
- .btn-negociacao-responder:active {
-     transform: scale(0.98);
- }
+.btn-negociacao-responder:active {
+    transform: scale(0.98);
+}
 
 
- /* ============================================================
+/* ============================================================
    SEM AÇÕES
 ============================================================ */
 
- .negociacao-sem-acoes {
-     display: flex;
-     flex-direction: column;
+.negociacao-sem-acoes {
+    display: flex;
+    flex-direction: column;
 
-     gap: 5px;
+    gap: 5px;
 
-     margin-top: 20px;
-     padding: 15px;
+    margin-top: 20px;
+    padding: 15px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 
-     background: #f9fafb;
- }
+    background: #f9fafb;
+}
 
- .negociacao-sem-acoes strong {
-     color: #111827;
+.negociacao-sem-acoes strong {
+    color: #111827;
 
-     font-size: 13px;
- }
+    font-size: 13px;
+}
 
- .negociacao-sem-acoes span {
-     color: #6b7280;
+.negociacao-sem-acoes span {
+    color: #6b7280;
 
-     font-size: 12px;
-     line-height: 1.4;
- }
+    font-size: 12px;
+    line-height: 1.4;
+}
 
 
- /* ============================================================
+/* ============================================================
    ERRO DE AÇÃO
 ============================================================ */
 
- .negociacao-erro-acao {
-     margin-top: 14px;
-     padding: 12px;
+.negociacao-erro-acao {
+    margin-top: 14px;
+    padding: 12px;
 
-     border: 1px solid #fecaca;
-     border-radius: 9px;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
 
-     background: #fef2f2;
-     color: #991b1b;
+    background: #fef2f2;
+    color: #991b1b;
 
-     font-size: 12px;
-     line-height: 1.5;
- }
+    font-size: 12px;
+    line-height: 1.5;
+}
 
 
- /* ============================================================
+/* ============================================================
    LOADING DOS DETALHES
 ============================================================ */
 
- .negociacoes-detalhes-loading {
-     padding: 14px 20px;
+.negociacoes-detalhes-loading {
+    padding: 14px 20px;
 
-     border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #e5e7eb;
 
-     color: #6b7280;
+    color: #6b7280;
 
-     font-size: 13px;
+    font-size: 13px;
 
-     text-align: center;
- }
+    text-align: center;
+}
 
 
- /* ============================================================
+/* ============================================================
    PAGAMENTO
 ============================================================ */
 
- .negociacao-pagamento {
-     padding: 24px;
- }
+.negociacao-pagamento {
+    padding: 24px;
+}
 
- .pagamento-titulo {
-     margin-bottom: 20px;
- }
+.pagamento-titulo {
+    margin-bottom: 20px;
+}
 
- .pagamento-titulo h3 {
-     margin: 0 0 6px;
+.pagamento-titulo h3 {
+    margin: 0 0 6px;
 
-     color: #111827;
+    color: #111827;
 
-     font-size: 18px;
- }
+    font-size: 18px;
+}
 
- .pagamento-titulo p {
-     margin: 0;
+.pagamento-titulo p {
+    margin: 0;
 
-     color: #6b7280;
+    color: #6b7280;
 
-     font-size: 13px;
-     line-height: 1.5;
- }
+    font-size: 13px;
+    line-height: 1.5;
+}
 
 
- /* ============================================================
+/* ============================================================
    RESUMO DO PAGAMENTO
 ============================================================ */
 
- .pagamento-resumo {
-     display: grid;
+.pagamento-resumo {
+    display: grid;
 
-     grid-template-columns:
-         repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 
-     gap: 12px;
+    gap: 12px;
 
-     margin-bottom: 18px;
- }
+    margin-bottom: 18px;
+}
 
- .pagamento-resumo>div {
-     display: flex;
-     flex-direction: column;
+.pagamento-resumo>div {
+    display: flex;
+    flex-direction: column;
 
-     gap: 5px;
+    gap: 5px;
 
-     padding: 14px;
+    padding: 14px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 
-     background: #f9fafb;
- }
+    background: #f9fafb;
+}
 
- .pagamento-resumo span {
-     color: #6b7280;
+.pagamento-resumo span {
+    color: #6b7280;
 
-     font-size: 12px;
- }
+    font-size: 12px;
+}
 
- .pagamento-resumo strong {
-     color: #111827;
+.pagamento-resumo strong {
+    color: #111827;
 
-     font-size: 14px;
- }
+    font-size: 14px;
+}
 
- .pagamento-valor {
-     font-size: 18px !important;
- }
+.pagamento-valor {
+    font-size: 18px !important;
+}
 
+/* ============================================================
+   DETALHAMENTO DO PAGAMENTO
+============================================================ */
 
- /* ============================================================
+.pagamento-detalhamento {
+    margin-bottom: 20px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    overflow: hidden;
+}
+
+.pagamento-detalhamento-header {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    padding: 15px 16px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: #f9fafb;
+}
+
+.pagamento-detalhamento-header strong {
+    color: #111827;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.pagamento-detalhamento-header span {
+    color: #6b7280;
+
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.pagamento-detalhamento-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 13px 16px;
+
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.pagamento-detalhamento-linha span {
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+.pagamento-detalhamento-linha strong {
+    flex-shrink: 0;
+
+    color: #111827;
+
+    font-size: 14px;
+}
+
+.pagamento-detalhamento-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 16px;
+
+    background: #f9fafb;
+}
+
+.pagamento-detalhamento-total>div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.pagamento-detalhamento-total>div strong {
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.pagamento-detalhamento-total>div span {
+    color: #6b7280;
+
+    font-size: 11px;
+}
+
+.pagamento-detalhamento-total>strong {
+    flex-shrink: 0;
+
+    color: #111827;
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ============================================================
    STATUS DO PAGAMENTO
 ============================================================ */
 
- .pagamento-status {
-     display: flex;
-     align-items: flex-start;
+.pagamento-status {
+    display: flex;
+    align-items: flex-start;
 
-     gap: 12px;
+    gap: 12px;
 
-     margin-bottom: 20px;
-     padding: 14px;
+    margin-bottom: 20px;
+    padding: 14px;
 
-     border: 1px solid #fde68a;
-     border-radius: 10px;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
 
-     background: #fffbeb;
- }
+    background: #fffbeb;
+}
 
- .pagamento-status-indicador {
-     flex-shrink: 0;
+.pagamento-status-indicador {
+    flex-shrink: 0;
 
-     font-size: 22px;
- }
+    font-size: 22px;
+}
 
- .pagamento-status>div {
-     display: flex;
-     flex-direction: column;
+.pagamento-status>div {
+    display: flex;
+    flex-direction: column;
 
-     gap: 4px;
- }
+    gap: 4px;
+}
 
- .pagamento-status strong {
-     color: #92400e;
+.pagamento-status strong {
+    color: #92400e;
 
-     font-size: 14px;
- }
+    font-size: 14px;
+}
 
- .pagamento-status span {
-     color: #78350f;
+.pagamento-status span {
+    color: #78350f;
 
-     font-size: 12px;
-     line-height: 1.5;
- }
+    font-size: 12px;
+    line-height: 1.5;
+}
 
 
- /* ============================================================
+/* ============================================================
    QR CODE
 ============================================================ */
 
- .pagamento-qrcode-container {
-     display: flex;
-     flex-direction: column;
-     align-items: center;
+.pagamento-qrcode-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-     padding: 20px;
+    width: 100%;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 12px;
+    padding: 20px;
 
-     background: #ffffff;
- }
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 
- .pagamento-qrcode-container h3 {
-     margin: 0 0 16px;
+    background: #ffffff;
+}
 
-     color: #111827;
+.pagamento-qrcode-container h3 {
+    margin: 0 0 16px;
 
-     font-size: 15px;
- }
+    color: #111827;
 
- .pagamento-qrcode-ficticio {
-     position: relative;
+    font-size: 15px;
+    font-weight: 700;
 
-     width: 190px;
-     height: 190px;
+    text-align: center;
+}
 
-     display: grid;
+.pagamento-qrcode-ficticio {
+    position: relative;
 
-     grid-template-columns:
-         repeat(7, 1fr);
+    width: 190px;
+    height: 190px;
 
-     grid-template-rows:
-         repeat(7, 1fr);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-     gap: 3px;
+    padding: 12px;
 
-     padding: 14px;
+    box-sizing: border-box;
 
-     box-sizing: border-box;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
 
-     border: 8px solid #ffffff;
+    background: #ffffff;
 
-     background: #111827;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.08);
+}
 
-     box-shadow:
-         0 4px 15px rgba(0, 0, 0, 0.12);
- }
+.qr-matriz {
+    display: grid;
 
- .pagamento-qrcode-aviso {
-     margin: 12px 0 0;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
 
-     color: #9ca3af;
+    width: 100%;
+    height: 100%;
 
-     font-size: 11px;
+    aspect-ratio: 1 / 1;
 
-     text-align: center;
- }
+    background: #ffffff;
+}
+
+.qr-matriz span {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    background: #ffffff;
+}
+
+.qr-matriz span.ativo {
+    background: #18181b;
+}
+
+.pagamento-qrcode-aviso {
+    max-width: 280px;
+
+    margin: 12px 0 0;
+
+    color: #71717a;
+
+    font-size: 11px;
+    line-height: 1.4;
+
+    text-align: center;
+}
 
 
- /* ============================================================
+/* ============================================================
    PIX
 ============================================================ */
 
- .pagamento-pix {
-     display: flex;
-     flex-direction: column;
+.pagamento-pix {
+    display: flex;
+    flex-direction: column;
 
-     gap: 5px;
+    gap: 5px;
 
-     margin-top: 16px;
-     padding: 15px;
+    margin-top: 16px;
+    padding: 15px;
 
-     border: 1px solid #e5e7eb;
-     border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 
-     background: #f9fafb;
+    background: #f9fafb;
 
-     text-align: center;
- }
+    text-align: center;
+}
 
- .pagamento-pix span {
-     color: #6b7280;
+.pagamento-pix span {
+    color: #6b7280;
 
-     font-size: 12px;
- }
+    font-size: 12px;
+}
 
- .pagamento-pix strong {
-     color: #111827;
+.pagamento-pix strong {
+    color: #111827;
 
-     font-size: 15px;
+    font-size: 15px;
 
-     word-break: break-word;
- }
+    word-break: break-word;
+}
 
- .pagamento-pix small {
-     color: #9ca3af;
+.pagamento-pix small {
+    color: #9ca3af;
 
-     font-size: 11px;
- }
+    font-size: 11px;
+}
 
 
- /* ============================================================
+/* ============================================================
    AVISO DE PAGAMENTO
 ============================================================ */
 
- .pagamento-aviso {
-     display: flex;
-     flex-direction: column;
+.pagamento-aviso {
+    display: flex;
+    flex-direction: column;
 
-     gap: 4px;
+    gap: 4px;
 
-     margin-top: 16px;
-     padding: 14px;
+    margin-top: 16px;
+    padding: 14px;
 
-     border: 1px solid #bfdbfe;
-     border-radius: 10px;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
 
-     background: #eff6ff;
- }
+    background: #eff6ff;
+}
 
- .pagamento-aviso strong {
-     color: #1e40af;
+.pagamento-aviso strong {
+    color: #1e40af;
 
-     font-size: 13px;
- }
+    font-size: 13px;
+}
 
- .pagamento-aviso span {
-     color: #1e3a8a;
+.pagamento-aviso span {
+    color: #1e3a8a;
 
-     font-size: 12px;
+    font-size: 12px;
 
-     line-height: 1.5;
- }
+    line-height: 1.5;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO PAGAMENTO REALIZADO
 ============================================================ */
 
- .btn-pagamento-realizado {
-     width: 100%;
-     min-height: 48px;
+.btn-pagamento-realizado {
+    width: 100%;
+    min-height: 48px;
 
-     margin-top: 16px;
+    margin-top: 16px;
 
-     padding: 12px 20px;
+    padding: 12px 20px;
 
-     border: none;
-     border-radius: 10px;
+    border: none;
+    border-radius: 10px;
 
-     background: #198754;
-     color: #ffffff;
+    background: #198754;
+    color: #ffffff;
 
-     font-family: inherit;
-     font-size: 15px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     display: flex;
-     align-items: center;
-     justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-     transition:
-         background-color 0.2s ease,
-         transform 0.1s ease,
-         box-shadow 0.2s ease;
- }
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease,
+        box-shadow 0.2s ease;
+}
 
- .btn-pagamento-realizado:hover {
-     background: #157347;
+.btn-pagamento-realizado:hover {
+    background: #157347;
 
-     box-shadow:
-         0 4px 10px rgba(0, 0, 0, 0.15);
- }
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.15);
+}
 
- .btn-pagamento-realizado:active {
-     transform: scale(0.98);
- }
+.btn-pagamento-realizado:active {
+    transform: scale(0.98);
+}
 
- .btn-pagamento-realizado:disabled {
-     background: #9ca3af;
+.btn-pagamento-realizado:disabled {
+    background: #9ca3af;
 
-     cursor: not-allowed;
+    cursor: not-allowed;
 
-     box-shadow: none;
-     transform: none;
- }
+    box-shadow: none;
+    transform: none;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO VOLTAR DO PAGAMENTO
 ============================================================ */
 
- .btn-pagamento-voltar {
-     width: 100%;
-     min-height: 42px;
+.btn-pagamento-voltar {
+    width: 100%;
+    min-height: 42px;
 
-     margin-top: 10px;
+    margin-top: 10px;
 
-     border: 1px solid #d1d5db;
-     border-radius: 9px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
 
-     background: #ffffff;
-     color: #374151;
+    background: #ffffff;
+    color: #374151;
 
-     font-family: inherit;
-     font-size: 13px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
 
-     cursor: pointer;
- }
+    cursor: pointer;
+}
 
- .btn-pagamento-voltar:hover {
-     background: #f9fafb;
- }
+.btn-pagamento-voltar:hover {
+    background: #f9fafb;
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÃO VER INTERAÇÕES
 ============================================================ */
 
- button.btn-ver-interacoes {
-     display: block;
+button.btn-ver-interacoes {
+    display: block;
 
-     width: 100%;
-     min-height: 44px;
+    width: 100%;
+    min-height: 44px;
 
-     margin: 12px 0 16px;
-     padding: 10px 14px;
+    margin: 12px 0 16px;
+    padding: 10px 14px;
 
-     box-sizing: border-box;
+    box-sizing: border-box;
 
-     border: 1px solid #d1d5db;
-     border-radius: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
 
-     background: #f9fafb;
-     color: #374151;
+    background: #f9fafb;
+    color: #374151;
 
-     font-family: inherit;
-     font-size: 13px;
-     font-weight: 600;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
 
-     line-height: 1.2;
+    line-height: 1.2;
 
-     cursor: pointer;
+    cursor: pointer;
 
-     transition:
-         background-color 0.2s ease,
-         border-color 0.2s ease,
-         transform 0.1s ease;
- }
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.1s ease;
+}
 
- button.btn-ver-interacoes:hover {
-     background: #f3f4f6;
-     border-color: #9ca3af;
- }
+button.btn-ver-interacoes:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
 
- button.btn-ver-interacoes:active {
-     transform: scale(0.98);
- }
+button.btn-ver-interacoes:active {
+    transform: scale(0.98);
+}
 
- button.btn-ver-interacoes:focus {
-     outline: none;
+button.btn-ver-interacoes:focus {
+    outline: none;
 
-     border-color: #2563eb;
+    border-color: #2563eb;
 
-     box-shadow:
-         0 0 0 3px rgba(37, 99, 235, 0.10);
- }
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.10);
+}
 
 
- /* ============================================================
+/* ============================================================
    BOTÕES DESABILITADOS
 ============================================================ */
 
- .negociacoes-modal button:disabled {
-     opacity: 0.65;
-     cursor: not-allowed;
- }
+.negociacoes-modal button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
 
 
- /* ============================================================
+/* ============================================================
    MOBILE
 ============================================================ */
 
- @media (max-width: 700px) {
+@media (max-width: 700px) {
 
-     .negociacoes-modal-overlay {
-         align-items: flex-end;
-         padding: 0;
-     }
+    .negociacoes-modal-overlay {
+        align-items: flex-end;
 
-     .negociacoes-modal {
-         width: 100%;
-         max-width: none;
-         max-height: 94vh;
+        padding: 0;
+    }
 
-         border-radius:
-             18px 18px 0 0;
-     }
+    .negociacoes-modal {
+        width: 100%;
+        max-width: none;
+        max-height: 94vh;
 
-     .negociacoes-modal-header {
-         padding: 16px 18px;
-     }
+        border-radius:
+            18px 18px 0 0;
+    }
 
-     .negociacoes-modal-header h2 {
-         font-size: 19px;
-     }
+    .negociacoes-modal-header {
+        padding: 16px;
+    }
 
-     .negociacoes-modal-header p {
-         font-size: 13px;
-     }
+    .negociacoes-modal-header h2 {
+        font-size: 19px;
+    }
 
-     .negociacoes-lista,
-     .negociacao-detalhes,
-     .negociacao-pagamento {
-         padding: 18px;
-     }
+    .negociacoes-modal-header p {
+        font-size: 13px;
+    }
 
-     .negociacao-card {
-         padding: 15px;
-     }
+    .negociacoes-lista,
+    .negociacao-detalhes,
+    .negociacao-pagamento {
+        padding: 16px;
+    }
 
-     .negociacao-card-header {
-         flex-direction: column;
-         gap: 10px;
-     }
+    .negociacao-card {
+        padding: 16px;
+    }
 
-     .negociacao-status {
-         align-self: flex-start;
-     }
+    .negociacao-card-header {
+        flex-direction: column;
 
-     .negociacao-card-info {
-         gap: 8px;
-     }
+        gap: 10px;
+    }
 
-     .negociacao-resumo,
-     .pagamento-resumo {
-         grid-template-columns: 1fr;
+    .negociacao-status {
+        align-self: flex-start;
+    }
 
-         gap: 8px;
+    .negociacao-card-info {
+        gap: 8px;
+    }
 
-         margin-bottom: 20px;
-     }
+    .negociacao-resumo,
+    .pagamento-resumo {
+        grid-template-columns: 1fr;
 
-     .negociacao-historico {
-         padding: 14px;
-     }
+        gap: 8px;
 
-     .negociacao-interacao {
-         padding: 13px;
-     }
+        margin-bottom: 20px;
+    }
 
-     .negociacao-interacao-header {
-         align-items: flex-start;
+    .negociacao-historico {
+        padding: 14px;
+    }
 
-         flex-direction: column;
+    .negociacao-interacao {
+        padding: 13px;
+    }
 
-         gap: 4px;
-     }
+    .negociacao-interacao-header {
+        align-items: flex-start;
 
-     .negociacao-acoes {
-         padding: 16px;
-     }
+        flex-direction: column;
 
-     .negociacao-botoes-principais {
-         grid-template-columns: 1fr;
+        gap: 4px;
+    }
 
-         gap: 8px;
-     }
+    .negociacao-acoes {
+        padding: 16px;
+    }
 
-     .btn-negociacao-aceitar,
-     .btn-negociacao-recusar {
-         min-height: 43px;
-     }
+    .negociacao-botoes-principais {
+        grid-template-columns: 1fr;
 
-     .pagamento-qrcode-ficticio {
-         width: 170px;
-         height: 170px;
-     }
+        gap: 8px;
+    }
 
-     .pagamento-status {
-         padding: 12px;
-     }
- }
+    .btn-negociacao-aceitar,
+    .btn-negociacao-recusar {
+        min-height: 43px;
+    }
+
+    .pagamento-qrcode-ficticio {
+        width: 170px;
+        height: 170px;
+    }
+
+    .pagamento-status {
+        padding: 12px;
+    }
+}
 
 
- /* ============================================================
+/* ============================================================
    MOBILE PEQUENO
 ============================================================ */
 
- @media (max-width: 400px) {
+@media (max-width: 400px) {
 
-     .negociacoes-modal-header {
-         padding: 14px 15px;
-     }
+    .negociacoes-modal-header {
+        padding: 14px 16px;
+    }
 
-     .negociacoes-lista,
-     .negociacao-detalhes,
-     .negociacao-pagamento {
-         padding: 15px;
-     }
+    .negociacoes-lista,
+    .negociacao-detalhes,
+    .negociacao-pagamento {
+        padding: 16px;
+    }
 
-     .negociacao-card-info {
-         grid-template-columns: 1fr;
-     }
+    .negociacao-card {
+        padding: 15px;
+    }
 
-     .negociacao-historico {
-         padding: 12px;
-     }
+    .negociacao-card-info {
+        grid-template-columns: 1fr;
+    }
 
-     .negociacao-acoes {
-         padding: 14px;
-     }
+    .negociacao-historico {
+        padding: 12px;
+    }
 
-     .pagamento-qrcode-ficticio {
-         width: 150px;
-         height: 150px;
-     }
+    .negociacao-acoes {
+        padding: 14px;
+    }
 
+    .pagamento-qrcode-container {
+        margin-top: 20px;
+        padding: 18px 14px;
 
-     /* ==========================================================================
-        QR CODE — PAGAMENTO
-        ========================================================================== */
+        border-radius: 14px;
 
-     .pagamento-qrcode-container {
-         display: flex;
-         flex-direction: column;
-         align-items: center;
+        background: #fafafa;
+    }
 
-         width: 100%;
-         margin-top: 24px;
-         padding: 22px 18px;
+    .pagamento-qrcode-ficticio {
+        width: 200px;
+        height: 200px;
 
-         box-sizing: border-box;
+        padding: 10px;
+    }
 
-         border: 1px solid #eeeeee;
-         border-radius: 14px;
+    .pagamento-qrcode-aviso {
+        max-width: 230px;
 
-         background: #fafafa;
-     }
-
-     .pagamento-qrcode-container h3 {
-         margin: 0 0 16px;
-
-         color: #18181b;
-
-         font-size: 15px;
-         font-weight: 700;
-
-         text-align: center;
-     }
+        font-size: 10px;
+    }
+}
 
 
-     /* --------------------------------------------------------------------------
-   Área branca do QR Code
-   -------------------------------------------------------------------------- */
+/* ============================================================
+   MOBILE MUITO PEQUENO
+============================================================ */
 
-     .pagamento-qrcode-ficticio {
-         display: flex;
-         align-items: center;
-         justify-content: center;
+@media (max-width: 380px) {
 
-         width: 220px;
-         height: 220px;
+    .negociacoes-modal-header {
+        padding: 14px 16px;
+    }
 
-         max-width: 100%;
-         box-sizing: border-box;
+    .negociacoes-lista,
+    .negociacao-detalhes,
+    .negociacao-pagamento {
+        padding: 16px;
+    }
 
-         padding: 12px;
+    .negociacao-acoes {
+        padding: 14px;
+    }
 
-         border: 1px solid #e4e4e7;
-         border-radius: 8px;
+    .pagamento-qrcode-container {
+        padding: 16px 10px;
+    }
 
-         background: #ffffff;
-     }
+    .pagamento-qrcode-ficticio {
+        width: 180px;
+        height: 180px;
 
+        padding: 9px;
+    }
 
-     /* --------------------------------------------------------------------------
-   Matriz
-   -------------------------------------------------------------------------- */
+    .pagamento-qrcode-aviso {
+        max-width: 230px;
 
-     .qr-matriz {
-         display: grid;
-
-         grid-template-columns: repeat(11, 1fr);
-         grid-template-rows: repeat(11, 1fr);
-
-         width: 100%;
-         height: 100%;
-
-         aspect-ratio: 1 / 1;
-
-         background: #ffffff;
-     }
+        font-size: 10px;
+    }
+}
 
 
-     /* --------------------------------------------------------------------------
-   Módulos
-   -------------------------------------------------------------------------- */
+/* ============================================================
+   RESUMO FINANCEIRO
+============================================================ */
 
-     .qr-matriz span {
-         display: block;
+.negociacao-financeiro {
+    margin-bottom: 26px;
 
-         width: 100%;
-         height: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 
-         background: #ffffff;
-     }
+    background: #ffffff;
 
-     .qr-matriz span.ativo {
-         background: #18181b;
-     }
+    overflow: hidden;
+}
+
+.negociacao-financeiro-header {
+    padding: 15px 16px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: #f9fafb;
+}
+
+.negociacao-financeiro-header>div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.negociacao-financeiro-header strong {
+    color: #111827;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.negociacao-financeiro-header span {
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.negociacao-financeiro-linhas {
+    padding: 4px 16px;
+}
+
+.negociacao-financeiro-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.negociacao-financeiro-linha:last-child {
+    border-bottom: none;
+}
+
+.negociacao-financeiro-linha span {
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+.negociacao-financeiro-linha strong {
+    flex-shrink: 0;
+
+    color: #111827;
+
+    font-size: 14px;
+}
+
+.negociacao-financeiro-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 16px;
+
+    border-top: 1px solid #e5e7eb;
+
+    background: #f9fafb;
+}
+
+.negociacao-financeiro-total>div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.negociacao-financeiro-total>div strong {
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.negociacao-financeiro-total>div span {
+    color: #6b7280;
+
+    font-size: 11px;
+}
+
+.negociacao-financeiro-total>strong {
+    flex-shrink: 0;
+
+    color: #111827;
+
+    font-size: 19px;
+    font-weight: 800;
+}
 
 
-     /* --------------------------------------------------------------------------
-   Aviso
-   -------------------------------------------------------------------------- */
+/* ============================================================
+   TOTAL NO CARD DA NEGOCIAÇÃO
+============================================================ */
 
-     .pagamento-qrcode-aviso {
-         margin: 12px 0 0;
+.negociacao-card-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-         color: #71717a;
+    gap: 12px;
 
-         font-size: 11px;
-         line-height: 1.4;
+    margin-bottom: 16px;
+    padding: 12px 13px;
 
-         text-align: center;
-     }
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
 
+    background: #f9fafb;
+}
 
-     /* ==========================================================================
-   RESPONSIVIDADE
-   ========================================================================== */
+.negociacao-card-total-info {
+    display: flex;
+    flex-direction: column;
 
-     @media (max-width: 600px) {
+    gap: 3px;
 
-         .pagamento-qrcode-container {
-             margin-top: 20px;
-             padding: 18px 14px;
-         }
+    min-width: 0;
+}
 
-         .pagamento-qrcode-ficticio {
-             width: 200px;
-             height: 200px;
+.negociacao-card-total-info span {
+    color: #374151;
 
-             padding: 10px;
-         }
-     }
+    font-size: 12px;
+    font-weight: 600;
+}
 
+.negociacao-card-total-info small {
+    color: #6b7280;
 
-     @media (max-width: 380px) {
+    font-size: 10px;
+    line-height: 1.4;
+}
 
-         .pagamento-qrcode-container {
-             padding: 16px 10px;
-         }
+.negociacao-card-total>strong {
+    flex-shrink: 0;
 
-         .pagamento-qrcode-ficticio {
-             width: 180px;
-             height: 180px;
+    color: #111827;
 
-             padding: 9px;
-         }
-
-         .pagamento-qrcode-aviso {
-             max-width: 230px;
-             font-size: 10px;
-         }
-     }
- }
+    font-size: 16px;
+    font-weight: 800;
+}

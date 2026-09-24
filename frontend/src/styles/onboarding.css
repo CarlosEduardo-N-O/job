@@ -1,0 +1,571 @@
+/* ============================================================
+   BASE
+   ============================================================ */
+
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 9999;
+
+    pointer-events: auto;
+}
+
+/* ============================================================
+   APRESENTAÇÃO
+   ============================================================ */
+
+.onboarding-overlay-apresentacao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: rgba(0, 0, 0, 0.68);
+
+    backdrop-filter: blur(3px);
+}
+
+/* ============================================================
+   TOUR
+   ============================================================ */
+
+.onboarding-overlay-tour {
+    background: rgba(0, 0, 0, 0.08);
+
+    /*
+     * Mantém a interface visível e apenas levemente escurecida.
+     */
+}
+
+/* ============================================================
+   DESTAQUE
+   ============================================================ */
+
+.onboarding-highlight {
+    position: fixed;
+
+    z-index: 10000;
+
+    border: 2px solid rgba(255, 255, 255, 0.95);
+
+    border-radius: 14px;
+
+    pointer-events: none;
+
+    box-shadow:
+        0 0 0 4px rgba(255, 255, 255, 0.10),
+        0 0 18px rgba(255, 255, 255, 0.18),
+        0 0 0 9999px rgba(0, 0, 0, 0.08);
+
+    transition:
+        top 0.3s ease,
+        left 0.3s ease,
+        width 0.3s ease,
+        height 0.3s ease;
+}
+
+/* ============================================================
+   CARD BASE
+   ============================================================ */
+
+.onboarding-card {
+    position: fixed;
+
+    z-index: 10001;
+
+    text-align: center;
+
+    pointer-events: auto;
+}
+
+/* ============================================================
+   CARD DA APRESENTAÇÃO
+   ============================================================ */
+
+.onboarding-card-apresentacao {
+    width: 100%;
+    max-width: 460px;
+
+    padding: 32px;
+
+    background: #ffffff;
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================
+   MENSAGEM DO TOUR
+   ============================================================ */
+
+.onboarding-card-tour {
+    left: 24px;
+    bottom: 90px;
+
+    width: min(340px, calc(100vw - 48px));
+
+    padding: 14px 16px;
+
+    background: rgba(25, 25, 25, 0.92);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.25);
+
+    color: #ffffff;
+
+    text-align: left;
+}
+
+/*
+ * O tour fica acima do menu inferior.
+ *
+ * 90px deixa espaço suficiente para a barra de navegação.
+ */
+
+/* ============================================================
+   BOTÃO FECHAR
+   ============================================================ */
+
+.onboarding-close {
+    position: absolute;
+
+    top: 8px;
+    right: 10px;
+
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: transparent;
+
+    color: #777;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.onboarding-close:hover:not(:disabled) {
+    background: #f1f1f1;
+}
+
+.onboarding-close:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.onboarding-card-tour .onboarding-close {
+    top: 7px;
+    right: 8px;
+
+    color: rgba(255, 255, 255, 0.7);
+
+    font-size: 21px;
+}
+
+.onboarding-card-tour .onboarding-close:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.10);
+}
+
+/* ============================================================
+   ÍCONE
+   ============================================================ */
+
+.onboarding-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 18px;
+
+    border-radius: 50%;
+
+    background: #f1f3f5;
+
+    font-size: 34px;
+}
+
+.onboarding-card-tour .onboarding-icon {
+    width: 34px;
+    height: 34px;
+
+    margin: 0 0 5px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    font-size: 18px;
+}
+
+/* ============================================================
+   PROGRESSO
+   ============================================================ */
+
+.onboarding-progress {
+    margin-bottom: 10px;
+
+    color: #777;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.onboarding-card-tour .onboarding-progress {
+    margin-bottom: 3px;
+
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 10px;
+}
+
+/* ============================================================
+   TÍTULO
+   ============================================================ */
+
+.onboarding-card h2 {
+    margin: 0 0 12px;
+
+    color: #222;
+
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.onboarding-card-tour h2 {
+    margin: 0 28px 5px 0;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   DESCRIÇÃO
+   ============================================================ */
+
+.onboarding-card p {
+    margin: 0 auto;
+
+    max-width: 380px;
+
+    color: #666;
+
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.onboarding-card-tour p {
+    max-width: none;
+
+    margin: 0 0 10px;
+
+    color: rgba(255, 255, 255, 0.82);
+
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* ============================================================
+   INDICADORES
+   ============================================================ */
+
+.onboarding-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 7px;
+
+    margin: 26px 0;
+}
+
+.onboarding-card-tour .onboarding-dots {
+    justify-content: flex-start;
+
+    gap: 5px;
+
+    margin: 8px 0;
+}
+
+.onboarding-dots span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #d2d2d2;
+
+    transition:
+        width 0.2s ease,
+        background 0.2s ease;
+}
+
+.onboarding-dots span.active {
+    width: 22px;
+
+    border-radius: 10px;
+
+    background: #333;
+}
+
+.onboarding-card-tour .onboarding-dots span {
+    width: 5px;
+    height: 5px;
+
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.onboarding-card-tour .onboarding-dots span.active {
+    width: 15px;
+
+    background: #ffffff;
+}
+
+/* ============================================================
+   AÇÕES
+   ============================================================ */
+
+.onboarding-actions {
+    display: flex;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.onboarding-card-tour .onboarding-actions {
+    justify-content: flex-start;
+
+    gap: 7px;
+}
+
+.onboarding-button {
+    min-height: 44px;
+
+    padding: 0 22px;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        background 0.2s ease;
+}
+
+.onboarding-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.onboarding-button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.65;
+}
+
+.onboarding-button.primary {
+    flex: 1;
+
+    border: none;
+
+    background: #222;
+
+    color: #ffffff;
+}
+
+.onboarding-button.primary:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.onboarding-button.secondary {
+    border: 1px solid #d8d8d8;
+
+    background: #ffffff;
+
+    color: #444;
+}
+
+.onboarding-button.secondary:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+/* ============================================================
+   BOTÕES DO TOUR
+   ============================================================ */
+
+.onboarding-card-tour .onboarding-button {
+    min-height: 30px;
+
+    padding: 0 12px;
+
+    border-radius: 7px;
+
+    font-size: 11px;
+}
+
+.onboarding-card-tour .onboarding-button.primary {
+    flex: 0 0 auto;
+
+    background: #ffffff;
+
+    color: #222;
+}
+
+.onboarding-card-tour .onboarding-button.primary:hover:not(:disabled) {
+    background: #eeeeee;
+}
+
+.onboarding-card-tour .onboarding-button.secondary {
+    border-color: rgba(255, 255, 255, 0.18);
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.onboarding-card-tour .onboarding-button.secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+
+.onboarding-button.primary:has(.onboarding-spinner) {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+}
+
+.onboarding-spinner {
+    width: 14px;
+    height: 14px;
+
+    flex-shrink: 0;
+
+    border: 2px solid rgba(255, 255, 255, 0.35);
+
+    border-top-color: #ffffff;
+
+    border-radius: 50%;
+
+    animation: onboarding-spin 0.7s linear infinite;
+}
+
+@keyframes onboarding-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+    .onboarding-overlay-apresentacao {
+        align-items: flex-end;
+
+        padding: 16px;
+    }
+
+    .onboarding-card-apresentacao {
+        max-width: none;
+
+        padding: 26px 20px 22px;
+
+        border-radius: 18px;
+    }
+
+    /*
+     * No celular o menu inferior costuma ocupar mais espaço.
+     * Mantemos a mensagem acima dele.
+     */
+
+    .onboarding-card-tour {
+        left: 16px;
+        bottom: 84px;
+
+        width: calc(100vw - 32px);
+
+        padding: 12px 14px;
+
+        border-radius: 11px;
+    }
+
+    .onboarding-card-tour .onboarding-icon {
+        width: 30px;
+        height: 30px;
+
+        margin-bottom: 4px;
+
+        font-size: 16px;
+    }
+
+    .onboarding-card-tour h2 {
+        font-size: 16px;
+    }
+
+    .onboarding-card-tour p {
+        font-size: 11px;
+    }
+
+    .onboarding-card-tour .onboarding-button {
+        min-height: 29px;
+
+        padding: 0 10px;
+
+        font-size: 10px;
+    }
+
+    .onboarding-icon {
+        width: 62px;
+        height: 62px;
+
+        margin-bottom: 14px;
+
+        font-size: 30px;
+    }
+
+    .onboarding-card h2 {
+        font-size: 22px;
+    }
+
+    .onboarding-card p {
+        font-size: 15px;
+    }
+
+    .onboarding-actions {
+        gap: 8px;
+    }
+
+    .onboarding-button {
+        padding: 0 16px;
+    }
+}

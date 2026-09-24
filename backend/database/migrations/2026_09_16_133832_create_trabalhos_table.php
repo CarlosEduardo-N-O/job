@@ -69,10 +69,34 @@ return new class extends Migration
                 ->restrictOnDelete();
 
             /*
-             * Valor definido na contratação.
+             * Valor do serviço.
+             *
+             * É o valor que o contratado
+             * recebe pelo trabalho.
              */
             $table->decimal(
-                'valor',
+                'valor_trabalho',
+                12,
+                2
+            );
+
+            /*
+             * Valor da taxa de intermediação
+             * cobrada pela JOB.
+             */
+            $table->decimal(
+                'valor_taxa',
+                12,
+                2
+            );
+
+            /*
+             * Valor total pago pelo contratante.
+             *
+             * valor_trabalho + valor_taxa
+             */
+            $table->decimal(
+                'valor_total',
                 12,
                 2
             );

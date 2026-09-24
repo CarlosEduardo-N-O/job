@@ -3,6 +3,7 @@
    ========================================================================== */
 
 .profile-page {
+    width: 100%;
     padding-bottom: 110px;
 }
 
@@ -521,7 +522,7 @@
 @media (max-width: 600px) {
 
     .profile-page {
-        padding: 18px 14px 110px;
+        padding: 18px 16px 110px;
     }
 
     .profile-page .page-header {
@@ -627,8 +628,8 @@
 @media (max-width: 380px) {
 
     .profile-page {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .profile-header {

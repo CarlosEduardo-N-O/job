@@ -210,13 +210,6 @@ class TrabalhoController extends Controller
         /*
          * Busca o tipo pelo ID E verifica
          * se ele pertence ao contexto TRABALHO.
-         *
-         * Isso impede, por exemplo, que:
-         *
-         * ID 1 = INTERESSE
-         *
-         * seja utilizado em um trabalho,
-         * pois INTERESSE pertence a NEGOCIACAO.
          */
         $interacaoTipo =
             InteracaoTipo::where(
@@ -287,7 +280,8 @@ class TrabalhoController extends Controller
 
             /*
              * Desistência do contratado.
-             */ elseif ($idInteracaoTipo === 9) {
+             */
+            elseif ($idInteracaoTipo === 9) {
 
                 if ($codigoStatus !== 'PENDENTE') {
                     throw ValidationException::withMessages([
@@ -304,7 +298,8 @@ class TrabalhoController extends Controller
             /*
              * Tipo de trabalho existente,
              * mas não permitido para o contratado.
-             */ else {
+             */
+            else {
                 throw ValidationException::withMessages([
                     'id_interacao_tipo' => [
                         'Esta interação não está disponível para o contratado.',
@@ -322,7 +317,8 @@ class TrabalhoController extends Controller
         | ID 8 = SERVICO_CONTESTADO
         | ID 10 = DESISTENCIA_CONTRATANTE
         |
-        */ elseif ($isContratante) {
+        */
+        elseif ($isContratante) {
 
             /*
              * Confirma a conclusão.
@@ -343,7 +339,8 @@ class TrabalhoController extends Controller
 
             /*
              * Contesta a conclusão.
-             */ elseif ($idInteracaoTipo === 8) {
+             */
+            elseif ($idInteracaoTipo === 8) {
 
                 if ($codigoStatus !== 'AGUARDANDO_CONFIRMACAO') {
                     throw ValidationException::withMessages([
@@ -358,8 +355,8 @@ class TrabalhoController extends Controller
             }
 
             /*
-            * Desistência do contratante.
-             */ 
+             * Desistência do contratante.
+             */
             elseif ($idInteracaoTipo === 10) {
 
                 if ($codigoStatus !== 'PENDENTE') {
@@ -377,7 +374,8 @@ class TrabalhoController extends Controller
             /*
              * Tipo de trabalho existente,
              * mas não permitido para o contratante.
-             */ else {
+             */
+            else {
                 throw ValidationException::withMessages([
                     'id_interacao_tipo' => [
                         'Esta interação não está disponível para o contratante.',
@@ -388,7 +386,8 @@ class TrabalhoController extends Controller
 
         /*
          * Usuário não participa do trabalho.
-         */ else {
+         */
+        else {
             abort(
                 403,
                 'Você não participa deste trabalho.'
@@ -473,10 +472,11 @@ class TrabalhoController extends Controller
              *
              * O pagamento começa como AGUARDANDO_PROCESSAMENTO.
              *
-             * A plataforma poderá posteriormente:
+             * Os valores financeiros são copiados do trabalho:
              *
-             * - confirmar o pagamento -> PAGO
-             * - recusar o processamento -> NAO_PROCESSADO
+             * valor_trabalho = valor que o contratado recebe
+             * valor_taxa     = taxa de intermediação da JOB
+             * valor_total    = total da operação
              */
             if ($novoStatus === 'CONCLUIDO') {
 
@@ -524,8 +524,24 @@ class TrabalhoController extends Controller
                         $statusPagamento
                             ->id_trabalho_pagamento_status,
 
-                        'valor' =>
-                        $trabalho->valor,
+                        /*
+                         * Valor do serviço que será recebido
+                         * pelo contratado.
+                         */
+                        'valor_trabalho' =>
+                        $trabalho->valor_trabalho,
+
+                        /*
+                         * Taxa de intermediação da JOB.
+                         */
+                        'valor_taxa' =>
+                        $trabalho->valor_taxa,
+
+                        /*
+                         * Valor total da operação.
+                         */
+                        'valor_total' =>
+                        $trabalho->valor_total,
 
                         'data_processamento' =>
                         null,

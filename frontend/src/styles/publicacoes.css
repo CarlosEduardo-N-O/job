@@ -4,73 +4,116 @@
 
 
 /* ==========================================================================
+   BASE
+   ========================================================================== */
+
+.publicacao-card,
+.contratacao-publicacao-card,
+.publicacao-modal,
+.publicacao-anexo-modal-conteudo {
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================================
    CARD DE PUBLICAÇÃO
    ========================================================================== */
 
 .publicacao-card {
     position: relative;
+
     width: 100%;
     margin-bottom: 18px;
     padding: 18px;
+
     box-sizing: border-box;
+
     background: #ffffff;
+
     border: 1px solid #e8e8e8;
     border-radius: 18px;
+
     box-shadow:
         0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 
-/* --------------------------------------------------------------------------
-   Cabeçalho
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   CABEÇALHO DA PUBLICAÇÃO
+   ========================================================================== */
 
 .publicacao-header {
     display: flex;
     align-items: center;
+
+    width: 100%;
+    min-width: 0;
+
     margin-bottom: 12px;
 }
 
 .publicacao-user {
     display: flex;
     align-items: center;
+
     gap: 10px;
+
     min-width: 0;
+    max-width: 100%;
 }
 
 .publicacao-avatar {
     display: flex;
     align-items: center;
     justify-content: center;
+
     flex-shrink: 0;
+
     width: 42px;
     height: 42px;
+
     overflow: hidden;
+
     border-radius: 50%;
+
     background: #eeeeee;
     color: #18181b;
+
     font-weight: 700;
 }
 
 .publicacao-avatar img {
+    display: block;
+
     width: 100%;
     height: 100%;
+
     object-fit: cover;
 }
 
 .publicacao-user strong {
     display: block;
+
     max-width: 220px;
+
     overflow: hidden;
+
+    color: #18181b;
+
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .publicacao-location {
     display: block;
+
     margin-top: 2px;
+
     color: #777777;
+
     font-size: 0.78rem;
+
+    overflow-wrap: anywhere;
 }
 
 
@@ -82,14 +125,26 @@
 .publicacao-categoria {
     display: inline-flex;
     align-items: center;
+
+    max-width: 100%;
+
     margin-bottom: 12px;
     padding: 6px 10px;
+
+    box-sizing: border-box;
+
     border: 1px solid #e2e2e2;
     border-radius: 8px;
+
     background: #f7f7f7;
     color: #3f3f46;
+
     font-size: 0.73rem;
     font-weight: 700;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
@@ -97,29 +152,46 @@
    CONTEÚDO
    ========================================================================== */
 
+.publicacao-content {
+    width: 100%;
+    min-width: 0;
+}
+
 .publicacao-content h2 {
     margin: 0 0 8px;
+
     color: #18181b;
-    font-size: 1.18rem;
+
+    font-size: clamp(1.05rem, 2vw, 1.18rem);
     line-height: 1.35;
+
+    overflow-wrap: anywhere;
 }
 
 .publicacao-description {
     margin: 0;
+
     color: #555555;
+
     font-size: 0.92rem;
     line-height: 1.55;
+
     overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .read-more-button {
     margin-top: 5px;
     padding: 0;
+
     border: 0;
+
     background: transparent;
     color: #18181b;
+
     font-size: 0.82rem;
     font-weight: 700;
+
     cursor: pointer;
 }
 
@@ -134,15 +206,547 @@
 
 
 /* ==========================================================================
+   ANEXOS DA PUBLICAÇÃO
+   ========================================================================== */
+
+.publicacao-anexos {
+    position: relative;
+
+    width: calc(100% + 36px);
+
+    margin: 18px -18px 0;
+
+    overflow: hidden;
+
+    background: #f5f5f5;
+
+    border-radius: 0 0 14px 14px;
+}
+
+.publicacao-anexos-carrossel {
+    position: relative;
+
+    width: 100%;
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================================
+   TRILHO DO CARROSSEL
+   ========================================================================== */
+
+.publicacao-anexos-trilho {
+    display: flex;
+
+    width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+
+    touch-action: pan-x;
+
+    overscroll-behavior-x: contain;
+}
+
+.publicacao-anexos-trilho::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* ==========================================================================
+   SLIDE DO ANEXO
+   ========================================================================== */
+
+.publicacao-anexo-slide {
+    flex: 0 0 100%;
+
+    width: 100%;
+    min-width: 100%;
+
+    height: 380px;
+
+    box-sizing: border-box;
+
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+
+/* ==========================================================================
+   IMAGEM
+   ========================================================================== */
+
+.publicacao-anexo-imagem {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    border: 0;
+    border-radius: 0;
+
+    background: #f5f5f5;
+
+    cursor: pointer;
+}
+
+.publicacao-anexo-imagem img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition: transform 0.25s ease;
+}
+
+.publicacao-anexo-imagem:hover img {
+    transform: scale(1.02);
+}
+
+.publicacao-anexo-imagem:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: -2px;
+}
+
+
+/* ==========================================================================
+   CARREGAMENTO DA IMAGEM
+   ========================================================================== */
+
+.publicacao-anexo-carregando {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    background: #f5f5f5;
+    color: #666666;
+
+    font-size: 14px;
+}
+
+
+/* ==========================================================================
+   VÍDEO / PDF
+   ========================================================================== */
+
+.publicacao-anexo-arquivo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 14px;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    border: 0;
+    border-radius: 0;
+
+    background: #f5f5f5;
+    color: #27272a;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition: background-color 0.2s ease;
+}
+
+.publicacao-anexo-arquivo:hover {
+    background: #eeeeee;
+}
+
+.publicacao-anexo-arquivo:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: -2px;
+}
+
+.publicacao-anexo-arquivo:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.publicacao-anexo-icone {
+    flex-shrink: 0;
+
+    font-size: 36px;
+}
+
+.publicacao-anexo-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    min-width: 0;
+}
+
+.publicacao-anexo-info strong {
+    display: block;
+
+    max-width: 100%;
+
+    overflow: hidden;
+
+    color: #27272a;
+
+    font-size: 14px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.publicacao-anexo-info small {
+    color: #71717a;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================================
+   SETAS DO CARROSSEL
+   ========================================================================== */
+
+.publicacao-anexos-seta {
+    position: absolute;
+
+    top: 50%;
+    z-index: 10;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    transform: translateY(-50%);
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.publicacao-anexos-seta:hover {
+    background: rgba(0, 0, 0, 0.75);
+
+    transform: translateY(-50%) scale(1.05);
+}
+
+.publicacao-anexos-seta:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+.publicacao-anexos-seta:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+
+    transform: translateY(-50%);
+}
+
+.publicacao-anexos-seta-esquerda {
+    left: 12px;
+}
+
+.publicacao-anexos-seta-direita {
+    right: 12px;
+}
+
+
+/* ==========================================================================
+   CONTROLES / INDICADORES
+   ========================================================================== */
+
+.publicacao-anexos-controles {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 6;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+
+    padding: 8px 12px;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(to top,
+            rgba(0, 0, 0, 0.5),
+            rgba(0, 0, 0, 0));
+
+    pointer-events: none;
+}
+
+.publicacao-anexos-indicadores {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    pointer-events: auto;
+}
+
+.publicacao-anexo-indicador {
+    width: 6px;
+    height: 6px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    cursor: pointer;
+
+    transition:
+        width 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.publicacao-anexo-indicador:hover {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.publicacao-anexo-indicador.ativo {
+    width: 18px;
+
+    border-radius: 999px;
+
+    background: #ffffff;
+}
+
+
+/* ==========================================================================
+   CONTADOR
+   ========================================================================== */
+
+.publicacao-anexos-contador {
+    position: absolute;
+
+    right: 12px;
+    bottom: 10px;
+
+    padding: 3px 7px;
+
+    border-radius: 999px;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    pointer-events: none;
+}
+
+
+/* ==========================================================================
+   MODAL DOS ANEXOS
+   ========================================================================== */
+
+.publicacao-anexo-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.publicacao-anexo-modal-conteudo {
+    width: 100%;
+    max-width: 1000px;
+
+    max-height: calc(100vh - 40px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.publicacao-anexo-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.publicacao-anexo-modal-header strong {
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #18181b;
+
+    font-size: 14px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.publicacao-anexo-modal-header button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 36px;
+    height: 36px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #f4f4f5;
+    color: #27272a;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.publicacao-anexo-modal-header button:hover {
+    background: #e4e4e7;
+}
+
+.publicacao-anexo-modal-header button:focus-visible {
+    outline: 2px solid #18181b;
+    outline-offset: 2px;
+}
+
+.publicacao-anexo-modal-body {
+    width: 100%;
+    min-height: 300px;
+
+    max-height: calc(100vh - 120px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: auto;
+
+    background: #18181b;
+}
+
+.publicacao-anexo-modal-body img {
+    display: block;
+
+    max-width: 100%;
+    max-height: calc(100vh - 140px);
+
+    object-fit: contain;
+}
+
+.publicacao-anexo-modal-body video {
+    display: block;
+
+    width: 100%;
+    max-height: calc(100vh - 140px);
+}
+
+.publicacao-anexo-modal-body iframe {
+    display: block;
+
+    width: 100%;
+    height: calc(100vh - 140px);
+
+    border: 0;
+
+    background: #ffffff;
+}
+
+
+/* ==========================================================================
    INFORMAÇÕES DA PUBLICAÇÃO
    ========================================================================== */
 
 .publicacao-info {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
     gap: 8px;
+
     margin-top: 18px;
     padding: 12px 0;
+
     border-top: 1px solid #eeeeee;
     border-bottom: 1px solid #eeeeee;
 }
@@ -150,19 +754,25 @@
 .publicacao-info-item {
     display: flex;
     flex-direction: column;
+
     gap: 3px;
+
     min-width: 0;
 }
 
 .publicacao-info-item span {
     color: #888888;
+
     font-size: 0.7rem;
 }
 
 .publicacao-info-item strong {
     overflow: hidden;
+
     color: #18181b;
+
     font-size: 0.8rem;
+
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -175,10 +785,15 @@
 .publicacao-address {
     display: flex;
     align-items: flex-start;
+
     gap: 7px;
+
     margin-top: 13px;
+
     color: #666666;
+
     font-size: 0.8rem;
+
     overflow-wrap: anywhere;
 }
 
@@ -189,8 +804,12 @@
 
 .publicacao-actions {
     display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr;
+
+    grid-template-columns:
+        1.3fr 1fr 1fr;
+
     gap: 7px;
+
     margin-top: 16px;
 }
 
@@ -198,19 +817,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
     gap: 5px;
+
     min-height: 40px;
+
     padding: 7px 8px;
+
     box-sizing: border-box;
+
     border: 1px solid #dddddd;
     border-radius: 10px;
+
     background: #ffffff;
     color: #18181b;
+
     font-size: 0.75rem;
     font-weight: 600;
+
     cursor: pointer;
+
     transition:
-        background 0.2s ease,
+        background-color 0.2s ease,
         border-color 0.2s ease,
         color 0.2s ease,
         transform 0.1s ease;
@@ -231,11 +859,13 @@
 
 .action-button:disabled {
     opacity: 0.55;
+
     cursor: not-allowed;
 }
 
 .interest-button.interested {
     border-color: #222222;
+
     background: #222222;
     color: #ffffff;
 }
@@ -250,18 +880,22 @@
 
 
 /* ==========================================================================
-   CARD DE PUBLICAÇÃO — MINHAS PUBLICAÇÕES
+   MINHAS PUBLICAÇÕES
    ========================================================================== */
 
 .contratacao-publicacao-card {
     width: 100%;
-    box-sizing: border-box;
+
     padding: 20px;
+
     background: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 16px;
+
     box-shadow:
         0 3px 12px rgba(0, 0, 0, 0.04);
+
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease;
@@ -269,103 +903,130 @@
 
 .contratacao-publicacao-card:hover {
     border-color: #d1d5db;
+
     box-shadow:
         0 5px 18px rgba(0, 0, 0, 0.06);
 }
 
 
-/* --------------------------------------------------------------------------
-   Cabeçalho do card
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   CABEÇALHO — MINHAS PUBLICAÇÕES
+   ========================================================================== */
 
 .contratacao-card-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+
     gap: 16px;
+
     margin-bottom: 18px;
 }
 
-.contratacao-card-header > div {
+.contratacao-card-header>div {
     min-width: 0;
 }
 
 .contratacao-card-header h3 {
     margin: 0 0 7px;
+
     color: #111827;
+
     font-size: 18px;
     font-weight: 800;
     line-height: 1.35;
+
     overflow-wrap: anywhere;
 }
 
 
-/* --------------------------------------------------------------------------
-   Status
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   STATUS
+   ========================================================================== */
 
 .contratacao-publicacao-card .publicacao-status {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     flex-shrink: 0;
+
     min-height: 28px;
+
     padding: 4px 9px;
+
     border-radius: 999px;
+
     background: #f3f4f6;
     color: #374151;
+
     font-size: 11px;
     font-weight: 700;
+
     white-space: nowrap;
 }
 
 
-/* --------------------------------------------------------------------------
-   Meta
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   META
+   ========================================================================== */
 
 .contratacao-card-meta {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
     gap: 10px;
+
     margin-bottom: 18px;
     padding: 13px 0;
+
     border-top: 1px solid #eeeeee;
     border-bottom: 1px solid #eeeeee;
 }
 
-.contratacao-card-meta > div {
+.contratacao-card-meta>div {
     display: flex;
     flex-direction: column;
+
     gap: 4px;
+
     min-width: 0;
 }
 
 .contratacao-card-meta span {
     color: #888888;
+
     font-size: 11px;
     font-weight: 500;
 }
 
 .contratacao-card-meta strong {
+    overflow: hidden;
+
     color: #18181b;
+
     font-size: 13px;
     font-weight: 700;
-    overflow: hidden;
+
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 
-/* --------------------------------------------------------------------------
-   Descrição
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   DESCRIÇÃO — MINHAS PUBLICAÇÕES
+   ========================================================================== */
 
 .contratacao-card-descricao {
     margin-bottom: 18px;
+
     color: #52525b;
+
     font-size: 14px;
     line-height: 1.55;
+
     overflow-wrap: anywhere;
 }
 
@@ -376,23 +1037,35 @@
 
 .publicacao-acoes-contratacao {
     display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
+
+    grid-template-columns:
+        1fr 1.2fr 1fr;
+
     gap: 8px;
+
     padding-top: 2px;
 }
 
 .publicacao-acoes-contratacao button {
     min-height: 42px;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     gap: 6px;
+
     padding: 7px 10px;
+
     box-sizing: border-box;
+
     border-radius: 10px;
+
     font-size: 12px;
     font-weight: 700;
+
     cursor: pointer;
+
     transition:
         background-color 0.2s ease,
         border-color 0.2s ease,
@@ -411,12 +1084,13 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Editar
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   BOTÃO EDITAR
+   ========================================================================== */
 
 .btn-editar-publicacao {
     border: 1px solid #d4d4d8;
+
     background: #ffffff;
     color: #27272a;
 }
@@ -427,12 +1101,13 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Negociações
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   BOTÃO NEGOCIAÇÕES
+   ========================================================================== */
 
 .btn-negociacoes-publicacao {
     border: 1px solid #18181b;
+
     background: #18181b;
     color: #ffffff;
 }
@@ -446,21 +1121,27 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     min-width: 21px;
     height: 21px;
+
     padding: 0 5px;
+
     border-radius: 999px;
+
     background: rgba(255, 255, 255, 0.15);
+
     font-size: 10px;
 }
 
 
-/* --------------------------------------------------------------------------
-   Cancelar
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   BOTÃO CANCELAR
+   ========================================================================== */
 
 .btn-cancelar-publicacao {
     border: 1px solid #fecaca;
+
     background: #ffffff;
     color: #dc2626;
 }
@@ -472,9 +1153,12 @@
 
 .btn-cancelar-publicacao:disabled {
     opacity: 0.45;
+
     background: #f9fafb;
     color: #9ca3af;
+
     border-color: #e5e7eb;
+
     cursor: not-allowed;
 }
 
@@ -490,23 +1174,21 @@
 
 .publicacao-modal-overlay {
     position: fixed;
+
     inset: 0;
+
     z-index: 1000;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    box-sizing: border-box;
     padding: 20px;
+
+    box-sizing: border-box;
 
     background: rgba(0, 0, 0, 0.55);
 }
-
-
-/* --------------------------------------------------------------------------
-   Estrutura principal
-   -------------------------------------------------------------------------- */
 
 .publicacao-modal {
     display: flex;
@@ -514,13 +1196,13 @@
 
     width: 100%;
     max-width: 720px;
+
     max-height: calc(100vh - 40px);
 
     overflow: hidden;
 
-    box-sizing: border-box;
-
     border-radius: 16px;
+
     background: #ffffff;
 
     box-shadow:
@@ -528,14 +1210,15 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Cabeçalho do modal
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   CABEÇALHO DO MODAL
+   ========================================================================== */
 
 .publicacao-modal-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+
     gap: 20px;
 
     padding: 22px 24px;
@@ -545,22 +1228,29 @@
     border-bottom: 1px solid #eeeeee;
 }
 
-.publicacao-modal-header > div {
+.publicacao-modal-header>div {
     min-width: 0;
 }
 
 .publicacao-modal-header h2 {
     margin: 0;
+
     color: #18181b;
-    font-size: 22px;
+
+    font-size: clamp(18px, 3vw, 22px);
     line-height: 1.2;
+
     overflow-wrap: anywhere;
 }
 
 .publicacao-modal-header p {
     margin: 6px 0 0;
+
     color: #71717a;
+
     font-size: 14px;
+
+    overflow-wrap: anywhere;
 }
 
 .publicacao-modal-fechar {
@@ -572,6 +1262,8 @@
 
     width: 38px;
     height: 38px;
+
+    padding: 0;
 
     box-sizing: border-box;
 
@@ -586,8 +1278,7 @@
 
     cursor: pointer;
 
-    transition:
-        background 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
 .publicacao-modal-fechar:hover {
@@ -600,17 +1291,19 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Formulário
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   FORMULÁRIO
+   ========================================================================== */
 
 .publicacao-modal-form {
     width: 100%;
-    box-sizing: border-box;
-
-    overflow-y: auto;
 
     padding: 24px;
+
+    box-sizing: border-box;
+
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .publicacao-modal-form::-webkit-scrollbar {
@@ -619,6 +1312,7 @@
 
 .publicacao-modal-form::-webkit-scrollbar-thumb {
     border-radius: 10px;
+
     background: #d4d4d8;
 }
 
@@ -627,12 +1321,13 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Mensagens
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   MENSAGENS
+   ========================================================================== */
 
 .publicacao-modal-erro {
     margin: 18px 24px 0;
+
     padding: 12px 14px;
 
     box-sizing: border-box;
@@ -650,7 +1345,9 @@
 
 .publicacao-modal-loading {
     padding: 50px 20px;
+
     color: #71717a;
+
     text-align: center;
 }
 
@@ -662,14 +1359,17 @@
 .publicacao-modal-campo {
     display: flex;
     flex-direction: column;
+
     gap: 7px;
 
     min-width: 0;
+
     margin-bottom: 17px;
 }
 
 .publicacao-modal-campo label {
     color: #27272a;
+
     font-size: 14px;
     font-weight: 600;
 }
@@ -683,9 +1383,9 @@
     max-width: 100%;
     min-width: 0;
 
-    box-sizing: border-box;
-
     padding: 12px 13px;
+
+    box-sizing: border-box;
 
     border: 1px solid #d4d4d8;
     border-radius: 9px;
@@ -702,14 +1402,9 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Controles nativos de data e horário
-   -------------------------------------------------------------------------- */
-
-/*
-   Garante que os controles nativos de celular respeitem
-   a largura real do campo.
-*/
+/* ==========================================================================
+   DATA / HORÁRIO
+   ========================================================================== */
 
 .publicacao-modal-campo input[type="date"],
 .publicacao-modal-campo input[type="time"] {
@@ -717,39 +1412,31 @@
     max-width: 100%;
     min-width: 0;
 
-    box-sizing: border-box;
-
     overflow: hidden;
+
+    box-sizing: border-box;
 }
 
-
-/*
-   O indicador nativo do navegador recebe espaço próprio,
-   evitando que o horário fique cortado.
-*/
-
-.publicacao-modal-campo input[type="time"]::-webkit-date-and-time-value {
-    text-align: left;
-}
-
+.publicacao-modal-campo input[type="time"]::-webkit-date-and-time-value,
 .publicacao-modal-campo input[type="date"]::-webkit-date-and-time-value {
     text-align: left;
 }
 
 
-/* --------------------------------------------------------------------------
-   Textarea
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   TEXTAREA
+   ========================================================================== */
 
 .publicacao-modal-campo textarea {
     min-height: 120px;
+
     resize: vertical;
 }
 
 
-/* --------------------------------------------------------------------------
-   Placeholder
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   PLACEHOLDER
+   ========================================================================== */
 
 .publicacao-modal-campo input::placeholder,
 .publicacao-modal-campo textarea::placeholder {
@@ -757,9 +1444,9 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Foco
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   FOCO
+   ========================================================================== */
 
 .publicacao-modal-campo input:focus,
 .publicacao-modal-campo select:focus,
@@ -773,26 +1460,28 @@
 }
 
 
-/* --------------------------------------------------------------------------
-   Disabled
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   DISABLED
+   ========================================================================== */
 
 .publicacao-modal-campo input:disabled,
 .publicacao-modal-campo select:disabled,
 .publicacao-modal-campo textarea:disabled {
     background: #f4f4f5;
+
     cursor: not-allowed;
 }
 
 
 /* ==========================================================================
-   GRID DE CAMPOS
+   GRID DO FORMULÁRIO
    ========================================================================== */
 
 .publicacao-modal-grid {
     display: grid;
 
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns:
+        minmax(0, 1fr) minmax(0, 1fr);
 
     gap: 16px;
 
@@ -800,7 +1489,7 @@
     min-width: 0;
 }
 
-.publicacao-modal-grid > .publicacao-modal-campo {
+.publicacao-modal-grid>.publicacao-modal-campo {
     min-width: 0;
 }
 
@@ -836,13 +1525,14 @@
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
+        background-color 0.2s ease,
         border-color 0.2s ease,
         opacity 0.2s ease;
 }
 
 .publicacao-modal-btn-cancelar {
     border: 1px solid #d4d4d8;
+
     background: #ffffff;
     color: #27272a;
 }
@@ -853,12 +1543,14 @@
 
 .publicacao-modal-btn-salvar {
     border: 1px solid #18181b;
+
     background: #18181b;
     color: #ffffff;
 }
 
 .publicacao-modal-btn-salvar:hover {
     border-color: #27272a;
+
     background: #27272a;
 }
 
@@ -869,15 +1561,487 @@
 
 .publicacao-modal-acoes button:disabled {
     opacity: 0.6;
+
     cursor: not-allowed;
 }
 
 
 /* ==========================================================================
-   RESPONSIVIDADE — CARD DE PUBLICAÇÃO
+   ANEXOS — INPUT DO FORMULÁRIO
+   ========================================================================== */
+
+.publicacao-arquivos-input {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    width: 100%;
+}
+
+.publicacao-arquivos-input-hidden {
+    display: none;
+}
+
+.publicacao-arquivos-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    width: fit-content;
+    max-width: 100%;
+    min-height: 44px;
+
+    padding: 10px 16px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #374151;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.publicacao-arquivos-btn:hover {
+    background: #f3f4f6;
+
+    border-color: #9ca3af;
+}
+
+.publicacao-arquivos-btn:active {
+    transform: scale(0.98);
+}
+
+.publicacao-arquivos-btn.disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.publicacao-arquivos-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 24px;
+    height: 24px;
+
+    border-radius: 50%;
+
+    background: #f3f4f6;
+
+    font-size: 20px;
+    line-height: 1;
+}
+
+.publicacao-arquivos-input small {
+    color: #6b7280;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+/* ==========================================================================
+   CARROSSEL — PREVIEW DOS ARQUIVOS
+   ========================================================================== */
+
+.publicacao-arquivos-carousel {
+    width: 100%;
+
+    margin-top: 16px;
+
+    overflow: hidden;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    background: #f9fafb;
+
+    outline: none;
+}
+
+.publicacao-arquivos-carousel:focus-visible {
+    border-color: #9ca3af;
+
+    box-shadow:
+        0 0 0 3px rgba(156, 163, 175, 0.2);
+}
+
+
+/* ==========================================================================
+   ÁREA PRINCIPAL DO PREVIEW
+   ========================================================================== */
+
+.publicacao-arquivos-carousel-content {
+    position: relative;
+
+    width: 100%;
+    height: clamp(220px, 42vw, 300px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: #ffffff;
+}
+
+
+/* ==========================================================================
+   IMAGEM / VÍDEO DO PREVIEW
+   ========================================================================== */
+
+.publicacao-arquivo-carousel-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+}
+
+.publicacao-arquivo-carousel-media img,
+.publicacao-arquivo-carousel-media video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+
+/* ==========================================================================
+   PDF DO PREVIEW
+   ========================================================================== */
+
+.publicacao-arquivos-carousel-pdf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    color: #ffffff;
+
+    text-align: center;
+}
+
+.publicacao-arquivos-carousel-pdf span {
+    font-size: clamp(46px, 10vw, 64px);
+}
+
+.publicacao-arquivos-carousel-pdf strong {
+    max-width: 90%;
+
+    font-size: clamp(15px, 3vw, 18px);
+
+    overflow-wrap: anywhere;
+}
+
+.publicacao-arquivos-carousel-pdf small {
+    color: #d1d5db;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================================
+   SETAS DO PREVIEW
+   ========================================================================== */
+
+.publicacao-arquivos-carousel-arrow {
+    position: absolute;
+
+    top: 50%;
+
+    z-index: 2;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    transform: translateY(-50%);
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.publicacao-arquivos-carousel-arrow:hover {
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.publicacao-arquivos-carousel-arrow:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+.publicacao-arquivos-carousel-arrow:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+}
+
+.publicacao-arquivos-carousel-arrow-left {
+    left: 12px;
+}
+
+.publicacao-arquivos-carousel-arrow-right {
+    right: 12px;
+}
+
+
+/* ==========================================================================
+   INFORMAÇÕES DO ARQUIVO
+   ========================================================================== */
+
+.publicacao-arquivos-carousel-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    min-height: 64px;
+
+    padding: 10px 14px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+}
+
+.publicacao-arquivos-carousel-file-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    min-width: 0;
+    flex: 1;
+}
+
+.publicacao-arquivos-carousel-file-info strong {
+    display: block;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #1f2937;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.publicacao-arquivos-carousel-file-info span {
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================================
+   BOTÃO REMOVER ARQUIVO
+   ========================================================================== */
+
+.publicacao-arquivo-remover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 32px;
+    height: 32px;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+
+    background: #ffffff;
+    color: #6b7280;
+
+    font-size: 20px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.publicacao-arquivo-remover:hover {
+    background: #fef2f2;
+
+    border-color: #fecaca;
+
+    color: #dc2626;
+}
+
+.publicacao-arquivo-remover:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================================
+   INDICADORES DO PREVIEW
+   ========================================================================== */
+
+.publicacao-arquivos-carousel-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 10px;
+
+    background: #ffffff;
+}
+
+.publicacao-arquivos-carousel-dot {
+    width: 7px;
+    height: 7px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #d1d5db;
+
+    cursor: pointer;
+
+    transition:
+        width 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.publicacao-arquivos-carousel-dot:hover {
+    background: #9ca3af;
+}
+
+.publicacao-arquivos-carousel-dot.active {
+    width: 20px;
+
+    border-radius: 10px;
+
+    background: #374151;
+}
+
+
+/* ==========================================================================
+   RESPONSIVIDADE — TABLET
+   ========================================================================== */
+
+@media (max-width: 900px) {
+
+    .publicacao-anexo-slide {
+        height: 340px;
+    }
+
+    .publicacao-actions {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .contratacao-card-meta {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+/* ==========================================================================
+   RESPONSIVIDADE — 700PX
    ========================================================================== */
 
 @media (max-width: 700px) {
+
+    /* ----------------------------------------------------------------------
+       Publicação
+       ---------------------------------------------------------------------- */
+
+    .publicacao-anexo-slide {
+        height: 320px;
+    }
+
+    .publicacao-anexos-seta {
+        width: 36px;
+        height: 36px;
+
+        font-size: 27px;
+    }
+
+    .publicacao-anexos-seta-esquerda {
+        left: 8px;
+    }
+
+    .publicacao-anexos-seta-direita {
+        right: 8px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Minhas publicações
+       ---------------------------------------------------------------------- */
 
     .contratacao-card-header {
         gap: 12px;
@@ -888,7 +2052,8 @@
     }
 
     .publicacao-acoes-contratacao {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns:
+            1fr 1fr;
     }
 
     .btn-negociacoes-publicacao {
@@ -909,19 +2074,25 @@
 
 
 /* ==========================================================================
-   RESPONSIVIDADE — MODAL
+   RESPONSIVIDADE — MODAL / MOBILE
    ========================================================================== */
 
 @media (max-width: 600px) {
 
+    /* ----------------------------------------------------------------------
+       Modal de publicação
+       ---------------------------------------------------------------------- */
+
     .publicacao-modal-overlay {
         align-items: flex-end;
+
         padding: 0;
     }
 
     .publicacao-modal {
         width: 100%;
         max-width: none;
+
         max-height: 94vh;
 
         border-radius: 18px 18px 0 0;
@@ -940,7 +2111,6 @@
     }
 
     .publicacao-modal-form {
-        width: 100%;
         padding: 18px;
     }
 
@@ -948,52 +2118,15 @@
         margin: 15px 18px 0;
     }
 
-    /*
-       No celular os dois campos ficam um abaixo do outro.
-       Isso é especialmente importante para date/time,
-       pois os controles nativos variam de tamanho entre aparelhos.
-    */
-
     .publicacao-modal-grid {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns:
+            minmax(0, 1fr);
+
         gap: 0;
     }
 
-    .publicacao-modal-grid > .publicacao-modal-campo {
+    .publicacao-modal-grid>.publicacao-modal-campo {
         width: 100%;
-    }
-
-    .publicacao-modal-campo input,
-    .publicacao-modal-campo select,
-    .publicacao-modal-campo textarea {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-    }
-
-    .publicacao-modal-campo input[type="date"],
-    .publicacao-modal-campo input[type="time"] {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-
-        /*
-           Evita que o navegador tente manter uma largura
-           mínima maior que o espaço disponível.
-        */
-        -webkit-appearance: none;
-        appearance: none;
-    }
-
-    /*
-       Recoloca um visual de campo consistente depois
-       de remover a aparência nativa.
-    */
-
-    .publicacao-modal-campo input[type="date"],
-    .publicacao-modal-campo input[type="time"] {
-        min-height: 45px;
-        padding: 12px 13px;
     }
 
     .publicacao-modal-acoes {
@@ -1005,17 +2138,105 @@
     .publicacao-modal-acoes button {
         width: 100%;
     }
+
+
+    /* ----------------------------------------------------------------------
+       Anexos da publicação
+       ---------------------------------------------------------------------- */
+
+    .publicacao-anexo-slide {
+        height: 280px;
+    }
+
+    .publicacao-anexo-info strong {
+        max-width: 150px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Preview dos arquivos
+       ---------------------------------------------------------------------- */
+
+    .publicacao-arquivos-carousel-content {
+        height: 240px;
+    }
+
+    .publicacao-arquivos-carousel-arrow {
+        width: 34px;
+        height: 34px;
+
+        font-size: 26px;
+    }
+
+    .publicacao-arquivos-carousel-arrow-left {
+        left: 8px;
+    }
+
+    .publicacao-arquivos-carousel-arrow-right {
+        right: 8px;
+    }
+
+    .publicacao-arquivos-carousel-info {
+        min-height: 58px;
+
+        padding: 9px 10px;
+    }
+
+    .publicacao-arquivos-carousel-file-info strong {
+        font-size: 13px;
+    }
+
+    .publicacao-arquivos-carousel-file-info span {
+        font-size: 11px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Modal de anexo
+       ---------------------------------------------------------------------- */
+
+    .publicacao-anexo-modal {
+        padding: 10px;
+    }
+
+    .publicacao-anexo-modal-conteudo {
+        max-height: calc(100vh - 20px);
+
+        border-radius: 12px;
+    }
+
+    .publicacao-anexo-modal-body {
+        max-height: calc(100vh - 90px);
+    }
+
+    .publicacao-anexo-modal-body img {
+        max-height: calc(100vh - 110px);
+    }
+
+    .publicacao-anexo-modal-body video {
+        max-height: calc(100vh - 110px);
+    }
+
+    .publicacao-anexo-modal-body iframe {
+        height: calc(100vh - 90px);
+    }
 }
 
 
 /* ==========================================================================
-   CELULAR
+   CELULAR — 430PX
    ========================================================================== */
 
 @media (max-width: 430px) {
 
+    /* ----------------------------------------------------------------------
+       Card
+       ---------------------------------------------------------------------- */
+
     .publicacao-card {
         padding: 15px;
+
+        border-radius: 15px;
     }
 
     .publicacao-user strong {
@@ -1026,8 +2247,16 @@
         font-size: 0.75rem;
     }
 
+
+    /* ----------------------------------------------------------------------
+       Ações
+       ---------------------------------------------------------------------- */
+
     .action-button {
+        min-height: 40px;
+
         padding: 7px 5px;
+
         font-size: 0.68rem;
     }
 
@@ -1042,13 +2271,16 @@
 
     .contratacao-publicacao-card {
         padding: 16px;
+
         border-radius: 14px;
     }
 
     .contratacao-card-header {
         flex-direction: column;
         align-items: flex-start;
+
         gap: 10px;
+
         margin-bottom: 15px;
     }
 
@@ -1058,6 +2290,7 @@
 
     .contratacao-card-meta {
         gap: 8px;
+
         margin-bottom: 15px;
     }
 
@@ -1079,56 +2312,120 @@
 
     .publicacao-acoes-contratacao button {
         min-height: 40px;
+
         padding: 6px 7px;
+
         font-size: 11px;
     }
 
 
     /* ----------------------------------------------------------------------
-       Modal — celular estreito
+       Anexos
        ---------------------------------------------------------------------- */
 
-    .publicacao-modal-header {
-        padding: 16px;
+    .publicacao-anexos {
+        width: calc(100% + 30px);
+
+        margin-left: -15px;
+        margin-right: -15px;
+
+        margin-top: 15px;
     }
 
-    .publicacao-modal-form {
-        padding: 16px;
+    .publicacao-anexo-slide {
+        height: 260px;
     }
 
-    .publicacao-modal-erro {
-        margin-left: 16px;
-        margin-right: 16px;
+    .publicacao-anexo-arquivo {
+        padding: 20px;
     }
 
-    .publicacao-modal-campo {
-        margin-bottom: 15px;
+    .publicacao-anexo-info strong {
+        max-width: 120px;
     }
 
-    .publicacao-modal-campo input,
-    .publicacao-modal-campo select,
-    .publicacao-modal-campo textarea {
-        padding: 11px 12px;
-        font-size: 14px;
+    .publicacao-anexos-seta {
+        width: 34px;
+        height: 34px;
+
+        font-size: 25px;
     }
 
-    .publicacao-modal-campo input[type="date"],
-    .publicacao-modal-campo input[type="time"] {
-        min-height: 44px;
-        padding: 11px 12px;
+    .publicacao-anexos-seta-esquerda {
+        left: 7px;
+    }
+
+    .publicacao-anexos-seta-direita {
+        right: 7px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Preview de arquivos
+       ---------------------------------------------------------------------- */
+
+    .publicacao-arquivos-btn {
+        width: 100%;
+    }
+
+    .publicacao-arquivos-carousel-content {
+        height: 220px;
+    }
+
+    .publicacao-arquivos-carousel-arrow {
+        width: 32px;
+        height: 32px;
+
+        font-size: 23px;
+    }
+
+    .publicacao-arquivos-carousel-arrow-left {
+        left: 6px;
+    }
+
+    .publicacao-arquivos-carousel-arrow-right {
+        right: 6px;
+    }
+
+    .publicacao-arquivos-carousel-info {
+        gap: 8px;
+    }
+
+    .publicacao-arquivos-carousel-file-info strong {
+        font-size: 12px;
+    }
+
+    .publicacao-arquivos-carousel-file-info span {
+        font-size: 10px;
+    }
+
+    .publicacao-arquivo-remover {
+        width: 30px;
+        height: 30px;
+
+        font-size: 18px;
     }
 }
 
 
 /* ==========================================================================
-   CELULARES PEQUENOS
+   CELULARES PEQUENOS — 360PX
    ========================================================================== */
 
 @media (max-width: 360px) {
 
+    /* ----------------------------------------------------------------------
+       Informações
+       ---------------------------------------------------------------------- */
+
     .publicacao-info {
         grid-template-columns: 1fr;
     }
+
+
+    /* ----------------------------------------------------------------------
+       Ações
+       ---------------------------------------------------------------------- */
 
     .publicacao-actions {
         grid-template-columns: 1fr;
@@ -1142,12 +2439,69 @@
     .btn-editar-publicacao,
     .btn-cancelar-publicacao {
         grid-column: span 1;
+
         grid-row: auto;
     }
 
 
     /* ----------------------------------------------------------------------
-       Modal — aparelhos muito estreitos
+       Anexos
+       ---------------------------------------------------------------------- */
+
+    .publicacao-anexo-slide {
+        height: 230px;
+    }
+
+    .publicacao-anexos-seta {
+        width: 32px;
+        height: 32px;
+
+        font-size: 23px;
+    }
+
+    .publicacao-anexos-seta-esquerda {
+        left: 6px;
+    }
+
+    .publicacao-anexos-seta-direita {
+        right: 6px;
+    }
+
+    .publicacao-anexo-info strong {
+        max-width: 90px;
+
+        font-size: 11px;
+    }
+
+    .publicacao-anexo-info small {
+        font-size: 10px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Preview de arquivos
+       ---------------------------------------------------------------------- */
+
+    .publicacao-arquivos-carousel-content {
+        height: 200px;
+    }
+
+    .publicacao-arquivos-carousel-info {
+        min-height: 54px;
+
+        padding: 8px;
+    }
+
+    .publicacao-arquivo-remover {
+        width: 28px;
+        height: 28px;
+
+        font-size: 17px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       Modal
        ---------------------------------------------------------------------- */
 
     .publicacao-modal {
@@ -1156,6 +2510,7 @@
 
     .publicacao-modal-header {
         gap: 10px;
+
         padding: 14px;
     }
 
@@ -1173,12 +2528,15 @@
 
     .publicacao-modal-erro {
         margin: 12px 14px 0;
+
         padding: 10px 12px;
+
         font-size: 13px;
     }
 
     .publicacao-modal-campo {
         gap: 6px;
+
         margin-bottom: 14px;
     }
 
@@ -1190,26 +2548,128 @@
     .publicacao-modal-campo select,
     .publicacao-modal-campo textarea {
         padding: 10px 11px;
+
         font-size: 13px;
     }
 
     .publicacao-modal-campo input[type="date"],
     .publicacao-modal-campo input[type="time"] {
-        width: 100%;
-        min-width: 0;
         min-height: 43px;
+
         padding: 10px 11px;
     }
 
     .publicacao-modal-acoes {
         gap: 8px;
+
         margin-top: 5px;
         padding-top: 14px;
     }
 
     .publicacao-modal-acoes button {
         min-height: 42px;
+
         padding: 0 14px;
+
         font-size: 13px;
     }
+}
+
+/* ==========================================================================
+   INPUT DE ARQUIVOS
+   ========================================================================== */
+
+.publicacao-arquivos-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.publicacao-arquivos-input-hidden {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    padding: 0;
+    margin: -1px;
+
+    overflow: hidden;
+
+    border: 0;
+
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+
+    white-space: nowrap;
+}
+
+.publicacao-arquivos-btn {
+    width: fit-content;
+    min-height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 10px 16px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #374151;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.publicacao-arquivos-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.publicacao-arquivos-btn:active {
+    transform: scale(0.98);
+}
+
+.publicacao-arquivos-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.publicacao-arquivos-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+
+    border-radius: 50%;
+
+    background: #f3f4f6;
+
+    font-size: 20px;
+    line-height: 1;
+}
+
+.publicacao-arquivos-input small {
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.4;
 }

@@ -16,6 +16,8 @@ import {
     podeContestarTrabalho,
 } from './TrabalhoControle';
 
+import PublicacaoAnexos from '../publicacoes/PublicacaoAnexos';
+
 import '../../styles/trabalhos.css';
 
 
@@ -161,16 +163,64 @@ export default function TrabalhoCard({
 
     /*
      * =========================================================
-     * VALOR
+     * VALORES FINANCEIROS
      * =========================================================
      *
-     * O valor do trabalho é prioritário porque representa
-     * o valor efetivamente definido na contratação.
+     * A composição financeira segue o mesmo padrão
+     * utilizado nas negociações.
+     *
+     * valor_trabalho = valor do serviço
+     * valor_taxa     = taxa de intermediação JOB
+     * valor_total    = valor do serviço + taxa
      */
 
-    const valor =
-        trabalho?.valor ??
-        publicacao?.valor_estimado;
+    const valorTrabalho =
+        Number(
+            trabalho?.valor_trabalho ??
+            pagamento?.valor_trabalho ??
+            publicacao?.valor_estimado ??
+            0
+        );
+
+    const valorTaxa =
+        Number(
+            trabalho?.valor_taxa ??
+            pagamento?.valor_taxa ??
+            0
+        );
+
+    const valorTotal =
+        Number(
+            trabalho?.valor_total ??
+            pagamento?.valor_total ??
+            (
+                valorTrabalho +
+                valorTaxa
+            )
+        );
+
+    const taxaPercentual =
+        valorTrabalho > 0
+            ? (
+                (valorTaxa / valorTrabalho) *
+                100
+            )
+            : 0;
+
+
+    /*
+     * Valor principal exibido no resumo.
+     *
+     * Contratante:
+     *   total que será pago.
+     *
+     * Contratado:
+     *   valor que receberá pelo serviço.
+     */
+    const valorPrincipal =
+        ehContratante
+            ? valorTotal
+            : valorTrabalho;
 
 
     /*
@@ -544,12 +594,12 @@ export default function TrabalhoCard({
 
         if (
             confirmacao.tipo ===
-                TIPOS_INTERACAO_TRABALHO
-                    .DESISTENCIA_CONTRATANTE
+            TIPOS_INTERACAO_TRABALHO
+                .DESISTENCIA_CONTRATANTE
             ||
             confirmacao.tipo ===
-                TIPOS_INTERACAO_TRABALHO
-                    .DESISTENCIA_CONTRATADO
+            TIPOS_INTERACAO_TRABALHO
+                .DESISTENCIA_CONTRATADO
         ) {
 
             await executarInteracao(
@@ -655,6 +705,11 @@ export default function TrabalhoCard({
             </header>
 
 
+            <PublicacaoAnexos
+                publicacao={publicacao}
+            />
+
+
             {/* =================================================
                 META
             ================================================== */}
@@ -664,11 +719,15 @@ export default function TrabalhoCard({
                 <div className="trabalho-meta-item">
 
                     <span className="trabalho-meta-label">
-                        Valor
+                        {ehContratante
+                            ? 'Total'
+                            : 'Valor do serviço'}
                     </span>
 
                     <strong className="trabalho-meta-valor">
-                        {formatarValor(valor)}
+                        {formatarValor(
+                            valorPrincipal
+                        )}
                     </strong>
 
                 </div>
@@ -730,6 +789,7 @@ export default function TrabalhoCard({
 
                     )}
 
+
                     {dataFim && (
 
                         <div className="trabalho-meta-item">
@@ -765,6 +825,7 @@ export default function TrabalhoCard({
                             {obterIconePagamento()}
                         </div>
 
+
                         <div className="trabalho-pagamento-texto">
 
                             <span>
@@ -784,18 +845,18 @@ export default function TrabalhoCard({
                     </div>
 
 
-                    {pagamento?.valor !== undefined &&
-                        pagamento?.valor !== null && (
+                    {pagamento && (
 
-                            <strong className="trabalho-pagamento-valor">
+                        <strong className="trabalho-pagamento-valor">
 
-                                {formatarValor(
-                                    pagamento.valor
-                                )}
+                            {formatarValor(
+                                pagamento?.valor_trabalho ??
+                                valorTrabalho
+                            )}
 
-                            </strong>
+                        </strong>
 
-                        )}
+                    )}
 
                 </div>
 
@@ -855,21 +916,21 @@ export default function TrabalhoCard({
             {statusCodigo ===
                 'AGUARDANDO_CONFIRMACAO' && (
 
-                <div className="trabalho-aviso">
+                    <div className="trabalho-aviso">
 
-                    <strong>
-                        Serviço informado como concluído
-                    </strong>
+                        <strong>
+                            Serviço informado como concluído
+                        </strong>
 
-                    <span>
-                        {ehContratante
-                            ? 'Verifique o serviço antes de confirmar ou contestar a conclusão.'
-                            : 'Aguardando a confirmação do contratante.'}
-                    </span>
+                        <span>
+                            {ehContratante
+                                ? 'Verifique o serviço antes de confirmar ou contestar a conclusão.'
+                                : 'Aguardando a confirmação do contratante.'}
+                        </span>
 
-                </div>
+                    </div>
 
-            )}
+                )}
 
 
             {/* =================================================
@@ -894,6 +955,7 @@ export default function TrabalhoCard({
                         </span>
 
                     </div>
+
 
                     <button
                         type="button"
@@ -934,6 +996,7 @@ export default function TrabalhoCard({
 
                     </div>
 
+
                     <button
                         type="button"
                         className="trabalho-feedback-fechar"
@@ -959,120 +1022,125 @@ export default function TrabalhoCard({
                 podeContestar ||
                 podeDesistir) && (
 
-                <div className="trabalho-acoes">
+                    <div className="trabalho-acoes">
 
 
-                    {/* CONTRATADO */}
+                        {/* CONTRATADO */}
 
-                    {!ehContratante && (
+                        {!ehContratante && (
 
-                        <>
-                            {podeConcluir && (
+                            <>
 
-                                <button
-                                    type="button"
-                                    className="btn-confirmar-trabalho"
-                                    onClick={
-                                        solicitarConclusao
-                                    }
-                                    disabled={
-                                        processando
-                                    }
-                                >
-                                    {processando
-                                        ? 'Processando...'
-                                        : '✓ Concluir serviço'}
-                                </button>
+                                {podeConcluir && (
 
-                            )}
+                                    <button
+                                        type="button"
+                                        className="btn-confirmar-trabalho"
+                                        onClick={
+                                            solicitarConclusao
+                                        }
+                                        disabled={
+                                            processando
+                                        }
+                                    >
+                                        {processando
+                                            ? 'Processando...'
+                                            : '✓ Concluir serviço'}
+                                    </button>
 
-                            {podeDesistir && (
-
-                                <button
-                                    type="button"
-                                    className="btn-desistir-trabalho"
-                                    onClick={
-                                        solicitarDesistencia
-                                    }
-                                    disabled={
-                                        processando
-                                    }
-                                >
-                                    {processando
-                                        ? 'Processando...'
-                                        : 'Desistir'}
-                                </button>
-
-                            )}
-                        </>
-                    )}
+                                )}
 
 
-                    {/* CONTRATANTE */}
+                                {podeDesistir && (
 
-                    {ehContratante && (
+                                    <button
+                                        type="button"
+                                        className="btn-desistir-trabalho"
+                                        onClick={
+                                            solicitarDesistencia
+                                        }
+                                        disabled={
+                                            processando
+                                        }
+                                    >
+                                        {processando
+                                            ? 'Processando...'
+                                            : 'Desistir'}
+                                    </button>
 
-                        <>
+                                )}
 
-                            {podeConfirmar && (
+                            </>
 
-                                <button
-                                    type="button"
-                                    className="btn-confirmar-trabalho"
-                                    onClick={
-                                        solicitarConclusao
-                                    }
-                                    disabled={
-                                        processando
-                                    }
-                                >
-                                    ✓ Confirmar serviço
-                                </button>
-
-                            )}
-
-
-                            {podeContestar && (
-
-                                <button
-                                    type="button"
-                                    className="btn-contestar-trabalho"
-                                    onClick={
-                                        contestarTrabalho
-                                    }
-                                    disabled={
-                                        processando
-                                    }
-                                >
-                                    Contestar
-                                </button>
-
-                            )}
+                        )}
 
 
-                            {podeDesistir && (
+                        {/* CONTRATANTE */}
 
-                                <button
-                                    type="button"
-                                    className="btn-desistir-trabalho"
-                                    onClick={
-                                        solicitarDesistencia
-                                    }
-                                    disabled={
-                                        processando
-                                    }
-                                >
-                                    Desistir
-                                </button>
+                        {ehContratante && (
 
-                            )}
+                            <>
 
-                        </>
-                    )}
+                                {podeConfirmar && (
 
-                </div>
+                                    <button
+                                        type="button"
+                                        className="btn-confirmar-trabalho"
+                                        onClick={
+                                            solicitarConclusao
+                                        }
+                                        disabled={
+                                            processando
+                                        }
+                                    >
+                                        ✓ Confirmar serviço
+                                    </button>
 
-            )}
+                                )}
+
+
+                                {podeContestar && (
+
+                                    <button
+                                        type="button"
+                                        className="btn-contestar-trabalho"
+                                        onClick={
+                                            contestarTrabalho
+                                        }
+                                        disabled={
+                                            processando
+                                        }
+                                    >
+                                        Contestar
+                                    </button>
+
+                                )}
+
+
+                                {podeDesistir && (
+
+                                    <button
+                                        type="button"
+                                        className="btn-desistir-trabalho"
+                                        onClick={
+                                            solicitarDesistencia
+                                        }
+                                        disabled={
+                                            processando
+                                        }
+                                    >
+                                        Desistir
+                                    </button>
+
+                                )}
+
+                            </>
+
+                        )}
+
+                    </div>
+
+                )}
 
 
             {/* =================================================

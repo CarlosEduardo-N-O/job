@@ -27,7 +27,41 @@ return new class extends Migration
                 ->constrained('negociacao_status')
                 ->restrictOnDelete();
 
+            /*
+             * Valor que o prestador receberá pelo serviço.
+             */
             $table->decimal('valor_trabalho', 10, 2)
+                ->nullable();
+
+            /*
+             * Percentual da taxa de intermediação aplicado
+             * no momento da negociação.
+             *
+             * Exemplo: 12.00 = 12%
+             */
+            $table->decimal('taxa_percentual', 5, 2)
+                ->nullable();
+
+            /*
+             * Valor monetário da taxa de intermediação.
+             *
+             * Exemplo:
+             * valor_trabalho = 500.00
+             * taxa_percentual = 12.00
+             * valor_taxa = 60.00
+             */
+            $table->decimal('valor_taxa', 10, 2)
+                ->nullable();
+
+            /*
+             * Valor total que será cobrado do contratante.
+             *
+             * Exemplo:
+             * valor_trabalho = 500.00
+             * valor_taxa = 60.00
+             * valor_total = 560.00
+             */
+            $table->decimal('valor_total', 10, 2)
                 ->nullable();
 
             $table->timestamps();

@@ -64,4 +64,12 @@ class Publicacao extends Model
             'status_id'
         );
     }
+
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(
+            PublicacaoAnexo::class,
+            'publicacao_id'
+        )->orderBy('ordem');
+    }
 }

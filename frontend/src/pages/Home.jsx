@@ -15,6 +15,8 @@ export default function Home() {
 
     const [loading, setLoading] = useState(true);
 
+    const [atualizando, setAtualizando] = useState(false);
+
     const [error, setError] = useState('');
 
     const [publicacaoSelecionada, setPublicacaoSelecionada] =
@@ -38,7 +40,10 @@ export default function Home() {
             const response = await getPublicacoes();
 
             const dados =
-                response?.data ?? response ?? [];
+                response?.data ??
+                response?.data?.data ??
+                response ??
+                [];
 
             setPublicacoes(
                 Array.isArray(dados)
@@ -52,10 +57,29 @@ export default function Home() {
             );
 
             setError(
-                'Não foi possível carregar os trabalhos.'
+                'Não foi possível carregar as oportunidades.'
             );
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function atualizarPublicacoes() {
+        if (atualizando || loading) {
+            return;
+        }
+
+        try {
+            setAtualizando(true);
+
+            await carregarPublicacoes();
+        } catch (error) {
+            console.error(
+                'Erro ao atualizar publicações:',
+                error
+            );
+        } finally {
+            setAtualizando(false);
         }
     }
 
@@ -90,20 +114,16 @@ export default function Home() {
             );
 
             /*
-             * A publicação deixa o Home imediatamente.
+             * Depois de criar a interação, recarregamos
+             * as publicações diretamente do backend.
              *
-             * O backend também garante essa regra através
-             * da negociação criada para o usuário.
+             * Isso mantém o Home sincronizado com as regras
+             * do backend e evita depender apenas do estado local.
              */
-            setPublicacoes((publicacoesAtuais) =>
-                publicacoesAtuais.filter(
-                    (publicacao) =>
-                        publicacao.id !==
-                        publicacaoSelecionada.id
-                )
-            );
+            setPublicacaoSelecionada(null);
+            setTipoInteracao(null);
 
-            fecharModal();
+            await carregarPublicacoes();
         } catch (error) {
             console.error(
                 'Erro ao enviar interação:',
@@ -124,14 +144,33 @@ export default function Home() {
         <main className="home-page">
 
             <header className="home-header">
-                <h1>
-                    Oportunidades para você
-                </h1>
 
-                <p>
-                    Encontre trabalhos que combinam
-                    com suas categorias.
-                </p>
+                <div>
+                    <h1>
+                        Oportunidades para você
+                    </h1>
+
+                    <p>
+                        Encontre trabalhos que combinam
+                        com suas categorias.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    className="btn-atualizar"
+                    onClick={atualizarPublicacoes}
+                    disabled={
+                        atualizando ||
+                        loading
+                    }
+                    title="Atualizar oportunidades"
+                >
+                    {atualizando
+                        ? '↻ Atualizando...'
+                        : '↻ Atualizar'}
+                </button>
+
             </header>
 
             <section className="timeline">
@@ -163,6 +202,7 @@ export default function Home() {
                         <button
                             type="button"
                             onClick={carregarPublicacoes}
+                            disabled={loading}
                         >
                             Tentar novamente
                         </button>
@@ -189,6 +229,17 @@ export default function Home() {
                                 para você.
                             </p>
 
+                            <button
+                                type="button"
+                                className="btn-atualizar"
+                                onClick={atualizarPublicacoes}
+                                disabled={atualizando}
+                            >
+                                {atualizando
+                                    ? '↻ Atualizando...'
+                                    : '↻ Atualizar'}
+                            </button>
+
                         </div>
                     )}
 
@@ -198,9 +249,7 @@ export default function Home() {
                         <PublicacaoCard
                             key={publicacao.id}
                             publicacao={publicacao}
-                            onInteracao={
-                                abrirInteracao
-                            }
+                            onInteracao={abrirInteracao}
                         />
                     ))}
 

@@ -27,8 +27,29 @@ return new class extends Migration
 
             $table->string('tipo', 30);
 
+            /*
+             * Valor do serviço.
+             */
             $table->decimal(
-                'valor',
+                'valor_trabalho',
+                12,
+                2
+            );
+
+            /*
+             * Taxa de intermediação da JOB.
+             */
+            $table->decimal(
+                'valor_taxa',
+                12,
+                2
+            );
+
+            /*
+             * Valor total da operação.
+             */
+            $table->decimal(
+                'valor_total',
                 12,
                 2
             );

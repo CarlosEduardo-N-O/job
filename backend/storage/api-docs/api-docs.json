@@ -535,6 +535,362 @@
                 }
             }
         },
+        "/api/publicacoes/{publicacao}/anexos": {
+            "get": {
+                "tags": [
+                    "Publicação - Anexos"
+                ],
+                "summary": "Lista os anexos de uma publicação",
+                "description": "Retorna todos os anexos vinculados a uma publicação.",
+                "operationId": "2e9356a288d2fd4305e3deac553642b4",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Anexos carregados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Anexos da publicação carregados com sucesso."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "publicacao_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nome_original": {
+                                                        "type": "string",
+                                                        "example": "foto-servico.jpg"
+                                                    },
+                                                    "mime_type": {
+                                                        "type": "string",
+                                                        "example": "image/jpeg"
+                                                    },
+                                                    "tipo": {
+                                                        "type": "string",
+                                                        "example": "imagem"
+                                                    },
+                                                    "tamanho": {
+                                                        "type": "integer",
+                                                        "format": "int64",
+                                                        "example": 524288
+                                                    },
+                                                    "ordem": {
+                                                        "type": "integer",
+                                                        "example": 0
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2026-09-23T18:30:00Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2026-09-23T18:30:00Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "404": {
+                        "description": "Publicação não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Publicação - Anexos"
+                ],
+                "summary": "Adiciona um anexo à publicação",
+                "description": "Envia uma imagem, vídeo ou arquivo PDF para uma publicação. Cada publicação pode possuir no máximo 10 anexos. O tamanho máximo de cada arquivo é 100 MB.",
+                "operationId": "193c1b9ac252ebf5ec50312e20ec418f",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Arquivo que será anexado à publicação.",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "arquivo"
+                                ],
+                                "properties": {
+                                    "arquivo": {
+                                        "description": "Imagem, vídeo ou arquivo PDF. Formatos permitidos: JPG, JPEG, PNG, WEBP, MP4, WEBM e PDF. Máximo de 100 MB.",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Anexo adicionado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Anexo adicionado com sucesso."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "publicacao_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nome_original": {
+                                                    "type": "string",
+                                                    "example": "foto-servico.jpg"
+                                                },
+                                                "mime_type": {
+                                                    "type": "string",
+                                                    "example": "image/jpeg"
+                                                },
+                                                "tipo": {
+                                                    "type": "string",
+                                                    "example": "imagem"
+                                                },
+                                                "tamanho": {
+                                                    "type": "integer",
+                                                    "format": "int64",
+                                                    "example": 524288
+                                                },
+                                                "ordem": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Usuário não possui permissão para adicionar anexos"
+                    },
+                    "404": {
+                        "description": "Publicação não encontrada"
+                    },
+                    "422": {
+                        "description": "Arquivo inválido ou limite de anexos atingido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/publicacoes/{publicacao}/anexos/{anexo}": {
+            "get": {
+                "tags": [
+                    "Publicação - Anexos"
+                ],
+                "summary": "Visualiza um anexo",
+                "description": "Retorna o arquivo diretamente para o navegador. Imagens, PDFs e vídeos podem ser visualizados de acordo com o suporte do navegador.",
+                "operationId": "4e3bf3484318e453ed0f107c49ada39a",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "anexo",
+                        "in": "path",
+                        "description": "ID do anexo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Arquivo retornado com sucesso",
+                        "content": {
+                            "image/jpeg": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "image/png": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "image/webp": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "video/mp4": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "video/webm": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "404": {
+                        "description": "Publicação, anexo ou arquivo não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Publicação - Anexos"
+                ],
+                "summary": "Remove um anexo da publicação",
+                "description": "Remove o anexo do banco de dados e também o arquivo físico do armazenamento privado.",
+                "operationId": "9a00b6d0322e8ef8058a1272885a25ad",
+                "parameters": [
+                    {
+                        "name": "publicacao",
+                        "in": "path",
+                        "description": "ID da publicação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "anexo",
+                        "in": "path",
+                        "description": "ID do anexo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Anexo removido com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Anexo removido com sucesso."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Usuário não possui permissão para remover o anexo"
+                    },
+                    "404": {
+                        "description": "Publicação ou anexo não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/publicacoes": {
             "get": {
                 "tags": [
@@ -562,11 +918,12 @@
                     "Publicações"
                 ],
                 "summary": "Cria uma nova publicação",
+                "description": "Cria uma publicação e permite anexar imagens, vídeos e arquivos PDF.",
                 "operationId": "cf7e4b6378851cf1d4688cc486ec9843",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "categoria_id",
@@ -616,6 +973,14 @@
                                         "type": "string",
                                         "format": "date",
                                         "example": "2026-09-20"
+                                    },
+                                    "arquivos": {
+                                        "description": "Imagens, vídeos ou arquivos PDF. Máximo de 10 arquivos.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1388,6 +1753,10 @@
         {
             "name": "Negociações - Pagamentos",
             "description": "Negociações - Pagamentos"
+        },
+        {
+            "name": "Publicação - Anexos",
+            "description": "Publicação - Anexos"
         },
         {
             "name": "Publicações",

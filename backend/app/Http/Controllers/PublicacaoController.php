@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publicacao;
+use App\Models\PublicacaoAnexo;
 use App\Models\PublicacaoStatus;
 use App\Models\Negociacao;
 use App\Models\NegociacaoStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 class PublicacaoController extends Controller
@@ -49,6 +51,7 @@ class PublicacaoController extends Controller
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
             'status:id,codigo,nome,descricao',
+            'anexos',
         ])
             ->whereHas(
                 'status',
@@ -138,6 +141,7 @@ class PublicacaoController extends Controller
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
             'status:id,codigo,nome,descricao',
+            'anexos',
         ])
             ->withCount('negociacoes')
             ->where(
@@ -162,71 +166,94 @@ class PublicacaoController extends Controller
     #[OA\Post(
         path: '/api/publicacoes',
         summary: 'Cria uma nova publicação',
+        description: 'Cria uma publicação e permite anexar imagens, vídeos e arquivos PDF.',
         tags: ['Publicações'],
         security: [['sanctum' => []]],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                required: [
-                    'categoria_id',
-                    'titulo',
-                    'descricao'
-                ],
-                properties: [
-                    new OA\Property(
-                        property: 'categoria_id',
-                        type: 'integer',
-                        example: 1
-                    ),
-                    new OA\Property(
-                        property: 'titulo',
-                        type: 'string',
-                        example: 'Preciso de um eletricista'
-                    ),
-                    new OA\Property(
-                        property: 'descricao',
-                        type: 'string',
-                        example: 'Preciso instalar três tomadas em minha residência.'
-                    ),
-                    new OA\Property(
-                        property: 'valor_estimado',
-                        type: 'number',
-                        format: 'float',
-                        example: 250.00
-                    ),
-                    new OA\Property(
-                        property: 'cidade',
-                        type: 'string',
-                        example: 'Rio do Sul'
-                    ),
-                    new OA\Property(
-                        property: 'estado',
-                        type: 'string',
-                        example: 'SC'
-                    ),
-                    new OA\Property(
-                        property: 'endereco_servico',
-                        type: 'string',
-                        example: 'Rua das Flores, 100'
-                    ),
-                    new OA\Property(
-                        property: 'data_inicio',
-                        type: 'string',
-                        format: 'date',
-                        example: '2026-09-15'
-                    ),
-                    new OA\Property(
-                        property: 'horario_inicio',
-                        type: 'string',
-                        example: '14:00'
-                    ),
-                    new OA\Property(
-                        property: 'data_fim',
-                        type: 'string',
-                        format: 'date',
-                        example: '2026-09-20'
-                    )
-                ]
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: [
+                        'categoria_id',
+                        'titulo',
+                        'descricao'
+                    ],
+                    properties: [
+                        new OA\Property(
+                            property: 'categoria_id',
+                            type: 'integer',
+                            example: 1
+                        ),
+
+                        new OA\Property(
+                            property: 'titulo',
+                            type: 'string',
+                            example: 'Preciso de um eletricista'
+                        ),
+
+                        new OA\Property(
+                            property: 'descricao',
+                            type: 'string',
+                            example: 'Preciso instalar três tomadas em minha residência.'
+                        ),
+
+                        new OA\Property(
+                            property: 'valor_estimado',
+                            type: 'number',
+                            format: 'float',
+                            example: 250.00
+                        ),
+
+                        new OA\Property(
+                            property: 'cidade',
+                            type: 'string',
+                            example: 'Rio do Sul'
+                        ),
+
+                        new OA\Property(
+                            property: 'estado',
+                            type: 'string',
+                            example: 'SC'
+                        ),
+
+                        new OA\Property(
+                            property: 'endereco_servico',
+                            type: 'string',
+                            example: 'Rua das Flores, 100'
+                        ),
+
+                        new OA\Property(
+                            property: 'data_inicio',
+                            type: 'string',
+                            format: 'date',
+                            example: '2026-09-15'
+                        ),
+
+                        new OA\Property(
+                            property: 'horario_inicio',
+                            type: 'string',
+                            example: '14:00'
+                        ),
+
+                        new OA\Property(
+                            property: 'data_fim',
+                            type: 'string',
+                            format: 'date',
+                            example: '2026-09-20'
+                        ),
+
+                        new OA\Property(
+                            property: 'arquivos',
+                            type: 'array',
+                            description: 'Imagens, vídeos ou arquivos PDF. Máximo de 10 arquivos.',
+                            items: new OA\Items(
+                                type: 'string',
+                                format: 'binary'
+                            )
+                        )
+                    ]
+                )
             )
         ),
         responses: [
@@ -306,19 +333,28 @@ class PublicacaoController extends Controller
                 'date',
                 'after_or_equal:data_inicio'
             ],
+
+            'arquivos' => [
+                'nullable',
+                'array',
+                'max:10'
+            ],
+
+            'arquivos.*' => [
+                'file',
+                'mimes:jpg,jpeg,png,webp,mp4,webm,pdf',
+                'max:102400'
+            ],
         ]);
 
         /*
-         * O contratante é sempre o usuário autenticado.
-         */
+     * O contratante é sempre o usuário autenticado.
+     */
         $dados['contratante_id'] = $usuario->id;
 
         /*
-         * Toda nova publicação começa como ATIVO.
-         *
-         * O status agora é controlado pela tabela
-         * publicacao_status.
-         */
+     * Toda nova publicação começa como ATIVO.
+     */
         $statusAtivo = PublicacaoStatus::where(
             'codigo',
             'ATIVO'
@@ -328,17 +364,134 @@ class PublicacaoController extends Controller
 
         $dados['status_id'] = $statusAtivo->id;
 
-        $publicacao = Publicacao::create($dados);
+        /*
+     * Retira os arquivos dos dados da publicação.
+     *
+     * Eles serão tratados separadamente.
+     */
+        $arquivos = $request->file('arquivos', []);
 
+        unset($dados['arquivos']);
+
+        $caminhosCriados = [];
+
+        try {
+
+            $publicacao = DB::transaction(function () use (
+                $dados,
+                $arquivos,
+                &$caminhosCriados
+            ) {
+
+                /*
+             * Cria a publicação.
+             */
+                $publicacao = Publicacao::create($dados);
+
+                /*
+             * Processa os anexos.
+             */
+                foreach ($arquivos as $ordem => $arquivo) {
+
+                    $mimeType = $arquivo->getMimeType();
+
+                    $tipo = match (true) {
+
+                        str_starts_with(
+                            $mimeType,
+                            'image/'
+                        ) => 'imagem',
+
+                        str_starts_with(
+                            $mimeType,
+                            'video/'
+                        ) => 'video',
+
+                        $mimeType === 'application/pdf'
+                        => 'pdf',
+
+                        default => null,
+                    };
+
+                    if (!$tipo) {
+                        throw new \RuntimeException(
+                            'Tipo de arquivo não permitido.'
+                        );
+                    }
+
+                    /*
+                 * O arquivo fica no storage privado.
+                 *
+                 * Exemplo:
+                 *
+                 * storage/app/private/
+                 * publicacoes/15/arquivo.pdf
+                 */
+                    $caminho = $arquivo->store(
+                        "publicacoes/{$publicacao->id}",
+                        'local'
+                    );
+
+                    $caminhosCriados[] = $caminho;
+
+                    /*
+                 * Cria os metadados no banco.
+                 */
+                    $publicacao->anexos()->create([
+                        'nome_original' =>
+                        $arquivo->getClientOriginalName(),
+
+                        'nome_arquivo' =>
+                        basename($caminho),
+
+                        'caminho' =>
+                        $caminho,
+
+                        'mime_type' =>
+                        $mimeType,
+
+                        'tipo' =>
+                        $tipo,
+
+                        'tamanho' =>
+                        $arquivo->getSize(),
+
+                        'ordem' =>
+                        $ordem,
+                    ]);
+                }
+
+                return $publicacao;
+            });
+        } catch (\Throwable $e) {
+
+            /*
+         * Se o banco falhar depois de algum arquivo
+         * ter sido salvo, remove os arquivos físicos.
+         */
+            foreach ($caminhosCriados as $caminho) {
+                Storage::disk('local')->delete($caminho);
+            }
+
+            throw $e;
+        }
+
+        /*
+     * Carrega os dados necessários para a resposta.
+     */
         $publicacao->load([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
             'status:id,codigo,nome,descricao',
+            'anexos',
         ]);
 
         return response()->json([
-            'message' => 'Publicação criada com sucesso.',
-            'data' => $publicacao
+            'message' =>
+            'Publicação criada com sucesso.',
+
+            'data' =>
+            $publicacao
         ], 201);
     }
 
@@ -410,6 +563,7 @@ class PublicacaoController extends Controller
                 'categoria:id,nome,descricao',
                 'contratante:id,name,email,telefone,foto_url,cidade,estado',
                 'status:id,codigo,nome,descricao',
+                'anexos',
             ]);
 
             return response()->json([
@@ -457,15 +611,15 @@ class PublicacaoController extends Controller
 
 
     /*
-    |--------------------------------------------------------------------------
-    | ATUALIZAR PUBLICAÇÃO
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| ATUALIZAR PUBLICAÇÃO
+|--------------------------------------------------------------------------
+*/
 
     #[OA\Put(
         path: '/api/publicacoes/{publicacao}',
         summary: 'Atualiza uma publicação do usuário autenticado',
-        description: 'Atualiza os dados da publicação. O status não pode ser alterado através deste endpoint. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.',
+        description: 'Atualiza os dados da publicação. Publicações encerradas não podem mais ser alteradas. O status não pode ser alterado através deste endpoint. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.',
         tags: ['Publicações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -559,7 +713,7 @@ class PublicacaoController extends Controller
             ),
             new OA\Response(
                 response: 422,
-                description: 'Dados inválidos'
+                description: 'Publicação não pode ser alterada'
             )
         ]
     )]
@@ -570,8 +724,8 @@ class PublicacaoController extends Controller
         $usuario = $request->user();
 
         /*
-         * Somente o dono pode alterar.
-         */
+     * Somente o dono pode alterar.
+     */
         if (
             (int) $publicacao->contratante_id !==
             (int) $usuario->id
@@ -583,12 +737,29 @@ class PublicacaoController extends Controller
         }
 
         /*
-         * Não permitimos alterar o contratante
-         * nem o status através do PUT.
-         *
-         * O cancelamento possui endpoint próprio.
-         */
+     * Carrega o status atual da publicação.
+     */
+        $publicacao->loadMissing('status');
 
+        /*
+     * Publicações encerradas não podem mais
+     * sofrer qualquer alteração.
+     */
+        if (
+            $publicacao->status?->codigo === 'ENCERRADO'
+        ) {
+            return response()->json([
+                'message' =>
+                'Esta publicação está encerrada e não pode mais ser alterada.'
+            ], 422);
+        }
+
+        /*
+     * Não permitimos alterar o contratante
+     * nem o status através do PUT.
+     *
+     * O cancelamento possui endpoint próprio.
+     */
         $dados = $request->validate([
             'categoria_id' => [
                 'sometimes',
@@ -650,10 +821,10 @@ class PublicacaoController extends Controller
         ]);
 
         /*
-         * Segurança:
-         * nunca permite alterar o contratante
-         * nem o status.
-         */
+     * Segurança:
+     * nunca permite alterar o contratante
+     * nem o status.
+     */
         unset(
             $dados['contratante_id'],
             $dados['status'],
@@ -661,10 +832,13 @@ class PublicacaoController extends Controller
         );
 
         /*
-         * Atualiza somente os dados permitidos.
-         */
+     * Atualiza somente os dados permitidos.
+     */
         $publicacao->update($dados);
 
+        /*
+     * Recarrega os relacionamentos.
+     */
         $publicacao->load([
             'categoria:id,nome,descricao',
             'contratante:id,name,email,telefone,foto_url,cidade,estado',
@@ -674,7 +848,9 @@ class PublicacaoController extends Controller
         return response()->json([
             'message' =>
             'Publicação atualizada com sucesso.',
-            'data' => $publicacao
+
+            'data' =>
+            $publicacao
         ]);
     }
 

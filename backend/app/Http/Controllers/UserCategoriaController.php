@@ -13,17 +13,68 @@ class UserCategoriaController extends Controller
     |--------------------------------------------------------------------------
     | Lista categorias disponíveis
     |--------------------------------------------------------------------------
+    |
+    | Endpoint público.
+    |
+    | Usado no cadastro do usuário.
+    | Não depende de usuário autenticado.
+    |
+    */
+
+    #[OA\Get(
+        path: '/api/categorias',
+        summary: 'Lista todas as categorias disponíveis',
+        tags: ['Categorias'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Lista de categorias'
+            )
+        ]
+    )]
+    public function categorias()
+    {
+        $categorias = Categoria::orderBy('nome')
+            ->get()
+            ->map(function ($categoria) {
+                return [
+                    'id' => $categoria->id,
+                    'nome' => $categoria->nome,
+                    'descricao' => $categoria->descricao,
+                ];
+            });
+
+        return response()->json([
+            'data' => $categorias
+        ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lista categorias para o perfil
+    |--------------------------------------------------------------------------
+    |
+    | Retorna TODAS as categorias disponíveis e informa quais estão
+    | selecionadas pelo usuário autenticado.
+    |
+    | Esse endpoint é diferente do /api/categorias porque aqui temos
+    | informações específicas do usuário:
+    |
+    | - selecionada
+    | - vinculo_id
+    |
     */
 
     #[OA\Get(
         path: '/api/users-categorias/categorias',
-        summary: 'Lista todas as categorias e informa quais pertencem ao usuário autenticado',
+        summary: 'Lista categorias e informa as categorias do usuário autenticado',
         tags: ['Usuário-Categorias'],
         security: [['sanctum' => []]],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Lista de categorias'
+                description: 'Lista de categorias com situação do usuário'
             ),
             new OA\Response(
                 response: 401,
@@ -31,10 +82,14 @@ class UserCategoriaController extends Controller
             )
         ]
     )]
-    public function categorias(Request $request)
+    public function categoriasUsuario(Request $request)
     {
         $usuario = $request->user();
 
+        /*
+        | Busca os vínculos do usuário uma única vez.
+        | keyBy permite localizar rapidamente pelo categoria_id.
+        */
         $categoriasUsuario = UserCategoria::where(
             'user_id',
             $usuario->id
@@ -69,11 +124,15 @@ class UserCategoriaController extends Controller
     |--------------------------------------------------------------------------
     | Lista meus vínculos
     |--------------------------------------------------------------------------
+    |
+    | Retorna somente os vínculos de categoria pertencentes ao usuário
+    | autenticado.
+    |
     */
 
     #[OA\Get(
         path: '/api/users-categorias',
-        summary: 'Lista as categorias do usuário autenticado',
+        summary: 'Lista as categorias vinculadas ao usuário autenticado',
         tags: ['Usuário-Categorias'],
         security: [['sanctum' => []]],
         responses: [
@@ -109,6 +168,15 @@ class UserCategoriaController extends Controller
     |--------------------------------------------------------------------------
     | Vincular categoria
     |--------------------------------------------------------------------------
+    |
+    | A categoria sempre será vinculada ao usuário autenticado.
+    |
+    | IMPORTANTE:
+    | Não recebemos user_id pelo request.
+    |
+    | Dessa forma, um usuário nunca consegue criar um vínculo
+    | de categoria para outro usuário.
+    |
     */
 
     #[OA\Post(
@@ -162,6 +230,9 @@ class UserCategoriaController extends Controller
             ],
         ]);
 
+        /*
+        | Verifica se o usuário já possui essa categoria.
+        */
         $existe = UserCategoria::where(
             'user_id',
             $usuario->id
@@ -178,6 +249,9 @@ class UserCategoriaController extends Controller
             ], 409);
         }
 
+        /*
+        | Cria o vínculo usando SEMPRE o usuário autenticado.
+        */
         $vinculo = UserCategoria::create([
             'user_id' => $usuario->id,
             'categoria_id' => $dados['categoria_id'],
@@ -196,6 +270,9 @@ class UserCategoriaController extends Controller
     |--------------------------------------------------------------------------
     | Remover vínculo
     |--------------------------------------------------------------------------
+    |
+    | O usuário só pode remover um vínculo pertencente ao próprio perfil.
+    |
     */
 
     #[OA\Delete(
@@ -206,7 +283,7 @@ class UserCategoriaController extends Controller
         parameters: [
             new OA\Parameter(
                 name: 'usuarioCategoria',
-                description: 'ID do vínculo',
+                description: 'ID do vínculo usuário-categoria',
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(
@@ -222,7 +299,7 @@ class UserCategoriaController extends Controller
             ),
             new OA\Response(
                 response: 404,
-                description: 'Vínculo não encontrado'
+                description: 'Vínculo não encontrado ou não pertence ao usuário'
             ),
             new OA\Response(
                 response: 401,
@@ -236,10 +313,10 @@ class UserCategoriaController extends Controller
     ) {
         $usuario = $request->user();
 
-        if (
-            $usuarioCategoria->user_id !==
-            $usuario->id
-        ) {
+        /*
+        | Garante que o usuário só possa excluir seus próprios vínculos.
+        */
+        if ($usuarioCategoria->user_id !== $usuario->id) {
             return response()->json([
                 'message' => 'Este vínculo não pertence ao usuário autenticado.'
             ], 404);

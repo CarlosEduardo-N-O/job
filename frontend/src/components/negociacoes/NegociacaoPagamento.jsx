@@ -15,18 +15,43 @@ export default function NegociacaoPagamento({
     onPagamentoRealizado,
 }) {
     const statusPagamento =
-        obterCodigoStatus(
-            negociacao
-        );
+        obterCodigoStatus(negociacao);
 
     const acoes =
-        obterAcoes(
-            negociacao
-        );
+        obterAcoes(negociacao);
 
-    const valor =
+    /*
+     * ============================================================
+     * VALORES DO PAGAMENTO
+     *
+     * valor_trabalho = valor do serviço/contrato
+     * valor_taxa     = taxa de intermediação JOB
+     * valor_total    = valor efetivamente pago pelo contratante
+     * ============================================================
+     */
+
+    const valorContrato = Number(
         negociacao?.valor_trabalho ??
-        publicacao?.valor_estimado;
+        publicacao?.valor_estimado ??
+        0
+    );
+
+    const valorTaxa = Number(
+        negociacao?.valor_taxa ?? 0
+    );
+
+    const taxaPercentual = Number(
+        negociacao?.taxa_percentual ?? 0
+    );
+
+    const valorTotal = Number(
+        negociacao?.valor_total ??
+        (valorContrato + valorTaxa)
+    );
+
+    const possuiTaxa =
+        negociacao?.valor_taxa !== null &&
+        negociacao?.valor_taxa !== undefined;
 
     /*
      * QR Code visual fictício.
@@ -40,10 +65,6 @@ export default function NegociacaoPagamento({
             const linha = Math.floor(index / 11);
             const coluna = index % 11;
 
-            /*
-             * Alguns módulos fixos para deixar
-             * o padrão visual semelhante a um QR Code.
-             */
             const padroes = [
                 [0, 0],
                 [0, 1],
@@ -90,11 +111,6 @@ export default function NegociacaoPagamento({
                     coluna === c
             );
 
-            /*
-             * Área central e inferior:
-             * padrão determinístico para evitar
-             * um quadrado completamente preenchido.
-             */
             const preenchido =
                 pertenceAoPadrao ||
                 (
@@ -171,7 +187,7 @@ export default function NegociacaoPagamento({
                         <p>
                             Para confirmar a contratação,
                             realize o pagamento do valor
-                            acordado.
+                            total abaixo.
                         </p>
 
                     </div>
@@ -205,14 +221,94 @@ export default function NegociacaoPagamento({
 
                         <div>
                             <span>
-                                Valor da negociação
+                                Total a pagar
                             </span>
 
                             <strong className="pagamento-valor">
                                 {formatarValor(
-                                    valor
+                                    valorTotal
                                 )}
                             </strong>
+                        </div>
+
+                    </div>
+
+
+                    {/* =====================================================
+                        DETALHAMENTO DO VALOR
+                    ===================================================== */}
+
+                    <div className="pagamento-detalhamento">
+
+                        <div className="pagamento-detalhamento-header">
+
+                            <strong>
+                                Detalhamento do pagamento
+                            </strong>
+
+                            <span>
+                                O valor total é composto pelo contrato + taxa JOB.
+                            </span>
+
+                        </div>
+
+
+                        <div className="pagamento-detalhamento-linha">
+
+                            <span>
+                                Valor do contrato
+                            </span>
+
+                            <strong>
+                                {formatarValor(
+                                    valorContrato
+                                )}
+                            </strong>
+
+                        </div>
+
+
+                        {possuiTaxa && (
+                            <div className="pagamento-detalhamento-linha">
+
+                                <span>
+                                    Taxa de intermediação JOB
+                                    {taxaPercentual > 0 &&
+                                        ` (${taxaPercentual
+                                            .toFixed(2)
+                                            .replace('.', ',')}%)`}
+                                </span>
+
+                                <strong>
+                                    + {formatarValor(
+                                        valorTaxa
+                                    )}
+                                </strong>
+
+                            </div>
+                        )}
+
+
+                        <div className="pagamento-detalhamento-total">
+
+                            <div>
+
+                                <strong>
+                                    Total que o contratante paga
+                                </strong>
+
+                                <span>
+                                    Valor do contrato + taxa de intermediação
+                                </span>
+
+                            </div>
+
+                            <strong>
+                                {formatarValor(
+                                    valorTotal
+                                )}
+                            </strong>
+
                         </div>
 
                     </div>

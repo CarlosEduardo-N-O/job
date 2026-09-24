@@ -208,16 +208,22 @@ class NegociacaoPagamentoController extends Controller
              * Atualiza pagamento.
              */
             $pagamento->update([
-                'status_id' => $statusPagamento->id,
-                'data_pagamento_informado' => now(),
-                'observacao' => $dados['observacao'] ?? null,
+                'status_id' =>
+                $statusPagamento->id,
+
+                'data_pagamento_informado' =>
+                now(),
+
+                'observacao' =>
+                $dados['observacao'] ?? null,
             ]);
 
             /*
              * Atualiza negociação.
              */
             $negociacao->update([
-                'status_id' => $statusNegociacao->id,
+                'status_id' =>
+                $statusNegociacao->id,
             ]);
 
             return response()->json([
@@ -320,16 +326,16 @@ class NegociacaoPagamentoController extends Controller
     public function confirmar(Negociacao $negociacao)
     {
         /*
-     * Busca o pagamento da negociação.
-     */
+         * Busca o pagamento da negociação.
+         */
         $pagamento = $negociacao
             ->pagamento()
             ->with('status')
             ->first();
 
         /*
-     * A negociação precisa possuir pagamento.
-     */
+         * A negociação precisa possuir pagamento.
+         */
         if (!$pagamento) {
             throw ValidationException::withMessages([
                 'pagamento' => [
@@ -339,9 +345,9 @@ class NegociacaoPagamentoController extends Controller
         }
 
         /*
-     * Somente pagamentos aguardando processamento
-     * podem ser validados pela plataforma.
-     */
+         * Somente pagamentos aguardando processamento
+         * podem ser validados pela plataforma.
+         */
         if (
             $pagamento->status->codigo !==
             'AGUARDANDO_PROCESSAMENTO'
@@ -359,10 +365,10 @@ class NegociacaoPagamentoController extends Controller
         ) {
 
             /*
-         * =========================================================
-         * 1. VALIDA O PAGAMENTO
-         * =========================================================
-         */
+             * =========================================================
+             * 1. VALIDA O PAGAMENTO
+             * =========================================================
+             */
 
             $statusPagamento =
                 $this->buscarStatusPagamento(
@@ -379,10 +385,10 @@ class NegociacaoPagamentoController extends Controller
 
 
             /*
-         * =========================================================
-         * 2. FECHA A NEGOCIAÇÃO CONTRATADA
-         * =========================================================
-         */
+             * =========================================================
+             * 2. FECHA A NEGOCIAÇÃO CONTRATADA
+             * =========================================================
+             */
 
             $statusFechada =
                 $this->buscarStatusNegociacao(
@@ -396,10 +402,10 @@ class NegociacaoPagamentoController extends Controller
 
 
             /*
-         * =========================================================
-         * 3. ENCERRA A PUBLICAÇÃO
-         * =========================================================
-         */
+             * =========================================================
+             * 3. ENCERRA A PUBLICAÇÃO
+             * =========================================================
+             */
 
             $publicacao =
                 $negociacao->publicacao;
@@ -430,16 +436,16 @@ class NegociacaoPagamentoController extends Controller
 
 
             /*
-         * =========================================================
-         * 4. ENCERRA AS DEMAIS NEGOCIAÇÕES
-         * =========================================================
-         *
-         * A negociação que recebeu o pagamento
-         * permanece FECHADA.
-         *
-         * As demais negociações abertas da publicação
-         * passam para ENCERRADA.
-         */
+             * =========================================================
+             * 4. ENCERRA AS DEMAIS NEGOCIAÇÕES
+             * =========================================================
+             *
+             * A negociação que recebeu o pagamento
+             * permanece FECHADA.
+             *
+             * As demais negociações abertas da publicação
+             * passam para ENCERRADA.
+             */
 
             $statusEncerrada =
                 $this->buscarStatusNegociacao(
@@ -476,19 +482,19 @@ class NegociacaoPagamentoController extends Controller
 
 
             /*
- * =========================================================
- * 5. CRIA O TRABALHO
- * =========================================================
- *
- * O trabalho só é criado depois que o pagamento
- * foi validado pela plataforma.
- *
- * O trabalho inicia obrigatoriamente como PENDENTE,
- * aguardando a execução do serviço pelo contratado.
- *
- * id_contratante = usuário que criou a publicação
- * id_contratado  = usuário que participou da negociação
- */
+             * =========================================================
+             * 5. CRIA O TRABALHO
+             * =========================================================
+             *
+             * O trabalho só é criado depois que o pagamento
+             * foi validado pela plataforma.
+             *
+             * O trabalho inicia obrigatoriamente como PENDENTE,
+             * aguardando a execução do serviço pelo contratado.
+             *
+             * id_contratante = usuário que criou a publicação
+             * id_contratado  = usuário que participou da negociação
+             */
 
             $statusTrabalho = TrabalhoStatus::where(
                 'codigo',
@@ -501,9 +507,13 @@ class NegociacaoPagamentoController extends Controller
                 ->firstOrFail();
 
             /*
- * Garante que a mesma negociação
- * não gere mais de um trabalho.
- */
+             * Garante que a mesma negociação
+             * não gere mais de um trabalho.
+             *
+             * Os valores financeiros são copiados
+             * da negociação para preservar o histórico
+             * da contratação.
+             */
             $trabalho = Trabalho::firstOrCreate(
                 [
                     'id_negociacao' =>
@@ -522,7 +532,23 @@ class NegociacaoPagamentoController extends Controller
                     'status_id' =>
                     $statusTrabalho->id,
 
-                    'valor' =>
+                    /*
+                     * Valor que o contratado recebe.
+                     */
+                    'valor_trabalho' =>
+                    $negociacao->valor_trabalho,
+
+                    /*
+                     * Taxa de intermediação da JOB.
+                     */
+                    'valor_taxa' =>
+                    $negociacao->valor_taxa ?? 0,
+
+                    /*
+                     * Total pago pelo contratante.
+                     */
+                    'valor_total' =>
+                    $negociacao->valor_total ??
                     $negociacao->valor_trabalho,
 
                     'data_inicio' =>
@@ -535,10 +561,10 @@ class NegociacaoPagamentoController extends Controller
 
 
             /*
-         * =========================================================
-         * 6. RETORNO
-         * =========================================================
-         */
+             * =========================================================
+             * 6. RETORNO
+             * =========================================================
+             */
 
             return response()->json([
                 'message' =>

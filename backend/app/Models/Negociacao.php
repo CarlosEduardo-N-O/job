@@ -19,10 +19,16 @@ class Negociacao extends Model
         'id_publicacao',
         'status_id',
         'valor_trabalho',
+        'taxa_percentual',
+        'valor_taxa',
+        'valor_total',
     ];
 
     protected $casts = [
         'valor_trabalho' => 'decimal:2',
+        'taxa_percentual' => 'decimal:2',
+        'valor_taxa' => 'decimal:2',
+        'valor_total' => 'decimal:2',
     ];
 
     /**
@@ -81,6 +87,9 @@ class Negociacao extends Model
         );
     }
 
+    /**
+     * Pagamento relacionado à negociação.
+     */
     public function pagamento(): HasOne
     {
         return $this->hasOne(

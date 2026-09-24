@@ -19,13 +19,17 @@ class Trabalho extends Model
         'id_contratante',
         'id_contratado',
         'status_id',
-        'valor',
+        'valor_trabalho',
+        'valor_taxa',
+        'valor_total',
         'data_inicio',
         'data_conclusao',
     ];
 
     protected $casts = [
-        'valor' => 'decimal:2',
+        'valor_trabalho' => 'decimal:2',
+        'valor_taxa' => 'decimal:2',
+        'valor_total' => 'decimal:2',
         'data_inicio' => 'datetime',
         'data_conclusao' => 'datetime',
     ];
@@ -86,6 +90,9 @@ class Trabalho extends Model
         );
     }
 
+    /**
+     * Interações realizadas no trabalho.
+     */
     public function interacoes()
     {
         return $this->hasMany(
@@ -95,6 +102,9 @@ class Trabalho extends Model
         );
     }
 
+    /**
+     * Pagamentos relacionados ao trabalho.
+     */
     public function pagamentos()
     {
         return $this->hasMany(
