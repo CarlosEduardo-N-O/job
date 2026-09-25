@@ -179,12 +179,12 @@ export default function Login() {
 
             const novosIds = jaSelecionada
                 ? prev.categoria_ids.filter(
-                      (item) => item !== id
-                  )
+                    (item) => item !== id
+                )
                 : [
-                      ...prev.categoria_ids,
-                      id,
-                  ];
+                    ...prev.categoria_ids,
+                    id,
+                ];
 
             return {
                 ...prev,
@@ -259,37 +259,45 @@ export default function Login() {
         setCadastroLoading(true);
 
         try {
+            // 1. Cria o usuário
             await api.post('/users', {
                 name: cadastro.name,
                 email: cadastro.email,
                 password: cadastro.password,
-                telefone:
-                    cadastro.telefone || null,
-                cidade:
-                    cadastro.cidade || null,
+                telefone: cadastro.telefone || null,
+                cidade: cadastro.cidade || null,
                 estado: cadastro.estado
                     ? cadastro.estado.toUpperCase()
                     : null,
-
-                /*
-                 * Agora enviamos todas as categorias
-                 * selecionadas.
-                 */
-                categoria_ids:
-                    cadastro.categoria_ids,
             });
 
-            /*
-             * Cadastro realizado.
-             *
-             * Faz login automaticamente usando
-             * as credenciais recém-criadas.
-             */
+            // 2. Faz login automaticamente
             await login(
                 cadastro.email,
                 cadastro.password
             );
 
+            // 3. Vincula as categorias selecionadas
+            //
+            // O login já deixou o Axios autenticado.
+            // Cada categoria é enviada separadamente para o endpoint
+            // que já existe no backend.
+            for (const categoriaId of cadastro.categoria_ids) {
+                try {
+                    await api.post('/users-categorias', {
+                        categoria_id: categoriaId,
+                    });
+                } catch (error) {
+                    // O usuário já foi criado e autenticado.
+                    // Se uma categoria falhar, não impede o cadastro.
+                    console.error(
+                        `Erro ao vincular categoria ${categoriaId}:`,
+                        error
+                    );
+                }
+            }
+
+            // 4. Finaliza o cadastro normalmente
             setMostrarCadastro(false);
 
             navigate('/', {
@@ -310,18 +318,18 @@ export default function Login() {
 
                     setCadastroError(
                         primeiraMensagem ||
-                            'Verifique os dados informados.'
+                        'Verifique os dados informados.'
                     );
                 } else {
                     setCadastroError(
                         error.response?.data?.message ||
-                            'Verifique os dados informados.'
+                        'Verifique os dados informados.'
                     );
                 }
             } else {
                 setCadastroError(
                     error.response?.data?.message ||
-                        'Não foi possível criar a conta.'
+                    'Não foi possível criar a conta.'
                 );
             }
         } finally {
@@ -437,7 +445,7 @@ export default function Login() {
                     onMouseDown={(event) => {
                         if (
                             event.target ===
-                                event.currentTarget &&
+                            event.currentTarget &&
                             !cadastroLoading
                         ) {
                             fecharCadastro();
@@ -690,42 +698,42 @@ export default function Login() {
 
                                     {categorias.length >
                                         6 && (
-                                        <div className="cadastro-categoria-navigation">
+                                            <div className="cadastro-categoria-navigation">
 
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    navegarCategorias(
-                                                        'esquerda'
-                                                    )
-                                                }
-                                                disabled={
-                                                    categoriasLoading ||
-                                                    cadastroLoading
-                                                }
-                                                aria-label="Ver categorias anteriores"
-                                            >
-                                                ‹
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navegarCategorias(
+                                                            'esquerda'
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        categoriasLoading ||
+                                                        cadastroLoading
+                                                    }
+                                                    aria-label="Ver categorias anteriores"
+                                                >
+                                                    ‹
+                                                </button>
 
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    navegarCategorias(
-                                                        'direita'
-                                                    )
-                                                }
-                                                disabled={
-                                                    categoriasLoading ||
-                                                    cadastroLoading
-                                                }
-                                                aria-label="Ver mais categorias"
-                                            >
-                                                ›
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navegarCategorias(
+                                                            'direita'
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        categoriasLoading ||
+                                                        cadastroLoading
+                                                    }
+                                                    aria-label="Ver mais categorias"
+                                                >
+                                                    ›
+                                                </button>
 
-                                        </div>
-                                    )}
+                                            </div>
+                                        )}
                                 </div>
 
                                 <div className="cadastro-categorias-wrapper">
@@ -740,7 +748,7 @@ export default function Login() {
                                             </span>
                                         </div>
                                     ) : categorias.length ===
-                                      0 ? (
+                                        0 ? (
                                         <p className="cadastro-categorias-empty">
                                             Nenhuma categoria
                                             disponível.
@@ -815,19 +823,19 @@ export default function Login() {
 
                                 {cadastro.categoria_ids.length >
                                     0 && (
-                                    <div className="cadastro-categorias-selecionadas">
-                                        {
-                                            cadastro
+                                        <div className="cadastro-categorias-selecionadas">
+                                            {
+                                                cadastro
+                                                    .categoria_ids
+                                                    .length
+                                            }{' '}
+                                            {cadastro
                                                 .categoria_ids
-                                                .length
-                                        }{' '}
-                                        {cadastro
-                                            .categoria_ids
-                                            .length === 1
-                                            ? 'categoria selecionada'
-                                            : 'categorias selecionadas'}
-                                    </div>
-                                )}
+                                                .length === 1
+                                                ? 'categoria selecionada'
+                                                : 'categorias selecionadas'}
+                                        </div>
+                                    )}
 
                             </div>
 
@@ -907,7 +915,7 @@ export default function Login() {
                                         cadastroLoading ||
                                         categoriasLoading ||
                                         categorias.length ===
-                                            0
+                                        0
                                     }
                                 >
                                     {cadastroLoading

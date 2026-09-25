@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
     getAuthenticatedUser,
@@ -36,6 +36,9 @@ export default function Perfil() {
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+
+    // Referência para o container das categorias
+    const categoriasContainerRef = useRef(null);
 
     useEffect(() => {
         loadData();
@@ -161,6 +164,32 @@ export default function Perfil() {
         } finally {
             setSaving(false);
         }
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | Navegação das categorias
+    |----------------------------------------------------------------------
+    */
+
+    function navegarCategorias(direcao) {
+        const container =
+            categoriasContainerRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        const deslocamento =
+            container.clientWidth * 0.85;
+
+        container.scrollBy({
+            left:
+                direcao === 'direita'
+                    ? deslocamento
+                    : -deslocamento,
+            behavior: 'smooth',
+        });
     }
 
     async function handleCategoria(categoria) {
@@ -424,7 +453,7 @@ export default function Perfil() {
                         serviços que você pode realizar.
                     </p>
 
-                    <div className="categories-list">
+                    <div className="categories-wrapper">
 
                         {categorias.length === 0 ? (
                             <p>
@@ -432,52 +461,97 @@ export default function Perfil() {
                                 cadastrada.
                             </p>
                         ) : (
-                            categorias.map((categoria) => (
-                                <button
-                                    key={categoria.id}
-                                    type="button"
-                                    className={
-                                        categoria.selecionada
-                                            ? 'category-item selected'
-                                            : 'category-item'
-                                    }
-                                    onClick={() =>
-                                        handleCategoria(
-                                            categoria
-                                        )
-                                    }
-                                    disabled={
-                                        savingCategoria ===
-                                        categoria.id
+                            <>
+                                <div className="categories-navigation">
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navegarCategorias(
+                                                'esquerda'
+                                            )
+                                        }
+                                        aria-label="Ver categorias anteriores"
+                                    >
+                                        ‹
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navegarCategorias(
+                                                'direita'
+                                            )
+                                        }
+                                        aria-label="Ver mais categorias"
+                                    >
+                                        ›
+                                    </button>
+
+                                </div>
+
+                                <div
+                                    className="categories-list"
+                                    ref={
+                                        categoriasContainerRef
                                     }
                                 >
 
-                                    <div className="category-content">
-
-                                        <strong>
-                                            {categoria.nome}
-                                        </strong>
-
-                                        {categoria.descricao && (
-                                            <span>
-                                                {
-                                                    categoria.descricao
+                                    {categorias.map(
+                                        (categoria) => (
+                                            <button
+                                                key={
+                                                    categoria.id
                                                 }
-                                            </span>
-                                        )}
+                                                type="button"
+                                                className={
+                                                    categoria.selecionada
+                                                        ? 'category-item selected'
+                                                        : 'category-item'
+                                                }
+                                                onClick={() =>
+                                                    handleCategoria(
+                                                        categoria
+                                                    )
+                                                }
+                                                disabled={
+                                                    savingCategoria ===
+                                                    categoria.id
+                                                }
+                                            >
 
-                                    </div>
+                                                <div className="category-content">
 
-                                    <div className="category-check">
+                                                    <strong>
+                                                        {
+                                                            categoria.nome
+                                                        }
+                                                    </strong>
 
-                                        {categoria.selecionada
-                                            ? '✓'
-                                            : '+'}
+                                                    {categoria.descricao && (
+                                                        <span>
+                                                            {
+                                                                categoria.descricao
+                                                            }
+                                                        </span>
+                                                    )}
 
-                                    </div>
+                                                </div>
 
-                                </button>
-                            ))
+                                                <div className="category-check">
+
+                                                    {categoria.selecionada
+                                                        ? '✓'
+                                                        : '+'}
+
+                                                </div>
+
+                                            </button>
+                                        )
+                                    )}
+
+                                </div>
+                            </>
                         )}
 
                     </div>

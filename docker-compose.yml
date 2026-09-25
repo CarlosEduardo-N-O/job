@@ -13,7 +13,8 @@ services:
       - "8000:8000"
 
     volumes:
-      - ./backend:/var/www
+    - ./backend:/var/www
+    - backend_vendor:/var/www/vendor
 
     environment:
       APP_ENV: local
@@ -96,3 +97,4 @@ networks:
 
 volumes:
   postgres_data:
+  backend_vendor:
