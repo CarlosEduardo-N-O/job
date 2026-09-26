@@ -11,9 +11,28 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
+
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist
+RUN mkdir -p \
+    storage/app/private \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+RUN composer dump-autoload \
+    --optimize \
+    --no-dev
 
 EXPOSE 8000
 

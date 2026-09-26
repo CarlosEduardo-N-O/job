@@ -1,19 +1,18 @@
-/* ============================================================
+/* ==========================================================================
    BASE
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-overlay {
     position: fixed;
     inset: 0;
-
     z-index: 9999;
 
     pointer-events: auto;
 }
 
-/* ============================================================
+/* ==========================================================================
    APRESENTAÇÃO
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-overlay-apresentacao {
     display: flex;
@@ -22,34 +21,31 @@
 
     padding: 24px;
 
-    background: rgba(0, 0, 0, 0.68);
-
+    background-color: rgba(0, 0, 0, 0.68);
     backdrop-filter: blur(3px);
 }
 
-/* ============================================================
+/* ==========================================================================
    TOUR
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-overlay-tour {
-    background: rgba(0, 0, 0, 0.08);
+    background-color: rgba(0, 0, 0, 0.08);
 
     /*
      * Mantém a interface visível e apenas levemente escurecida.
      */
 }
 
-/* ============================================================
+/* ==========================================================================
    DESTAQUE
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-highlight {
     position: fixed;
-
     z-index: 10000;
 
     border: 2px solid rgba(255, 255, 255, 0.95);
-
     border-radius: 14px;
 
     pointer-events: none;
@@ -66,23 +62,21 @@
         height 0.3s ease;
 }
 
-/* ============================================================
+/* ==========================================================================
    CARD BASE
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-card {
     position: fixed;
-
     z-index: 10001;
 
     text-align: center;
-
     pointer-events: auto;
 }
 
-/* ============================================================
+/* ==========================================================================
    CARD DA APRESENTAÇÃO
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-card-apresentacao {
     width: 100%;
@@ -90,19 +84,19 @@
 
     padding: 32px;
 
-    background: #ffffff;
-
+    background-color: #ffffff;
     border-radius: 22px;
 
     box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.25);
 }
 
-/* ============================================================
+/* ==========================================================================
    MENSAGEM DO TOUR
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-card-tour {
+    position: fixed;
     left: 24px;
     bottom: 90px;
 
@@ -110,48 +104,43 @@
 
     padding: 14px 16px;
 
-    background: rgba(25, 25, 25, 0.92);
-
+    background-color: rgba(25, 25, 25, 0.92);
     border: 1px solid rgba(255, 255, 255, 0.12);
-
     border-radius: 12px;
 
     box-shadow:
         0 8px 24px rgba(0, 0, 0, 0.25);
 
     color: #ffffff;
-
     text-align: left;
+
+    /*
+     * O tour fica acima do menu inferior.
+     *
+     * 90px deixa espaço suficiente para a barra de navegação.
+     */
 }
 
-/*
- * O tour fica acima do menu inferior.
- *
- * 90px deixa espaço suficiente para a barra de navegação.
- */
-
-/* ============================================================
+/* ==========================================================================
    BOTÃO FECHAR
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-close {
     position: absolute;
-
     top: 8px;
     right: 10px;
-
-    width: 28px;
-    height: 28px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border: none;
+    width: 28px;
+    height: 28px;
+
+    border: 0;
     border-radius: 50%;
 
-    background: transparent;
-
+    background-color: transparent;
     color: #777;
 
     font-size: 24px;
@@ -163,7 +152,7 @@
 }
 
 .onboarding-close:hover:not(:disabled) {
-    background: #f1f1f1;
+    background-color: #f1f1f1;
 }
 
 .onboarding-close:disabled {
@@ -176,17 +165,16 @@
     right: 8px;
 
     color: rgba(255, 255, 255, 0.7);
-
     font-size: 21px;
 }
 
 .onboarding-card-tour .onboarding-close:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.10);
+    background-color: rgba(255, 255, 255, 0.10);
 }
 
-/* ============================================================
+/* ==========================================================================
    ÍCONE
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-icon {
     display: flex;
@@ -200,7 +188,7 @@
 
     border-radius: 50%;
 
-    background: #f1f3f5;
+    background-color: #f1f3f5;
 
     font-size: 34px;
 }
@@ -211,14 +199,14 @@
 
     margin: 0 0 5px;
 
-    background: rgba(255, 255, 255, 0.10);
+    background-color: rgba(255, 255, 255, 0.10);
 
     font-size: 18px;
 }
 
-/* ============================================================
+/* ==========================================================================
    PROGRESSO
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-progress {
     margin-bottom: 10px;
@@ -237,9 +225,9 @@
     font-size: 10px;
 }
 
-/* ============================================================
+/* ==========================================================================
    TÍTULO
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-card h2 {
     margin: 0 0 12px;
@@ -259,14 +247,14 @@
     font-weight: 700;
 }
 
-/* ============================================================
+/* ==========================================================================
    DESCRIÇÃO
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-card p {
-    margin: 0 auto;
-
     max-width: 380px;
+
+    margin: 0 auto;
 
     color: #666;
 
@@ -285,15 +273,14 @@
     line-height: 1.45;
 }
 
-/* ============================================================
+/* ==========================================================================
    INDICADORES
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-dots {
     display: flex;
-    justify-content: center;
     align-items: center;
-
+    justify-content: center;
     gap: 7px;
 
     margin: 26px 0;
@@ -301,7 +288,6 @@
 
 .onboarding-card-tour .onboarding-dots {
     justify-content: flex-start;
-
     gap: 5px;
 
     margin: 8px 0;
@@ -313,7 +299,7 @@
 
     border-radius: 50%;
 
-    background: #d2d2d2;
+    background-color: #d2d2d2;
 
     transition:
         width 0.2s ease,
@@ -325,36 +311,34 @@
 
     border-radius: 10px;
 
-    background: #333;
+    background-color: #333;
 }
 
 .onboarding-card-tour .onboarding-dots span {
     width: 5px;
     height: 5px;
 
-    background: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 .onboarding-card-tour .onboarding-dots span.active {
     width: 15px;
 
-    background: #ffffff;
+    background-color: #ffffff;
 }
 
-/* ============================================================
+/* ==========================================================================
    AÇÕES
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-actions {
     display: flex;
     justify-content: space-between;
-
     gap: 12px;
 }
 
 .onboarding-card-tour .onboarding-actions {
     justify-content: flex-start;
-
     gap: 7px;
 }
 
@@ -382,17 +366,15 @@
 
 .onboarding-button:disabled {
     cursor: not-allowed;
-
     opacity: 0.65;
 }
 
 .onboarding-button.primary {
     flex: 1;
 
-    border: none;
+    border: 0;
 
-    background: #222;
-
+    background-color: #222;
     color: #ffffff;
 }
 
@@ -403,18 +385,17 @@
 .onboarding-button.secondary {
     border: 1px solid #d8d8d8;
 
-    background: #ffffff;
-
+    background-color: #ffffff;
     color: #444;
 }
 
 .onboarding-button.secondary:hover:not(:disabled) {
-    background: #f5f5f5;
+    background-color: #f5f5f5;
 }
 
-/* ============================================================
+/* ==========================================================================
    BOTÕES DO TOUR
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-card-tour .onboarding-button {
     min-height: 30px;
@@ -429,50 +410,44 @@
 .onboarding-card-tour .onboarding-button.primary {
     flex: 0 0 auto;
 
-    background: #ffffff;
-
+    background-color: #ffffff;
     color: #222;
 }
 
 .onboarding-card-tour .onboarding-button.primary:hover:not(:disabled) {
-    background: #eeeeee;
+    background-color: #eeeeee;
 }
 
 .onboarding-card-tour .onboarding-button.secondary {
     border-color: rgba(255, 255, 255, 0.18);
 
-    background: rgba(255, 255, 255, 0.08);
-
+    background-color: rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.9);
 }
 
 .onboarding-card-tour .onboarding-button.secondary:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* ============================================================
+/* ==========================================================================
    LOADING
-   ============================================================ */
+   ========================================================================== */
 
 .onboarding-button.primary:has(.onboarding-spinner) {
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 8px;
 }
 
 .onboarding-spinner {
+    flex-shrink: 0;
+
     width: 14px;
     height: 14px;
 
-    flex-shrink: 0;
-
     border: 2px solid rgba(255, 255, 255, 0.35);
-
     border-top-color: #ffffff;
-
     border-radius: 50%;
 
     animation: onboarding-spin 0.7s linear infinite;
@@ -484,9 +459,9 @@
     }
 }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* ==========================================================================
+   RESPONSIVO
+   ========================================================================== */
 
 @media (max-width: 600px) {
     .onboarding-overlay-apresentacao {

@@ -160,6 +160,11 @@ Route::middleware('auth:sanctum')->group(function () {
         [PublicacaoController::class, 'minhas_publicacoes']
     );
 
+    Route::get(
+        '/publicacoes/outras',
+        [PublicacaoController::class, 'outras_publicacoes']
+    );
+
     Route::apiResource(
         'publicacoes',
         PublicacaoController::class

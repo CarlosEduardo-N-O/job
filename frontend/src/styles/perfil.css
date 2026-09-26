@@ -1,61 +1,177 @@
 /* ==========================================================================
-   PERFIL
+   MODAL DE PERFIL
    ========================================================================== */
 
-.profile-page {
+.profile-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
     width: 100%;
-    padding-bottom: 110px;
+    padding: 78px 18px 80px;
+
+    background-color: rgba(0, 0, 0, 0.45);
+
+    overflow-y: auto;
 }
 
 /* ==========================================================================
-   CABEÇALHO
+   MODAL
    ========================================================================== */
 
-.profile-page .page-header {
-    margin-bottom: 20px;
-}
+.profile-modal {
+    position: relative;
 
-.profile-page .page-header.simple {
-    display: block;
-}
-
-.profile-header {
     width: 100%;
+    max-width: 900px;
+    max-height: calc(100vh - 158px);
 
     display: flex;
-    align-items: center;
+    flex-direction: column;
 
-    gap: 18px;
-
-    padding: 22px;
-
-    background: #ffffff;
+    background-color: #ffffff;
 
     border: 1px solid #e5e7eb;
     border-radius: 18px;
 
     box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.03);
+        0 20px 50px rgba(0, 0, 0, 0.18);
+
+    overflow: hidden;
 }
 
-.profile-avatar {
+/* ==========================================================================
+   LOADING
+   ========================================================================== */
+
+.profile-modal-loading {
+    width: min(360px, 100%);
+
+    margin: auto;
+    padding: 40px 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+
+    background-color: #ffffff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.profile-modal-loading p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 15px;
+}
+
+/* ==========================================================================
+   CABEÇALHO DO MODAL
+   ========================================================================== */
+
+.profile-modal-header {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 18px 22px;
+
+    background-color: #ffffff;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.profile-modal-user {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* ==========================================================================
+   BOTÃO VOLTAR
+   ========================================================================== */
+
+.profile-back-button {
+    flex-shrink: 0;
+
+    width: 36px;
+    height: 36px;
+
     display: flex;
     align-items: center;
     justify-content: center;
 
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background-color: transparent;
+    color: #374151;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.profile-back-button:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.profile-back-button:active {
+    transform: scale(0.95);
+}
+
+.profile-back-button:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   AVATAR
+   ========================================================================== */
+
+.profile-avatar {
     flex-shrink: 0;
 
-    width: 72px;
-    height: 72px;
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     overflow: hidden;
 
     border-radius: 50%;
 
-    background: #111827;
+    background-color: #111827;
     color: #ffffff;
 
-    font-size: 25px;
+    font-size: 20px;
     font-weight: 800;
 }
 
@@ -66,13 +182,16 @@
     object-fit: cover;
 }
 
+/* ==========================================================================
+   INFORMAÇÕES DO USUÁRIO
+   ========================================================================== */
+
 .profile-info {
     min-width: 0;
 
     display: flex;
     flex-direction: column;
-
-    gap: 4px;
+    gap: 3px;
 }
 
 .profile-info h2 {
@@ -80,23 +199,113 @@
 
     color: #111827;
 
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 800;
-
     line-height: 1.3;
 
     overflow: hidden;
+
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.profile-info span {
+    color: #6b7280;
+
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+/* ==========================================================================
+   BOTÃO FECHAR
+   ========================================================================== */
+
+.profile-close {
+    flex-shrink: 0;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background-color: transparent;
+    color: #374151;
+
+    font-size: 28px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.profile-close:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.profile-close:active {
+    transform: scale(0.95);
+}
+
+.profile-close:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   CONTEÚDO DO MODAL
+   ========================================================================== */
+
+.profile-modal-content {
+    flex: 1;
+
+    padding: 24px;
+
+    overflow-y: auto;
 }
 
 /* ==========================================================================
    MENSAGENS
    ========================================================================== */
 
-.profile-page > .success-message,
-.profile-page > .error-message {
+.success-message,
+.error-message {
+    width: 100%;
+
     margin-bottom: 16px;
+    padding: 12px 14px;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.success-message {
+    background-color: #f0fdf4;
+
+    border: 1px solid #bbf7d0;
+
+    color: #166534;
+}
+
+.error-message {
+    background-color: #fef2f2;
+
+    border: 1px solid #fecaca;
+
+    color: #b91c1c;
 }
 
 /* ==========================================================================
@@ -106,16 +315,19 @@
 .profile-form {
     display: flex;
     flex-direction: column;
-
     gap: 16px;
 }
+
+/* ==========================================================================
+   CARDS DAS SEÇÕES
+   ========================================================================== */
 
 .form-section {
     width: 100%;
 
     padding: 22px;
 
-    background: #ffffff;
+    background-color: #ffffff;
 
     border: 1px solid #e5e7eb;
     border-radius: 18px;
@@ -131,7 +343,6 @@
 
     font-size: 18px;
     font-weight: 800;
-
     line-height: 1.3;
 }
 
@@ -142,7 +353,6 @@
 .form-section .form-group {
     display: flex;
     flex-direction: column;
-
     gap: 7px;
 
     margin: 0 0 18px;
@@ -157,14 +367,12 @@
 
     font-size: 14px;
     font-weight: 600;
-
     line-height: 1.3;
 }
 
 .form-section .form-group input,
 .form-section .form-group select {
     width: 100%;
-
     min-height: 50px;
 
     padding: 0 14px;
@@ -174,7 +382,7 @@
 
     outline: none;
 
-    background: #ffffff;
+    background-color: #ffffff;
     color: #1f2937;
 
     font-size: 15px;
@@ -199,8 +407,7 @@
 
 .form-section .form-group input:disabled,
 .form-section .form-group select:disabled {
-    background: #f3f4f6;
-
+    background-color: #f3f4f6;
     color: #6b7280;
 
     cursor: not-allowed;
@@ -256,40 +463,37 @@
     width: 100%;
 }
 
-/* --------------------------------------------------------------------------
-   NAVEGAÇÃO
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   NAVEGAÇÃO DAS CATEGORIAS
+   ========================================================================== */
 
 .categories-navigation {
     display: flex;
-
-    justify-content: flex-end;
     align-items: center;
-
+    justify-content: flex-end;
     gap: 8px;
 
     margin-bottom: 10px;
 }
 
 .categories-navigation button {
+    width: 34px;
+    height: 34px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-
-    width: 34px;
-    height: 34px;
 
     padding: 0;
 
     border: 1px solid #e5e7eb;
     border-radius: 50%;
 
-    background: #ffffff;
+    background-color: #ffffff;
     color: #111827;
 
     font-size: 23px;
     font-weight: 500;
-
     line-height: 1;
 
     cursor: pointer;
@@ -302,7 +506,7 @@
 }
 
 .categories-navigation button:hover {
-    background: #f8fafc;
+    background-color: #f8fafc;
 
     border-color: #cbd5e1;
 
@@ -316,12 +520,13 @@
 
 .categories-navigation button:focus-visible {
     outline: 2px solid #111827;
+
     outline-offset: 2px;
 }
 
-/* --------------------------------------------------------------------------
-   ÁREA DO CARROSSEL
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   CARROSSEL DE CATEGORIAS
+   ========================================================================== */
 
 .categories-list {
     width: 100%;
@@ -329,9 +534,7 @@
     display: grid;
 
     grid-auto-flow: column;
-
     grid-template-rows: repeat(2, minmax(88px, auto));
-
     grid-auto-columns: calc((100% - 12px) / 2);
 
     gap: 12px;
@@ -351,9 +554,9 @@
     display: none;
 }
 
-/* --------------------------------------------------------------------------
+/* ==========================================================================
    CARD DA CATEGORIA
-   -------------------------------------------------------------------------- */
+   ========================================================================== */
 
 .category-item {
     width: 100%;
@@ -363,7 +566,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 10px;
 
     padding: 15px;
@@ -371,7 +573,7 @@
     border: 1px solid #e5e7eb;
     border-radius: 14px;
 
-    background: #ffffff;
+    background-color: #ffffff;
 
     cursor: pointer;
 
@@ -389,7 +591,7 @@
 .category-item:hover {
     border-color: #cbd5e1;
 
-    background: #f8fafc;
+    background-color: #f8fafc;
 
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.05);
@@ -404,25 +606,29 @@
 .category-item.selected {
     border-color: #2563eb;
 
-    background: #eff6ff;
+    background-color: #eff6ff;
 
     box-shadow:
         0 4px 14px rgba(37, 99, 235, 0.1);
 }
 
-/* --------------------------------------------------------------------------
-   CONTEÚDO
-   -------------------------------------------------------------------------- */
+.category-item:disabled {
+    opacity: 0.65;
+
+    cursor: wait;
+}
+
+/* ==========================================================================
+   CONTEÚDO DO CARD
+   ========================================================================== */
 
 .category-content {
     flex: 1;
-
     min-width: 0;
 
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-
     gap: 4px;
 }
 
@@ -435,7 +641,6 @@
 
     font-size: 15px;
     font-weight: 700;
-
     line-height: 1.3;
 
     -webkit-line-clamp: 2;
@@ -456,7 +661,6 @@
 
     font-size: 13px;
     font-weight: 400;
-
     line-height: 1.35;
 
     -webkit-line-clamp: 2;
@@ -476,25 +680,24 @@
     color: #4b5563;
 }
 
-/* --------------------------------------------------------------------------
+/* ==========================================================================
    CHECK DA CATEGORIA
-   -------------------------------------------------------------------------- */
+   ========================================================================== */
 
 .category-check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     flex-shrink: 0;
 
     width: 32px;
     height: 32px;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     border: 2px solid #d1d5db;
     border-radius: 50%;
 
-    background: #ffffff;
-
+    background-color: #ffffff;
     color: #9ca3af;
 
     font-size: 17px;
@@ -510,17 +713,10 @@
 .category-item.selected .category-check {
     border-color: #2563eb;
 
-    background: #2563eb;
-
+    background-color: #2563eb;
     color: #ffffff;
 
     transform: scale(1.05);
-}
-
-.category-item:disabled {
-    opacity: 0.65;
-
-    cursor: wait;
 }
 
 /* ==========================================================================
@@ -529,16 +725,16 @@
 
 .profile-form .primary-button {
     width: 100%;
-
     min-height: 54px;
 
     margin-top: 2px;
+
     padding: 0 20px;
 
-    border: none;
+    border: 0;
     border-radius: 12px;
 
-    background: #111827;
+    background-color: #111827;
     color: #ffffff;
 
     font-size: 15px;
@@ -553,7 +749,7 @@
 }
 
 .profile-form .primary-button:hover {
-    background: #1f2937;
+    background-color: #1f2937;
 
     box-shadow:
         0 5px 14px rgba(17, 24, 39, 0.15);
@@ -565,11 +761,12 @@
 
 .profile-form .primary-button:focus-visible {
     outline: 2px solid #111827;
+
     outline-offset: 3px;
 }
 
 .profile-form .primary-button:disabled {
-    background: #6b7280;
+    background-color: #6b7280;
 
     opacity: 0.7;
 
@@ -584,7 +781,6 @@
 
 .logout-button {
     width: 100%;
-
     min-height: 50px;
 
     margin-top: 16px;
@@ -595,7 +791,7 @@
     border: 1px solid #fecaca;
     border-radius: 12px;
 
-    background: #ffffff;
+    background-color: #ffffff;
     color: #dc2626;
 
     font-size: 15px;
@@ -610,7 +806,7 @@
 }
 
 .logout-button:hover {
-    background: #fef2f2;
+    background-color: #fef2f2;
 
     border-color: #fca5a5;
 }
@@ -621,7 +817,14 @@
 
 .logout-button:focus-visible {
     outline: 2px solid #dc2626;
+
     outline-offset: 3px;
+}
+
+.logout-button:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
 }
 
 /* ==========================================================================
@@ -629,10 +832,8 @@
    ========================================================================== */
 
 @media (max-width: 700px) {
-
     .categories-list {
         grid-template-rows: repeat(2, minmax(80px, auto));
-
         grid-auto-columns: calc((100% - 10px) / 2);
 
         gap: 10px;
@@ -665,36 +866,51 @@
    ========================================================================== */
 
 @media (max-width: 600px) {
-
-    .profile-page {
-        padding: 18px 16px 110px;
+    .profile-modal-overlay {
+        padding: 68px 10px 72px;
     }
 
-    .profile-page .page-header {
-        margin-bottom: 16px;
-    }
-
-    .profile-header {
-        gap: 14px;
-
-        padding: 18px;
+    .profile-modal {
+        max-height: calc(100vh - 140px);
 
         border-radius: 16px;
     }
 
-    .profile-avatar {
-        width: 60px;
-        height: 60px;
-
-        font-size: 21px;
+    .profile-modal-header {
+        padding: 15px 16px;
     }
 
-    .profile-info h2 {
+    .profile-modal-user {
+        gap: 10px;
+    }
+
+    .profile-back-button {
+        width: 34px;
+        height: 34px;
+
+        font-size: 22px;
+    }
+
+    .profile-avatar {
+        width: 46px;
+        height: 46px;
+
         font-size: 18px;
     }
 
-    .profile-form {
-        gap: 12px;
+    .profile-info h2 {
+        font-size: 17px;
+    }
+
+    .profile-close {
+        width: 34px;
+        height: 34px;
+
+        font-size: 26px;
+    }
+
+    .profile-modal-content {
+        padding: 18px 16px;
     }
 
     .form-section {
@@ -730,10 +946,6 @@
         margin-bottom: 15px;
     }
 
-    /* ----------------------------------------------------------------------
-       Categorias no celular
-       ---------------------------------------------------------------------- */
-
     .categories-navigation {
         margin-bottom: 8px;
     }
@@ -747,7 +959,6 @@
 
     .categories-list {
         grid-template-rows: repeat(2, minmax(82px, auto));
-
         grid-auto-columns: calc((100% - 10px) / 2);
 
         gap: 10px;
@@ -769,7 +980,6 @@
 
     .category-content strong {
         font-size: 13px;
-
         line-height: 1.25;
 
         -webkit-line-clamp: 2;
@@ -777,7 +987,6 @@
 
     .category-content span {
         font-size: 11px;
-
         line-height: 1.3;
 
         -webkit-line-clamp: 2;
@@ -786,8 +995,6 @@
     .category-check {
         width: 27px;
         height: 27px;
-
-        border-width: 2px;
 
         font-size: 14px;
     }
@@ -814,25 +1021,13 @@
    ========================================================================== */
 
 @media (max-width: 380px) {
-
-    .profile-page {
-        padding-left: 12px;
-        padding-right: 12px;
+    .profile-modal-overlay {
+        padding-right: 8px;
+        padding-left: 8px;
     }
 
-    .profile-header {
-        padding: 16px;
-    }
-
-    .profile-avatar {
-        width: 54px;
-        height: 54px;
-
-        font-size: 19px;
-    }
-
-    .profile-info h2 {
-        font-size: 16px;
+    .profile-modal-content {
+        padding: 15px 12px;
     }
 
     .form-section {
@@ -841,7 +1036,6 @@
 
     .categories-list {
         grid-template-rows: repeat(2, minmax(76px, auto));
-
         grid-auto-columns: calc((100% - 8px) / 2);
 
         gap: 8px;
@@ -857,13 +1051,11 @@
 
     .category-content strong {
         font-size: 12px;
-
         line-height: 1.2;
     }
 
     .category-content span {
         font-size: 10px;
-
         line-height: 1.25;
     }
 

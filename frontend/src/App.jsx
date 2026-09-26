@@ -14,7 +14,6 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Contratacoes from './pages/Contratacoes';
 import Trabalhos from './pages/Trabalhos';
-import Perfil from './pages/Perfil';
 import Onboarding from './components/onboarding/Onboarding';
 
 import './styles/app.css';
@@ -64,12 +63,6 @@ export default function App() {
                         <Route
                             path="trabalhos"
                             element={<Trabalhos />}
-                        />
-
-                        {/* PERFIL */}
-                        <Route
-                            path="perfil"
-                            element={<Perfil />}
                         />
 
                     </Route>

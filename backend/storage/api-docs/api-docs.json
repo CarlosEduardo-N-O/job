@@ -535,13 +535,59 @@
                 }
             }
         },
+        "/api/onboarding": {
+            "get": {
+                "tags": [
+                    "Onboarding"
+                ],
+                "summary": "Consultar primeiro acesso",
+                "description": "Retorna se o usuário autenticado ainda está no primeiro acesso.",
+                "operationId": "503081b518bc60df6e9b5762d473bc15",
+                "responses": {
+                    "200": {
+                        "description": "Estado do primeiro acesso retornado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/onboarding/concluir": {
+            "post": {
+                "tags": [
+                    "Onboarding"
+                ],
+                "summary": "Concluir onboarding",
+                "description": "Marca o primeiro acesso do usuário como concluído.",
+                "operationId": "e46c4b4c2f2e0d4c4ceba73a4e3b358c",
+                "responses": {
+                    "200": {
+                        "description": "Onboarding concluído"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/publicacoes/{publicacao}/anexos": {
             "get": {
                 "tags": [
                     "Publicação - Anexos"
                 ],
                 "summary": "Lista os anexos de uma publicação",
-                "description": "Retorna todos os anexos vinculados a uma publicação.",
+                "description": "Retorna todos os anexos vinculados a uma publicação, independentemente do status.",
                 "operationId": "2e9356a288d2fd4305e3deac553642b4",
                 "parameters": [
                     {
@@ -637,7 +683,7 @@
                     "Publicação - Anexos"
                 ],
                 "summary": "Adiciona um anexo à publicação",
-                "description": "Envia uma imagem, vídeo ou arquivo PDF para uma publicação. Cada publicação pode possuir no máximo 10 anexos. O tamanho máximo de cada arquivo é 100 MB.",
+                "description": "Envia uma imagem, vídeo ou arquivo PDF para uma publicação. Apenas o proprietário pode adicionar anexos. Publicações encerradas não podem receber novos anexos. Cada publicação pode possuir no máximo 10 anexos. O tamanho máximo de cada arquivo é 100 MB.",
                 "operationId": "193c1b9ac252ebf5ec50312e20ec418f",
                 "parameters": [
                     {
@@ -733,7 +779,7 @@
                         "description": "Publicação não encontrada"
                     },
                     "422": {
-                        "description": "Arquivo inválido ou limite de anexos atingido"
+                        "description": "Publicação encerrada, arquivo inválido ou limite de anexos atingido"
                     }
                 },
                 "security": [
@@ -833,7 +879,7 @@
                     "Publicação - Anexos"
                 ],
                 "summary": "Remove um anexo da publicação",
-                "description": "Remove o anexo do banco de dados e também o arquivo físico do armazenamento privado.",
+                "description": "Remove o anexo do banco de dados e também o arquivo físico do armazenamento privado. Publicações encerradas não podem ter seus anexos removidos.",
                 "operationId": "9a00b6d0322e8ef8058a1272885a25ad",
                 "parameters": [
                     {
@@ -882,6 +928,9 @@
                     },
                     "404": {
                         "description": "Publicação ou anexo não encontrado"
+                    },
+                    "422": {
+                        "description": "Publicação encerrada e anexo não pode ser removido"
                     }
                 },
                 "security": [
@@ -899,6 +948,31 @@
                 "summary": "Lista publicações disponíveis para o usuário autenticado",
                 "description": "Retorna somente publicações ativas pertencentes às categorias vinculadas ao usuário autenticado, que não foram criadas pelo próprio usuário e que ainda não possuem negociação iniciada pelo usuário.",
                 "operationId": "5fce4def948e1b77a02ebfd056d7868b",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Quantidade de publicações por página. O máximo permitido é 50.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 50,
+                            "minimum": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Lista de publicações disponíveis"
@@ -1012,11 +1086,59 @@
                     "Publicações"
                 ],
                 "summary": "Lista minhas publicações",
-                "description": "Retorna todas as publicações criadas pelo usuário autenticado, independentemente do status, incluindo a quantidade de negociações vinculadas a cada publicação.",
+                "description": "Retorna as publicações criadas pelo usuário autenticado, independentemente do status, incluindo a quantidade de negociações vinculadas a cada publicação.",
                 "operationId": "6b557fe15958fd4410d2ff42e181f77b",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Quantidade de publicações por página. O máximo permitido é 50.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 50,
+                            "minimum": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Lista das publicações do usuário"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/publicacoes/outras": {
+            "get": {
+                "tags": [
+                    "Publicações"
+                ],
+                "summary": "Lista outras publicações disponíveis",
+                "description": "Retorna publicações ativas de categorias que não estão vinculadas ao usuário autenticado.",
+                "operationId": "72bdcde761f28358bc5df43bd9774308",
+                "responses": {
+                    "200": {
+                        "description": "Lista de outras publicações"
                     },
                     "401": {
                         "description": "Não autenticado"
@@ -1070,7 +1192,7 @@
                     "Publicações"
                 ],
                 "summary": "Atualiza uma publicação do usuário autenticado",
-                "description": "Atualiza os dados da publicação. O status não pode ser alterado através deste endpoint. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.",
+                "description": "Atualiza os dados da publicação. Publicações encerradas não podem mais ser alteradas. O status não pode ser alterado através deste endpoint. O cancelamento deve ser realizado exclusivamente pelo endpoint /cancelar.",
                 "operationId": "463d90bd10e9ef6779cb03655246db1b",
                 "parameters": [
                     {
@@ -1153,7 +1275,7 @@
                         "description": "Publicação não encontrada"
                     },
                     "422": {
-                        "description": "Dados inválidos"
+                        "description": "Publicação não pode ser alterada"
                     }
                 },
                 "security": [
@@ -1435,16 +1557,30 @@
                 }
             }
         },
+        "/api/categorias": {
+            "get": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Lista todas as categorias disponíveis",
+                "operationId": "c1f7d5ab4a05544534fa5c31753a9e19",
+                "responses": {
+                    "200": {
+                        "description": "Lista de categorias"
+                    }
+                }
+            }
+        },
         "/api/users-categorias/categorias": {
             "get": {
                 "tags": [
                     "Usuário-Categorias"
                 ],
-                "summary": "Lista todas as categorias e informa quais pertencem ao usuário autenticado",
-                "operationId": "8f1f2cefb3c0b94fb8d1af28fa49e4cc",
+                "summary": "Lista categorias e informa as categorias do usuário autenticado",
+                "operationId": "d68976adbee7581a5f1871e49fb226ff",
                 "responses": {
                     "200": {
-                        "description": "Lista de categorias"
+                        "description": "Lista de categorias com situação do usuário"
                     },
                     "401": {
                         "description": "Não autenticado"
@@ -1462,7 +1598,7 @@
                 "tags": [
                     "Usuário-Categorias"
                 ],
-                "summary": "Lista as categorias do usuário autenticado",
+                "summary": "Lista as categorias vinculadas ao usuário autenticado",
                 "operationId": "c97d51e623d16cab6dbcb45a9f9d2f5c",
                 "responses": {
                     "200": {
@@ -1535,7 +1671,7 @@
                     {
                         "name": "usuarioCategoria",
                         "in": "path",
-                        "description": "ID do vínculo",
+                        "description": "ID do vínculo usuário-categoria",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1548,7 +1684,7 @@
                         "description": "Vínculo removido"
                     },
                     "404": {
-                        "description": "Vínculo não encontrado"
+                        "description": "Vínculo não encontrado ou não pertence ao usuário"
                     },
                     "401": {
                         "description": "Não autenticado"
@@ -1755,6 +1891,10 @@
             "description": "Negociações - Pagamentos"
         },
         {
+            "name": "Onboarding",
+            "description": "Onboarding"
+        },
+        {
             "name": "Publicação - Anexos",
             "description": "Publicação - Anexos"
         },
@@ -1769,6 +1909,10 @@
         {
             "name": "Trabalhos - Pagamentos",
             "description": "Trabalhos - Pagamentos"
+        },
+        {
+            "name": "Categorias",
+            "description": "Categorias"
         },
         {
             "name": "Usuário-Categorias",

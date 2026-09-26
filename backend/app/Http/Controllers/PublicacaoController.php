@@ -322,6 +322,125 @@ class PublicacaoController extends Controller
 
 
     /*
+|--------------------------------------------------------------------------
+| LISTAR OUTRAS PUBLICAÇÕES
+|--------------------------------------------------------------------------
+*/
+
+    #[OA\Get(
+        path: '/api/publicacoes/outras',
+        summary: 'Lista outras publicações disponíveis',
+        description: 'Retorna publicações ativas de categorias que não estão vinculadas ao usuário autenticado.',
+        tags: ['Publicações'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Lista de outras publicações'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Não autenticado'
+            )
+        ]
+    )]
+    public function outras_publicacoes(Request $request)
+    {
+        $usuario = $request->user();
+
+        /*
+     * Verifica se o usuário possui alguma categoria.
+     */
+        $temCategorias = $usuario
+            ->categorias()
+            ->exists();
+
+        $publicacoes = Publicacao::query()
+            ->select([
+                'id',
+                'categoria_id',
+                'contratante_id',
+                'status_id',
+                'titulo',
+                'descricao',
+                'valor_estimado',
+                'cidade',
+                'estado',
+                'endereco_servico',
+                'data_inicio',
+                'horario_inicio',
+                'data_fim',
+                'created_at',
+                'updated_at',
+            ])
+
+            ->with(
+                $this->relacionamentosPublicacao(false)
+            )
+
+            /*
+         * Somente publicações ATIVAS.
+         */
+            ->whereHas(
+                'status',
+                function ($query) {
+                    $query
+                        ->where('codigo', 'ATIVO')
+                        ->where('ativo', true);
+                }
+            )
+
+            /*
+         * Somente categorias que NÃO estão
+         * vinculadas ao usuário.
+         */
+            ->whereDoesntHave(
+                'categoria.usuarios',
+                function ($query) use ($usuario) {
+                    $query->where(
+                        'users.id',
+                        $usuario->id
+                    );
+                }
+            )
+
+            /*
+         * Nunca mostrar a própria publicação.
+         */
+            ->where(
+                'contratante_id',
+                '!=',
+                $usuario->id
+            )
+
+            /*
+         * Não mostrar publicações onde o usuário
+         * já iniciou uma negociação.
+         */
+            ->whereDoesntHave(
+                'negociacoes',
+                function ($query) use ($usuario) {
+                    $query->where(
+                        'id_interessado',
+                        $usuario->id
+                    );
+                }
+            )
+
+            ->orderByDesc('id')
+
+            ->limit(6)
+
+            ->get();
+
+        return response()->json([
+            'tem_categorias' => $temCategorias,
+
+            'data' => $publicacoes,
+        ]);
+    }
+
+    /*
     |--------------------------------------------------------------------------
     | CRIAR PUBLICAÇÃO
     |--------------------------------------------------------------------------
@@ -559,7 +678,7 @@ class PublicacaoController extends Controller
                             ) => 'video',
 
                             $mimeType === 'application/pdf'
-                                => 'pdf',
+                            => 'pdf',
 
                             default => null,
                         };
@@ -579,32 +698,31 @@ class PublicacaoController extends Controller
 
                         $publicacao->anexos()->create([
                             'nome_original' =>
-                                $arquivo->getClientOriginalName(),
+                            $arquivo->getClientOriginalName(),
 
                             'nome_arquivo' =>
-                                basename($caminho),
+                            basename($caminho),
 
                             'caminho' =>
-                                $caminho,
+                            $caminho,
 
                             'mime_type' =>
-                                $mimeType,
+                            $mimeType,
 
                             'tipo' =>
-                                $tipo,
+                            $tipo,
 
                             'tamanho' =>
-                                $arquivo->getSize(),
+                            $arquivo->getSize(),
 
                             'ordem' =>
-                                $ordem,
+                            $ordem,
                         ]);
                     }
 
                     return $publicacao;
                 }
             );
-
         } catch (\Throwable $e) {
 
             /*
@@ -627,10 +745,10 @@ class PublicacaoController extends Controller
 
         return response()->json([
             'message' =>
-                'Publicação criada com sucesso.',
+            'Publicação criada com sucesso.',
 
             'data' =>
-                $publicacao
+            $publicacao
         ], 201);
     }
 
@@ -723,7 +841,7 @@ class PublicacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Publicação não encontrada.'
+                'Publicação não encontrada.'
             ], 404);
         }
 
@@ -742,7 +860,7 @@ class PublicacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Publicação não encontrada.'
+                'Publicação não encontrada.'
             ], 404);
         }
 
@@ -887,7 +1005,7 @@ class PublicacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Você não pode alterar esta publicação.'
+                'Você não pode alterar esta publicação.'
             ], 403);
         }
 
@@ -905,7 +1023,7 @@ class PublicacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Esta publicação está encerrada e não pode mais ser alterada.'
+                'Esta publicação está encerrada e não pode mais ser alterada.'
             ], 422);
         }
 
@@ -990,10 +1108,10 @@ class PublicacaoController extends Controller
 
         return response()->json([
             'message' =>
-                'Publicação atualizada com sucesso.',
+            'Publicação atualizada com sucesso.',
 
             'data' =>
-                $publicacao
+            $publicacao
         ]);
     }
 
@@ -1061,7 +1179,7 @@ class PublicacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Você não pode cancelar esta publicação.'
+                'Você não pode cancelar esta publicação.'
             ], 403);
         }
 
@@ -1074,7 +1192,7 @@ class PublicacaoController extends Controller
 
             return response()->json([
                 'message' =>
-                    'Somente uma publicação ativa pode ser cancelada.'
+                'Somente uma publicação ativa pode ser cancelada.'
             ], 422);
         }
 
@@ -1113,10 +1231,10 @@ class PublicacaoController extends Controller
 
         return response()->json([
             'message' =>
-                'Publicação cancelada com sucesso. Todas as negociações abertas foram canceladas.',
+            'Publicação cancelada com sucesso. Todas as negociações abertas foram canceladas.',
 
             'data' =>
-                $publicacao
+            $publicacao
         ]);
     }
 
@@ -1168,7 +1286,7 @@ class PublicacaoController extends Controller
             )
             ->update([
                 'status_id' =>
-                    $statusCancelada->id
+                $statusCancelada->id
             ]);
     }
 }

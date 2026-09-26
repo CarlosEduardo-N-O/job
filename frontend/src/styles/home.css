@@ -1,14 +1,15 @@
-/* =========================================================
+/* ==========================================================================
    HOME
-   ========================================================= */
+   ========================================================================== */
 
 .home-page {
     width: 100%;
     max-width: 900px;
 
     margin: 0 auto;
-
     padding: 24px 18px 100px;
+
+    box-sizing: border-box;
 }
 
 .home-header {
@@ -27,15 +28,10 @@
     width: 100%;
 }
 
-.publicacao-card {
-    width: 100%;
 
-    margin-left: 0;
-}
-
-/* =========================================================
+/* ==========================================================================
    LOADING
-   ========================================================= */
+   ========================================================================== */
 
 .home-loading {
     display: flex;
@@ -47,18 +43,17 @@
 
     padding: 60px 20px;
 
-    color: #777;
+    color: #777777;
 
     font-size: 0.85rem;
 }
 
-.loading-spinner {
+.home-loading .loading-spinner {
     width: 28px;
     height: 28px;
 
     border: 3px solid #e5e5e5;
-    border-top-color: #222;
-
+    border-top-color: #222222;
     border-radius: 50%;
 
     animation: home-spinner 0.8s linear infinite;
@@ -70,15 +65,18 @@
     }
 }
 
-/* =========================================================
+
+/* ==========================================================================
    ERRO
-   ========================================================= */
+   ========================================================================== */
 
 .home-error {
     padding: 30px 20px;
 
-    border: 1px solid #eee;
+    border: 1px solid #eeeeee;
     border-radius: 16px;
+
+    background: #ffffff;
 
     text-align: center;
 }
@@ -92,7 +90,7 @@
 .home-error p {
     margin: 0 0 18px;
 
-    color: #777;
+    color: #777777;
 
     font-size: 0.85rem;
 }
@@ -105,17 +103,30 @@
     border: 0;
     border-radius: 10px;
 
-    background: #222;
-    color: #fff;
+    background: #222222;
+    color: #ffffff;
 
     font-weight: 600;
 
     cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
 }
 
-/* =========================================================
+.home-error button:hover {
+    background: #333333;
+}
+
+.home-error button:active {
+    transform: translateY(1px);
+}
+
+
+/* ==========================================================================
    ESTADO VAZIO
-   ========================================================= */
+   ========================================================================== */
 
 .empty-state {
     padding: 60px 20px;
@@ -140,45 +151,206 @@
 
     margin: 0 auto;
 
-    color: #777;
+    color: #777777;
 
     line-height: 1.5;
 }
 
-/* =========================================================
-   DESKTOP
-   ========================================================= */
 
-@media (min-width: 768px) {
+/* ==========================================================================
+   SEM CATEGORIAS
+   ========================================================================== */
 
-    .home-page {
-        padding: 32px 24px 100px;
-    }
+.sem-categorias {
+    width: 100%;
 
-    .home-header h1 {
-        font-size: 1.7rem;
-    }
-}
-
-/* =========================================================
-   PUBLICAÇÃO
-   ========================================================= */
-
-.publicacao-card {
-    background: #ffffff;
+    margin-bottom: 24px;
+    padding: 20px;
 
     border: 1px solid #e4e4e7;
     border-radius: 14px;
 
+    background: #ffffff;
+}
+
+
+/* ==========================================================================
+   CABEÇALHO DO ESTADO
+   ========================================================================== */
+
+.sem-categorias-header {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    margin-bottom: 18px;
+}
+
+.sem-categorias-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 10px;
+
+    background: #f4f4f5;
+
+    font-size: 20px;
+}
+
+.sem-categorias-header h2 {
+    margin: 0 0 4px;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.sem-categorias-header p {
+    margin: 0;
+
+    color: #71717a;
+
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+
+/* ==========================================================================
+   OPÇÕES
+   ========================================================================== */
+
+.sem-categorias-opcoes {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+
+/* ==========================================================================
+   CARD DE OPÇÃO
+   ========================================================================== */
+
+.sem-categorias-card {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    padding: 16px;
+
+    border: 1px solid #e4e4e7;
+    border-radius: 12px;
+
+    background: #fafafa;
+}
+
+.sem-categorias-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    margin-bottom: 10px;
+
+    border-radius: 8px;
+
+    background: #18181b;
+    color: #ffffff;
+
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.sem-categorias-card-conteudo {
+    flex: 1;
+}
+
+.sem-categorias-card h3 {
+    margin: 0 0 6px;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sem-categorias-card p {
+    margin: 0 0 14px;
+
+    color: #71717a;
+
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+
+/* ==========================================================================
+   BOTÕES DAS OPÇÕES
+   ========================================================================== */
+
+.sem-categorias-botao {
+    width: 100%;
+    min-height: 38px;
+
+    padding: 8px 12px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #18181b;
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.sem-categorias-botao:hover {
+    background: #27272a;
+
+    transform: translateY(-1px);
+}
+
+.sem-categorias-botao:active {
+    transform: translateY(0);
+}
+
+
+/* ==========================================================================
+   PUBLICAÇÕES
+   ========================================================================== */
+
+.publicacao-card {
+    width: 100%;
+
+    margin-left: 0;
+    margin-bottom: 16px;
+
     overflow: hidden;
 
-    margin-bottom: 16px;
+    border: 1px solid #e4e4e7;
+    border-radius: 14px;
+
+    background: #ffffff;
 }
 
 .publicacao-card-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
 
     gap: 16px;
 
@@ -192,16 +364,13 @@
 }
 
 .publicacao-categoria {
-    font-size: 13px;
-
     color: #71717a;
+
+    font-size: 13px;
 }
 
 .publicacao-status {
     flex-shrink: 0;
-
-    font-size: 11px;
-    font-weight: 700;
 
     padding: 5px 9px;
 
@@ -209,6 +378,9 @@
 
     background: #dcfce7;
     color: #166534;
+
+    font-size: 11px;
+    font-weight: 700;
 }
 
 .publicacao-card-body {
@@ -218,9 +390,9 @@
 .publicacao-descricao {
     margin: 0 0 18px;
 
-    line-height: 1.5;
-
     color: #52525b;
+
+    line-height: 1.5;
 }
 
 .publicacao-info {
@@ -235,16 +407,16 @@
     display: flex;
     flex-direction: column;
 
-    gap: 4px;
-
     min-width: 0;
+
+    gap: 4px;
 }
 
 .publicacao-info span,
 .publicacao-contratante span {
-    font-size: 11px;
-
     color: #71717a;
+
+    font-size: 11px;
 }
 
 .publicacao-info strong,
@@ -264,9 +436,10 @@
     border-top: 1px solid #f4f4f5;
 }
 
-/* =========================================================
+
+/* ==========================================================================
    AÇÕES DA PUBLICAÇÃO
-   ========================================================= */
+   ========================================================================== */
 
 .publicacao-acoes {
     display: grid;
@@ -289,24 +462,32 @@
     min-width: 0;
     min-height: 42px;
 
+    padding: 8px 6px;
+
     border: 0;
     border-radius: 9px;
-
-    padding: 8px 6px;
 
     background: #f4f4f5;
     color: #27272a;
 
-    cursor: pointer;
-
     font-size: 13px;
     font-weight: 600;
 
+    cursor: pointer;
+
     white-space: nowrap;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
 }
 
-.publicacao-acoes button:hover {
+.publicacao-acoes button:hover:not(:disabled) {
     background: #e4e4e7;
+}
+
+.publicacao-acoes button:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
 .publicacao-acoes button:disabled {
@@ -315,15 +496,45 @@
     cursor: not-allowed;
 }
 
-/* =========================================================
+
+/* ==========================================================================
+   OUTROS SERVIÇOS
+   ========================================================================== */
+
+.outras-publicacoes {
+    margin-top: 28px;
+}
+
+.outras-publicacoes-header {
+    margin-bottom: 16px;
+}
+
+.outras-publicacoes-header h2 {
+    margin: 0 0 5px;
+
+    font-size: 18px;
+}
+
+.outras-publicacoes-header p {
+    margin: 0;
+
+    color: #71717a;
+
+    font-size: 13px;
+}
+
+.outras-publicacoes-lista {
+    width: 100%;
+}
+
+
+/* ==========================================================================
    MODAL DE INTERAÇÃO
-   ========================================================= */
+   ========================================================================== */
 
 .interacao-modal-overlay {
     position: fixed;
-
     inset: 0;
-
     z-index: 1000;
 
     display: flex;
@@ -333,17 +544,19 @@
     padding: 20px;
 
     background: rgba(0, 0, 0, 0.45);
+
+    box-sizing: border-box;
 }
 
 .interacao-modal {
     width: 100%;
     max-width: 480px;
 
-    background: #ffffff;
+    overflow: hidden;
 
     border-radius: 16px;
 
-    overflow: hidden;
+    background: #ffffff;
 
     box-shadow:
         0 20px 50px rgba(0, 0, 0, 0.2);
@@ -370,22 +583,42 @@
 .interacao-modal-header p {
     margin: 0;
 
-    font-size: 13px;
-
     color: #71717a;
+
+    font-size: 13px;
 }
 
 .interacao-modal-close {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+
+    padding: 0;
+
     border: 0;
+    border-radius: 8px;
 
     background: transparent;
+    color: #71717a;
 
     font-size: 26px;
     line-height: 1;
 
     cursor: pointer;
 
-    color: #71717a;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.interacao-modal-close:hover {
+    background: #f4f4f5;
+    color: #18181b;
 }
 
 .interacao-modal-content {
@@ -400,7 +633,12 @@
     line-height: 1.5;
 }
 
-.form-group {
+
+/* ==========================================================================
+   FORMULÁRIO DE INTERAÇÃO
+   ========================================================================== */
+
+.interacao-modal .form-group {
     display: flex;
     flex-direction: column;
 
@@ -409,36 +647,49 @@
     margin-bottom: 16px;
 }
 
-.form-group label {
+.interacao-modal .form-group label {
     font-size: 13px;
     font-weight: 600;
 }
 
-.form-group input,
-.form-group textarea {
+.interacao-modal .form-group input,
+.interacao-modal .form-group textarea {
     width: 100%;
 
-    box-sizing: border-box;
+    padding: 11px;
 
     border: 1px solid #d4d4d8;
     border-radius: 9px;
 
-    padding: 11px;
+    background: #ffffff;
+    color: #18181b;
 
     font-family: inherit;
     font-size: 14px;
 
     outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.interacao-modal .form-group input:focus,
+.interacao-modal .form-group textarea:focus {
     border-color: #18181b;
+
+    box-shadow:
+        0 0 0 3px rgba(24, 24, 27, 0.08);
 }
 
-.form-group textarea {
+.interacao-modal .form-group textarea {
     resize: vertical;
 }
+
+
+/* ==========================================================================
+   AVISO DE INTERESSE
+   ========================================================================== */
 
 .interesse-aviso {
     display: flex;
@@ -454,21 +705,27 @@
 }
 
 .interesse-aviso span {
+    flex-shrink: 0;
+
     font-size: 22px;
 }
 
 .interesse-aviso p {
     margin: 0;
 
+    color: #52525b;
+
     font-size: 13px;
     line-height: 1.5;
-
-    color: #52525b;
 }
+
+
+/* ==========================================================================
+   ERRO DE INTERAÇÃO
+   ========================================================================== */
 
 .interacao-error {
     margin-top: 12px;
-
     padding: 11px;
 
     border-radius: 8px;
@@ -478,6 +735,11 @@
 
     font-size: 13px;
 }
+
+
+/* ==========================================================================
+   AÇÕES DO MODAL
+   ========================================================================== */
 
 .interacao-modal-actions {
     display: flex;
@@ -500,16 +762,14 @@
     font-weight: 600;
 
     cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
 }
 
-.btn-cancelar {
-    background: #f4f4f5;
-    color: #27272a;
-}
-
-.btn-enviar {
-    background: #18181b;
-    color: #ffffff;
+.interacao-modal-actions button:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
 .interacao-modal-actions button:disabled {
@@ -518,15 +778,95 @@
     cursor: not-allowed;
 }
 
-/* =========================================================
-   RESPONSIVO
-   ========================================================= */
+.btn-cancelar {
+    background: #f4f4f5;
+    color: #27272a;
+}
+
+.btn-cancelar:hover:not(:disabled) {
+    background: #e4e4e7;
+}
+
+.btn-enviar {
+    background: #18181b;
+    color: #ffffff;
+}
+
+.btn-enviar:hover:not(:disabled) {
+    background: #27272a;
+}
+
+
+/* ==========================================================================
+   DESKTOP
+   ========================================================================== */
+
+@media (min-width: 768px) {
+
+    .home-page {
+        padding: 32px 24px 100px;
+    }
+
+    .home-header h1 {
+        font-size: 1.7rem;
+    }
+}
+
+
+/* ==========================================================================
+   TABLET / MOBILE
+   ========================================================================== */
 
 @media (max-width: 600px) {
 
     .home-page {
         padding: 24px 16px 100px;
     }
+
+
+    /* ----------------------------------------------------------------------
+       SEM CATEGORIAS
+       ---------------------------------------------------------------------- */
+
+    .sem-categorias {
+        padding: 16px;
+    }
+
+    .sem-categorias-header {
+        align-items: flex-start;
+
+        gap: 10px;
+
+        margin-bottom: 14px;
+    }
+
+    .sem-categorias-icon {
+        width: 36px;
+        height: 36px;
+
+        font-size: 17px;
+    }
+
+    .sem-categorias-header h2 {
+        font-size: 15px;
+    }
+
+    .sem-categorias-header p {
+        font-size: 12px;
+    }
+
+    .sem-categorias-opcoes {
+        grid-template-columns: 1fr;
+    }
+
+    .sem-categorias-card {
+        padding: 14px;
+    }
+
+
+    /* ----------------------------------------------------------------------
+       PUBLICAÇÃO
+       ---------------------------------------------------------------------- */
 
     .publicacao-card-header {
         padding: 15px;
@@ -554,6 +894,11 @@
         font-size: 10px;
     }
 
+
+    /* ----------------------------------------------------------------------
+       MODAL
+       ---------------------------------------------------------------------- */
+
     .interacao-modal-overlay {
         align-items: flex-end;
 
@@ -564,5 +909,17 @@
         max-width: none;
 
         border-radius: 18px 18px 0 0;
+    }
+
+    .interacao-modal-header {
+        padding: 16px;
+    }
+
+    .interacao-modal-content {
+        padding: 16px;
+    }
+
+    .interacao-modal-actions {
+        padding: 14px 16px;
     }
 }

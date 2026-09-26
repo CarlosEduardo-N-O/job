@@ -66,6 +66,7 @@ services:
 
   frontend:
     build:
+      target: development
       context: ./frontend
       dockerfile: Dockerfile
 

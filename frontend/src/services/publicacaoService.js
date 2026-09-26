@@ -158,6 +158,17 @@ export async function getPublicacao(
 
 }
 
+export async function getOutrasPublicacoes() {
+
+    const response =
+        await api.get(
+            '/publicacoes/outras'
+        );
+
+    return response.data;
+
+}
+
 
 export async function atualizarPublicacao(
     id,

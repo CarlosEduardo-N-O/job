@@ -1,16 +1,16 @@
-/* ============================================================
+/* ==========================================================================
    NEGOCIAÇÕES
-   Estilos dos componentes do domínio de negociações
-============================================================ */
+   ========================================================================== */
 
 
-/* ============================================================
+/* ==========================================================================
    OVERLAY
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-modal-overlay {
     position: fixed;
-    inset: 0;
+    inset: 0 0 64px;
+
     z-index: 1000;
 
     display: flex;
@@ -26,18 +26,18 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    MODAL PRINCIPAL
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-modal {
     width: 100%;
     max-width: 820px;
-    max-height: 92vh;
+    max-height: 100%;
 
     overflow-y: auto;
 
-    background: #ffffff;
+    background-color: #ffffff;
 
     border: 1px solid #e5e7eb;
     border-radius: 18px;
@@ -49,7 +49,6 @@
 }
 
 @keyframes negociacoesModalEntrada {
-
     from {
         opacity: 0;
         transform: translateY(10px) scale(0.98);
@@ -62,9 +61,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    SCROLLBAR
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-modal::-webkit-scrollbar {
     width: 7px;
@@ -84,9 +83,9 @@
 }
 
 
-/* ============================================================
-   HEADER
-============================================================ */
+/* ==========================================================================
+   CABEÇALHO DO MODAL
+   ========================================================================== */
 
 .negociacoes-modal-header {
     position: sticky;
@@ -101,7 +100,7 @@
 
     padding: 20px 24px;
 
-    background: #ffffff;
+    background-color: #ffffff;
 
     border-bottom: 1px solid #e5e7eb;
 }
@@ -126,24 +125,24 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÃO FECHAR
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-modal-fechar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     flex-shrink: 0;
 
     width: 38px;
     height: 38px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     border: 1px solid #e5e7eb;
     border-radius: 9px;
 
-    background: #f9fafb;
+    background-color: #f9fafb;
     color: #374151;
 
     font-size: 25px;
@@ -159,7 +158,7 @@
 }
 
 .negociacoes-modal-fechar:hover {
-    background: #f3f4f6;
+    background-color: #f3f4f6;
     border-color: #d1d5db;
     color: #111827;
 }
@@ -169,9 +168,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    LISTA
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-lista {
     padding: 24px;
@@ -180,21 +179,22 @@
 .negociacoes-cards {
     display: flex;
     flex-direction: column;
+
     gap: 14px;
 }
 
 
-/* ============================================================
+/* ==========================================================================
    CARD DE NEGOCIAÇÃO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-card {
     padding: 18px;
 
+    background-color: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
-    background: #ffffff;
 
     transition:
         border-color 0.2s ease,
@@ -212,9 +212,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    CABEÇALHO DO CARD
-============================================================ */
+   ========================================================================== */
 
 .negociacao-card-header {
     display: flex;
@@ -233,15 +233,16 @@
     font-weight: 700;
 }
 
-.negociacao-card-header>div>span {
+.negociacao-card-header > div > span {
     color: #6b7280;
+
     font-size: 13px;
 }
 
 
-/* ============================================================
+/* ==========================================================================
    STATUS
-============================================================ */
+   ========================================================================== */
 
 .negociacao-status {
     flex-shrink: 0;
@@ -250,7 +251,7 @@
 
     border-radius: 20px;
 
-    background: #f3f4f6;
+    background-color: #f3f4f6;
     color: #374151 !important;
 
     font-size: 12px !important;
@@ -260,15 +261,14 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    INFORMAÇÕES DO CARD
-============================================================ */
+   ========================================================================== */
 
 .negociacao-card-info {
     display: grid;
 
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
     gap: 12px;
 
@@ -285,7 +285,7 @@
 
     border-radius: 9px;
 
-    background: #f9fafb;
+    background-color: #f9fafb;
 }
 
 .negociacao-card-info span,
@@ -303,9 +303,62 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
+   TOTAL NO CARD
+   ========================================================================== */
+
+.negociacao-card-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+    padding: 12px 13px;
+
+    background-color: #f9fafb;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+}
+
+.negociacao-card-total-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.negociacao-card-total-info span {
+    color: #374151;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.negociacao-card-total-info small {
+    color: #6b7280;
+
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.negociacao-card-total > strong {
+    flex-shrink: 0;
+
+    color: #111827;
+
+    font-size: 16px;
+    font-weight: 800;
+}
+
+
+/* ==========================================================================
    BOTÃO ABRIR NEGOCIAÇÃO
-============================================================ */
+   ========================================================================== */
 
 .btn-abrir-negociacao {
     width: 100%;
@@ -314,7 +367,7 @@
     border: 0;
     border-radius: 9px;
 
-    background: #111827;
+    background-color: #111827;
     color: #ffffff;
 
     font-family: inherit;
@@ -329,7 +382,7 @@
 }
 
 .btn-abrir-negociacao:hover {
-    background: #1f2937;
+    background-color: #1f2937;
 }
 
 .btn-abrir-negociacao:active {
@@ -337,9 +390,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    LOADING / ERRO / VAZIO
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-loading,
 .negociacoes-error,
@@ -357,7 +410,7 @@
     color: #b91c1c;
 }
 
-.negociacoes-empty>div {
+.negociacoes-empty > div {
     margin-bottom: 12px;
 
     font-size: 38px;
@@ -378,18 +431,18 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    DETALHES
-============================================================ */
+   ========================================================================== */
 
 .negociacao-detalhes {
     padding: 24px;
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÃO VOLTAR
-============================================================ */
+   ========================================================================== */
 
 .negociacao-voltar {
     display: inline-flex;
@@ -400,7 +453,7 @@
 
     border: 0;
 
-    background: transparent;
+    background-color: transparent;
     color: #374151;
 
     font-family: inherit;
@@ -417,15 +470,14 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    RESUMO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-resumo {
     display: grid;
 
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
     gap: 12px;
 
@@ -440,24 +492,24 @@
 
     padding: 14px;
 
+    background-color: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-
-    background: #f9fafb;
 }
 
 
-/* ============================================================
+/* ==========================================================================
    HISTÓRICO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-historico {
     padding: 18px;
 
+    background-color: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
-    background: #f9fafb;
 }
 
 .negociacao-historico h3 {
@@ -470,18 +522,18 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    INTERAÇÕES
-============================================================ */
+   ========================================================================== */
 
 .negociacao-interacao {
     margin-bottom: 12px;
     padding: 15px;
 
+    background-color: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-
-    background: #ffffff;
 }
 
 .negociacao-interacao:last-child {
@@ -519,7 +571,7 @@
 
     border-radius: 6px;
 
-    background: #f3f4f6;
+    background-color: #f3f4f6;
     color: #374151;
 
     font-size: 11px;
@@ -552,18 +604,18 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    ÁREA DE AÇÕES
-============================================================ */
+   ========================================================================== */
 
 .negociacao-acoes {
     margin-top: 22px;
     padding: 20px;
 
+    background-color: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
-    background: #ffffff;
 
     box-shadow:
         0 3px 10px rgba(0, 0, 0, 0.04);
@@ -594,15 +646,14 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÕES PRINCIPAIS
-============================================================ */
+   ========================================================================== */
 
 .negociacao-botoes-principais {
     display: grid;
 
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
     gap: 10px;
 
@@ -632,24 +683,24 @@
 .btn-negociacao-aceitar {
     border: 1px solid #bbf7d0;
 
-    background: #f0fdf4;
+    background-color: #f0fdf4;
     color: #166534;
 }
 
 .btn-negociacao-aceitar:hover {
-    background: #dcfce7;
+    background-color: #dcfce7;
     border-color: #86efac;
 }
 
 .btn-negociacao-recusar {
     border: 1px solid #fecaca;
 
-    background: #ffffff;
+    background-color: #ffffff;
     color: #b91c1c;
 }
 
 .btn-negociacao-recusar:hover {
-    background: #fef2f2;
+    background-color: #fef2f2;
     border-color: #fca5a5;
 }
 
@@ -659,9 +710,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    RESPOSTA
-============================================================ */
+   ========================================================================== */
 
 .negociacao-resposta {
     display: flex;
@@ -677,10 +728,11 @@
 .negociacao-resposta-aviso {
     padding: 12px 13px;
 
+    background-color: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 9px;
 
-    background: #f9fafb;
     color: #6b7280;
 
     font-size: 13px;
@@ -688,9 +740,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    FORMULÁRIO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-form-grupo {
     display: flex;
@@ -711,12 +763,10 @@
 .negociacao-form-grupo textarea {
     width: 100%;
 
-    box-sizing: border-box;
-
     border: 1px solid #d1d5db;
     border-radius: 9px;
 
-    background: #ffffff;
+    background-color: #ffffff;
     color: #111827;
 
     font-family: inherit;
@@ -756,9 +806,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÃO RESPONDER
-============================================================ */
+   ========================================================================== */
 
 .btn-negociacao-responder {
     width: 100%;
@@ -766,10 +816,10 @@
 
     padding: 0 14px;
 
-    border: none;
+    border: 0;
     border-radius: 9px;
 
-    background: #2563eb;
+    background-color: #2563eb;
     color: #ffffff;
 
     font-family: inherit;
@@ -784,7 +834,7 @@
 }
 
 .btn-negociacao-responder:hover {
-    background: #1d4ed8;
+    background-color: #1d4ed8;
 }
 
 .btn-negociacao-responder:active {
@@ -792,9 +842,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    SEM AÇÕES
-============================================================ */
+   ========================================================================== */
 
 .negociacao-sem-acoes {
     display: flex;
@@ -805,10 +855,10 @@
     margin-top: 20px;
     padding: 15px;
 
+    background-color: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-
-    background: #f9fafb;
 }
 
 .negociacao-sem-acoes strong {
@@ -825,18 +875,19 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    ERRO DE AÇÃO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-erro-acao {
     margin-top: 14px;
     padding: 12px;
 
+    background-color: #fef2f2;
+
     border: 1px solid #fecaca;
     border-radius: 9px;
 
-    background: #fef2f2;
     color: #991b1b;
 
     font-size: 12px;
@@ -844,9 +895,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    LOADING DOS DETALHES
-============================================================ */
+   ========================================================================== */
 
 .negociacoes-detalhes-loading {
     padding: 14px 20px;
@@ -861,9 +912,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    PAGAMENTO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-pagamento {
     padding: 24px;
@@ -891,22 +942,21 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    RESUMO DO PAGAMENTO
-============================================================ */
+   ========================================================================== */
 
 .pagamento-resumo {
     display: grid;
 
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
     gap: 12px;
 
     margin-bottom: 18px;
 }
 
-.pagamento-resumo>div {
+.pagamento-resumo > div {
     display: flex;
     flex-direction: column;
 
@@ -914,10 +964,10 @@
 
     padding: 14px;
 
+    background-color: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-
-    background: #f9fafb;
 }
 
 .pagamento-resumo span {
@@ -936,19 +986,20 @@
     font-size: 18px !important;
 }
 
-/* ============================================================
+
+/* ==========================================================================
    DETALHAMENTO DO PAGAMENTO
-============================================================ */
+   ========================================================================== */
 
 .pagamento-detalhamento {
     margin-bottom: 20px;
 
+    overflow: hidden;
+
+    background-color: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
-    background: #ffffff;
-
-    overflow: hidden;
 }
 
 .pagamento-detalhamento-header {
@@ -959,9 +1010,9 @@
 
     padding: 15px 16px;
 
-    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
 
-    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .pagamento-detalhamento-header strong {
@@ -1013,30 +1064,30 @@
 
     padding: 16px;
 
-    background: #f9fafb;
+    background-color: #f9fafb;
 }
 
-.pagamento-detalhamento-total>div {
+.pagamento-detalhamento-total > div {
     display: flex;
     flex-direction: column;
 
     gap: 3px;
 }
 
-.pagamento-detalhamento-total>div strong {
+.pagamento-detalhamento-total > div strong {
     color: #111827;
 
     font-size: 14px;
     font-weight: 700;
 }
 
-.pagamento-detalhamento-total>div span {
+.pagamento-detalhamento-total > div span {
     color: #6b7280;
 
     font-size: 11px;
 }
 
-.pagamento-detalhamento-total>strong {
+.pagamento-detalhamento-total > strong {
     flex-shrink: 0;
 
     color: #111827;
@@ -1045,9 +1096,10 @@
     font-weight: 800;
 }
 
-/* ============================================================
+
+/* ==========================================================================
    STATUS DO PAGAMENTO
-============================================================ */
+   ========================================================================== */
 
 .pagamento-status {
     display: flex;
@@ -1058,10 +1110,10 @@
     margin-bottom: 20px;
     padding: 14px;
 
+    background-color: #fffbeb;
+
     border: 1px solid #fde68a;
     border-radius: 10px;
-
-    background: #fffbeb;
 }
 
 .pagamento-status-indicador {
@@ -1070,7 +1122,7 @@
     font-size: 22px;
 }
 
-.pagamento-status>div {
+.pagamento-status > div {
     display: flex;
     flex-direction: column;
 
@@ -1091,9 +1143,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    QR CODE
-============================================================ */
+   ========================================================================== */
 
 .pagamento-qrcode-container {
     display: flex;
@@ -1104,10 +1156,10 @@
 
     padding: 20px;
 
+    background-color: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
-    background: #ffffff;
 }
 
 .pagamento-qrcode-container h3 {
@@ -1124,21 +1176,19 @@
 .pagamento-qrcode-ficticio {
     position: relative;
 
-    width: 190px;
-    height: 190px;
-
     display: flex;
     align-items: center;
     justify-content: center;
 
+    width: 190px;
+    height: 190px;
+
     padding: 12px;
 
-    box-sizing: border-box;
+    background-color: #ffffff;
 
     border: 1px solid #e4e4e7;
     border-radius: 8px;
-
-    background: #ffffff;
 
     box-shadow:
         0 4px 15px rgba(0, 0, 0, 0.08);
@@ -1155,7 +1205,7 @@
 
     aspect-ratio: 1 / 1;
 
-    background: #ffffff;
+    background-color: #ffffff;
 }
 
 .qr-matriz span {
@@ -1164,11 +1214,11 @@
     width: 100%;
     height: 100%;
 
-    background: #ffffff;
+    background-color: #ffffff;
 }
 
 .qr-matriz span.ativo {
-    background: #18181b;
+    background-color: #18181b;
 }
 
 .pagamento-qrcode-aviso {
@@ -1185,9 +1235,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    PIX
-============================================================ */
+   ========================================================================== */
 
 .pagamento-pix {
     display: flex;
@@ -1198,10 +1248,10 @@
     margin-top: 16px;
     padding: 15px;
 
+    background-color: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-
-    background: #f9fafb;
 
     text-align: center;
 }
@@ -1227,9 +1277,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    AVISO DE PAGAMENTO
-============================================================ */
+   ========================================================================== */
 
 .pagamento-aviso {
     display: flex;
@@ -1240,10 +1290,10 @@
     margin-top: 16px;
     padding: 14px;
 
+    background-color: #eff6ff;
+
     border: 1px solid #bfdbfe;
     border-radius: 10px;
-
-    background: #eff6ff;
 }
 
 .pagamento-aviso strong {
@@ -1256,27 +1306,29 @@
     color: #1e3a8a;
 
     font-size: 12px;
-
     line-height: 1.5;
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÃO PAGAMENTO REALIZADO
-============================================================ */
+   ========================================================================== */
 
 .btn-pagamento-realizado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     width: 100%;
     min-height: 48px;
 
     margin-top: 16px;
-
     padding: 12px 20px;
 
-    border: none;
+    border: 0;
     border-radius: 10px;
 
-    background: #198754;
+    background-color: #198754;
     color: #ffffff;
 
     font-family: inherit;
@@ -1285,10 +1337,6 @@
 
     cursor: pointer;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     transition:
         background-color 0.2s ease,
         transform 0.1s ease,
@@ -1296,7 +1344,7 @@
 }
 
 .btn-pagamento-realizado:hover {
-    background: #157347;
+    background-color: #157347;
 
     box-shadow:
         0 4px 10px rgba(0, 0, 0, 0.15);
@@ -1307,7 +1355,7 @@
 }
 
 .btn-pagamento-realizado:disabled {
-    background: #9ca3af;
+    background-color: #9ca3af;
 
     cursor: not-allowed;
 
@@ -1316,9 +1364,9 @@
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÃO VOLTAR DO PAGAMENTO
-============================================================ */
+   ========================================================================== */
 
 .btn-pagamento-voltar {
     width: 100%;
@@ -1329,7 +1377,7 @@
     border: 1px solid #d1d5db;
     border-radius: 9px;
 
-    background: #ffffff;
+    background-color: #ffffff;
     color: #374151;
 
     font-family: inherit;
@@ -1340,13 +1388,13 @@
 }
 
 .btn-pagamento-voltar:hover {
-    background: #f9fafb;
+    background-color: #f9fafb;
 }
 
 
-/* ============================================================
+/* ==========================================================================
    BOTÃO VER INTERAÇÕES
-============================================================ */
+   ========================================================================== */
 
 button.btn-ver-interacoes {
     display: block;
@@ -1357,18 +1405,15 @@ button.btn-ver-interacoes {
     margin: 12px 0 16px;
     padding: 10px 14px;
 
-    box-sizing: border-box;
-
     border: 1px solid #d1d5db;
     border-radius: 10px;
 
-    background: #f9fafb;
+    background-color: #f9fafb;
     color: #374151;
 
     font-family: inherit;
     font-size: 13px;
     font-weight: 600;
-
     line-height: 1.2;
 
     cursor: pointer;
@@ -1380,7 +1425,7 @@ button.btn-ver-interacoes {
 }
 
 button.btn-ver-interacoes:hover {
-    background: #f3f4f6;
+    background-color: #f3f4f6;
     border-color: #9ca3af;
 }
 
@@ -1398,243 +1443,30 @@ button.btn-ver-interacoes:focus {
 }
 
 
-/* ============================================================
-   BOTÕES DESABILITADOS
-============================================================ */
-
-.negociacoes-modal button:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-}
-
-
-/* ============================================================
-   MOBILE
-============================================================ */
-
-@media (max-width: 700px) {
-
-    .negociacoes-modal-overlay {
-        align-items: flex-end;
-
-        padding: 0;
-    }
-
-    .negociacoes-modal {
-        width: 100%;
-        max-width: none;
-        max-height: 94vh;
-
-        border-radius:
-            18px 18px 0 0;
-    }
-
-    .negociacoes-modal-header {
-        padding: 16px;
-    }
-
-    .negociacoes-modal-header h2 {
-        font-size: 19px;
-    }
-
-    .negociacoes-modal-header p {
-        font-size: 13px;
-    }
-
-    .negociacoes-lista,
-    .negociacao-detalhes,
-    .negociacao-pagamento {
-        padding: 16px;
-    }
-
-    .negociacao-card {
-        padding: 16px;
-    }
-
-    .negociacao-card-header {
-        flex-direction: column;
-
-        gap: 10px;
-    }
-
-    .negociacao-status {
-        align-self: flex-start;
-    }
-
-    .negociacao-card-info {
-        gap: 8px;
-    }
-
-    .negociacao-resumo,
-    .pagamento-resumo {
-        grid-template-columns: 1fr;
-
-        gap: 8px;
-
-        margin-bottom: 20px;
-    }
-
-    .negociacao-historico {
-        padding: 14px;
-    }
-
-    .negociacao-interacao {
-        padding: 13px;
-    }
-
-    .negociacao-interacao-header {
-        align-items: flex-start;
-
-        flex-direction: column;
-
-        gap: 4px;
-    }
-
-    .negociacao-acoes {
-        padding: 16px;
-    }
-
-    .negociacao-botoes-principais {
-        grid-template-columns: 1fr;
-
-        gap: 8px;
-    }
-
-    .btn-negociacao-aceitar,
-    .btn-negociacao-recusar {
-        min-height: 43px;
-    }
-
-    .pagamento-qrcode-ficticio {
-        width: 170px;
-        height: 170px;
-    }
-
-    .pagamento-status {
-        padding: 12px;
-    }
-}
-
-
-/* ============================================================
-   MOBILE PEQUENO
-============================================================ */
-
-@media (max-width: 400px) {
-
-    .negociacoes-modal-header {
-        padding: 14px 16px;
-    }
-
-    .negociacoes-lista,
-    .negociacao-detalhes,
-    .negociacao-pagamento {
-        padding: 16px;
-    }
-
-    .negociacao-card {
-        padding: 15px;
-    }
-
-    .negociacao-card-info {
-        grid-template-columns: 1fr;
-    }
-
-    .negociacao-historico {
-        padding: 12px;
-    }
-
-    .negociacao-acoes {
-        padding: 14px;
-    }
-
-    .pagamento-qrcode-container {
-        margin-top: 20px;
-        padding: 18px 14px;
-
-        border-radius: 14px;
-
-        background: #fafafa;
-    }
-
-    .pagamento-qrcode-ficticio {
-        width: 200px;
-        height: 200px;
-
-        padding: 10px;
-    }
-
-    .pagamento-qrcode-aviso {
-        max-width: 230px;
-
-        font-size: 10px;
-    }
-}
-
-
-/* ============================================================
-   MOBILE MUITO PEQUENO
-============================================================ */
-
-@media (max-width: 380px) {
-
-    .negociacoes-modal-header {
-        padding: 14px 16px;
-    }
-
-    .negociacoes-lista,
-    .negociacao-detalhes,
-    .negociacao-pagamento {
-        padding: 16px;
-    }
-
-    .negociacao-acoes {
-        padding: 14px;
-    }
-
-    .pagamento-qrcode-container {
-        padding: 16px 10px;
-    }
-
-    .pagamento-qrcode-ficticio {
-        width: 180px;
-        height: 180px;
-
-        padding: 9px;
-    }
-
-    .pagamento-qrcode-aviso {
-        max-width: 230px;
-
-        font-size: 10px;
-    }
-}
-
-
-/* ============================================================
+/* ==========================================================================
    RESUMO FINANCEIRO
-============================================================ */
+   ========================================================================== */
 
 .negociacao-financeiro {
     margin-bottom: 26px;
 
+    overflow: hidden;
+
+    background-color: #ffffff;
+
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
-    background: #ffffff;
-
-    overflow: hidden;
 }
 
 .negociacao-financeiro-header {
     padding: 15px 16px;
 
-    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
 
-    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.negociacao-financeiro-header>div {
+.negociacao-financeiro-header > div {
     display: flex;
     flex-direction: column;
 
@@ -1671,7 +1503,7 @@ button.btn-ver-interacoes:focus {
 }
 
 .negociacao-financeiro-linha:last-child {
-    border-bottom: none;
+    border-bottom: 0;
 }
 
 .negociacao-financeiro-linha span {
@@ -1697,32 +1529,32 @@ button.btn-ver-interacoes:focus {
 
     padding: 16px;
 
-    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
 
-    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
 }
 
-.negociacao-financeiro-total>div {
+.negociacao-financeiro-total > div {
     display: flex;
     flex-direction: column;
 
     gap: 3px;
 }
 
-.negociacao-financeiro-total>div strong {
+.negociacao-financeiro-total > div strong {
     color: #111827;
 
     font-size: 14px;
     font-weight: 700;
 }
 
-.negociacao-financeiro-total>div span {
+.negociacao-financeiro-total > div span {
     color: #6b7280;
 
     font-size: 11px;
 }
 
-.negociacao-financeiro-total>strong {
+.negociacao-financeiro-total > strong {
     flex-shrink: 0;
 
     color: #111827;
@@ -1732,54 +1564,206 @@ button.btn-ver-interacoes:focus {
 }
 
 
-/* ============================================================
-   TOTAL NO CARD DA NEGOCIAÇÃO
-============================================================ */
+/* ==========================================================================
+   BOTÕES DESABILITADOS
+   ========================================================================== */
 
-.negociacao-card-total {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 12px;
-
-    margin-bottom: 16px;
-    padding: 12px 13px;
-
-    border: 1px solid #e5e7eb;
-    border-radius: 9px;
-
-    background: #f9fafb;
+.negociacoes-modal button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 
-.negociacao-card-total-info {
-    display: flex;
-    flex-direction: column;
 
-    gap: 3px;
+/* ==========================================================================
+   MOBILE
+   ========================================================================== */
 
-    min-width: 0;
+@media (max-width: 700px) {
+
+    .negociacoes-modal-overlay {
+        bottom: 62px;
+
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .negociacoes-modal {
+        max-width: none;
+
+        border-radius: 18px 18px 0 0;
+    }
+
+    .negociacoes-modal-header {
+        padding: 16px;
+    }
+
+    .negociacoes-modal-header h2 {
+        font-size: 19px;
+    }
+
+    .negociacoes-modal-header p {
+        font-size: 13px;
+    }
+
+    .negociacoes-lista,
+    .negociacao-detalhes,
+    .negociacao-pagamento {
+        padding: 16px 16px 40px;
+    }
+
+    .negociacao-card {
+        padding: 16px 16px 40px;
+    }
+
+    .negociacao-card-header {
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+    .negociacao-status {
+        align-self: flex-start;
+    }
+
+    .negociacao-card-info {
+        gap: 8px;
+    }
+
+    .negociacao-resumo,
+    .pagamento-resumo {
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+
+        margin-bottom: 20px;
+    }
+
+    .negociacao-historico {
+        padding: 14px;
+    }
+
+    .negociacao-interacao {
+        padding: 13px;
+    }
+
+    .negociacao-interacao-header {
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 4px;
+    }
+
+    .negociacao-acoes {
+        padding: 16px;
+    }
+
+    .negociacao-botoes-principais {
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+    .btn-negociacao-aceitar,
+    .btn-negociacao-recusar {
+        min-height: 43px;
+    }
+
+    .pagamento-qrcode-ficticio {
+        width: 170px;
+        height: 170px;
+    }
+
+    .pagamento-status {
+        padding: 12px;
+    }
 }
 
-.negociacao-card-total-info span {
-    color: #374151;
 
-    font-size: 12px;
-    font-weight: 600;
+/* ==========================================================================
+   MOBILE PEQUENO
+   ========================================================================== */
+
+@media (max-width: 400px) {
+
+    .negociacoes-modal-header {
+        padding: 14px 16px;
+    }
+
+    .negociacao-card {
+        padding: 15px;
+    }
+
+    .negociacao-card-info {
+        grid-template-columns: 1fr;
+    }
+
+    .negociacao-historico {
+        padding: 12px;
+    }
+
+    .negociacao-acoes {
+        padding: 14px;
+    }
+
+    .pagamento-qrcode-container {
+        margin-top: 20px;
+        padding: 18px 14px;
+
+        background-color: #fafafa;
+
+        border-radius: 14px;
+    }
+
+    .pagamento-qrcode-ficticio {
+        width: 200px;
+        height: 200px;
+
+        padding: 10px;
+    }
+
+    .pagamento-qrcode-aviso {
+        max-width: 230px;
+
+        font-size: 10px;
+    }
 }
 
-.negociacao-card-total-info small {
-    color: #6b7280;
 
-    font-size: 10px;
-    line-height: 1.4;
-}
+/* ==========================================================================
+   MOBILE MUITO PEQUENO
+   ========================================================================== */
 
-.negociacao-card-total>strong {
-    flex-shrink: 0;
+@media (max-width: 380px) {
 
-    color: #111827;
+    .negociacoes-modal-header {
+        padding: 14px 16px;
+    }
 
-    font-size: 16px;
-    font-weight: 800;
+    .negociacoes-lista,
+    .negociacao-detalhes,
+    .negociacao-pagamento {
+        padding: 16px;
+    }
+
+    .negociacao-acoes {
+        padding: 14px;
+    }
+
+    .pagamento-qrcode-container {
+        padding: 16px 10px;
+    }
+
+    .pagamento-qrcode-ficticio {
+        width: 180px;
+        height: 180px;
+
+        padding: 9px;
+    }
+
+    .pagamento-qrcode-aviso {
+        max-width: 230px;
+
+        font-size: 10px;
+    }
 }

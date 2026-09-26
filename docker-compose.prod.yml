@@ -34,6 +34,7 @@ services:
 
   frontend:
     build:
+      target: production
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:

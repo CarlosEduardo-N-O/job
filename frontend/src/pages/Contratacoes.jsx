@@ -1,4 +1,12 @@
-import { useEffect, useState } from 'react';
+import {
+    useEffect,
+    useState,
+} from 'react';
+
+import {
+    useLocation,
+    useNavigate,
+} from 'react-router-dom';
 
 import {
     getMinhasPublicacoes,
@@ -21,6 +29,15 @@ import '../styles/contratacoes.css';
 
 
 export default function Contratacoes() {
+
+    /* =====================================================
+       NAVEGAÇÃO
+    ===================================================== */
+
+    const location = useLocation();
+
+    const navigate = useNavigate();
+
 
     /* =====================================================
        PUBLICAÇÕES
@@ -84,6 +101,49 @@ export default function Contratacoes() {
         publicacaoNegociacoes,
         setPublicacaoNegociacoes,
     ] = useState(null);
+
+
+    /* =====================================================
+       ABRIR NOVA PUBLICAÇÃO VINDO DO HOME
+    ===================================================== */
+
+    useEffect(() => {
+
+        if (
+            location.state?.abrirNovaPublicacao
+        ) {
+
+            /*
+             * Abre o mesmo formulário utilizado
+             * pelo botão "Nova publicação".
+             */
+
+            setPublicacaoEditando({});
+
+
+            /*
+             * Remove o estado da navegação depois
+             * de processá-lo.
+             *
+             * Isso evita que o formulário seja aberto
+             * novamente caso a página seja recarregada
+             * ou a navegação seja repetida.
+             */
+
+            navigate(
+                location.pathname,
+                {
+                    replace: true,
+                    state: {},
+                }
+            );
+
+        }
+
+    }, [
+        location,
+        navigate,
+    ]);
 
 
     /* =====================================================
@@ -931,6 +991,7 @@ export default function Contratacoes() {
                     onClose={
                         fecharNegociacoes
                     }
+
                 />
 
             )}
