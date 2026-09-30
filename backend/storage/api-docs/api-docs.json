@@ -535,6 +535,189 @@
                 }
             }
         },
+        "/api/notificacoes": {
+            "get": {
+                "tags": [
+                    "Notificações"
+                ],
+                "summary": "Lista as notificações do usuário autenticado",
+                "description": "Retorna somente as notificações pertencentes ao usuário autenticado, ordenadas da mais recente para a mais antiga.",
+                "operationId": "a556d23d6c230e3bb85a27cc91085a78",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notificações retornadas com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notificacoes/nao-lidas": {
+            "get": {
+                "tags": [
+                    "Notificações"
+                ],
+                "summary": "Lista as notificações não lidas",
+                "description": "Retorna somente as notificações não lidas pertencentes ao usuário autenticado.",
+                "operationId": "00d021f9f54ffa6abaca9da2865d4dc4",
+                "responses": {
+                    "200": {
+                        "description": "Notificações não lidas retornadas com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notificacoes/contador": {
+            "get": {
+                "tags": [
+                    "Notificações"
+                ],
+                "summary": "Consulta o contador de notificações não lidas",
+                "description": "Retorna a quantidade de notificações não lidas pertencentes ao usuário autenticado.",
+                "operationId": "c9f792fcb9a60a0e81b2c811d22cd93b",
+                "responses": {
+                    "200": {
+                        "description": "Contador retornado com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notificacoes/{notificacao}/ler": {
+            "patch": {
+                "tags": [
+                    "Notificações"
+                ],
+                "summary": "Marca uma notificação como lida",
+                "description": "Marca como lida uma notificação pertencente ao usuário autenticado. Uma notificação de outro usuário não pode ser acessada.",
+                "operationId": "fa7f4290859fe410e452a3742277bdcb",
+                "parameters": [
+                    {
+                        "name": "notificacao",
+                        "in": "path",
+                        "description": "ID da notificação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notificação marcada como lida"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "404": {
+                        "description": "Notificação não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notificacoes/ler-todas": {
+            "patch": {
+                "tags": [
+                    "Notificações"
+                ],
+                "summary": "Marca todas as notificações como lidas",
+                "description": "Marca como lidas todas as notificações não lidas pertencentes ao usuário autenticado.",
+                "operationId": "7b84aa7c556eed20f606eb1d04742458",
+                "responses": {
+                    "200": {
+                        "description": "Notificações marcadas como lidas"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notificacoes/{notificacao}": {
+            "delete": {
+                "tags": [
+                    "Notificações"
+                ],
+                "summary": "Exclui uma notificação",
+                "description": "Exclui uma notificação pertencente ao usuário autenticado. Um usuário não pode excluir notificações de outro usuário.",
+                "operationId": "6c3b7256a629a2c0143895cc5d8e3c70",
+                "parameters": [
+                    {
+                        "name": "notificacao",
+                        "in": "path",
+                        "description": "ID da notificação",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notificação excluída com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "404": {
+                        "description": "Notificação não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/onboarding": {
             "get": {
                 "tags": [
@@ -1889,6 +2072,10 @@
         {
             "name": "Negociações - Pagamentos",
             "description": "Negociações - Pagamentos"
+        },
+        {
+            "name": "Notificações",
+            "description": "Notificações"
         },
         {
             "name": "Onboarding",

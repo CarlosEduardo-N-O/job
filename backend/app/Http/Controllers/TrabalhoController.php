@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Interacao;
 use App\Models\InteracaoTipo;
+use App\Models\Notificacao;
 use App\Models\Trabalho;
 use App\Models\TrabalhoInteracao;
 use App\Models\TrabalhoStatus;
@@ -11,6 +12,7 @@ use App\Models\TrabalhoPagamento;
 use App\Models\TrabalhoPagamentoStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
@@ -318,6 +320,7 @@ class TrabalhoController extends Controller
         | ID 10 = DESISTENCIA_CONTRATANTE
         |
         */
+
         elseif ($isContratante) {
 
             /*
@@ -399,7 +402,8 @@ class TrabalhoController extends Controller
             $usuario,
             $trabalho,
             $interacaoTipo,
-            $novoStatus
+            $novoStatus,
+            $idInteracaoTipo
         ) {
 
             /*
@@ -471,13 +475,9 @@ class TrabalhoController extends Controller
              * automaticamente o registro de pagamento ao contratado.
              *
              * O pagamento começa como AGUARDANDO_PROCESSAMENTO.
-             *
-             * Os valores financeiros são copiados do trabalho:
-             *
-             * valor_trabalho = valor que o contratado recebe
-             * valor_taxa     = taxa de intermediação da JOB
-             * valor_total    = total da operação
              */
+            $pagamento = null;
+
             if ($novoStatus === 'CONCLUIDO') {
 
                 $trabalho->update([
@@ -511,45 +511,36 @@ class TrabalhoController extends Controller
                  * pagamento do tipo PAGAMENTO_CONTRATADO
                  * para o mesmo trabalho.
                  */
-                TrabalhoPagamento::firstOrCreate(
-                    [
-                        'id_trabalho' =>
-                        $trabalho->id_trabalho,
+                $pagamento =
+                    TrabalhoPagamento::firstOrCreate(
+                        [
+                            'id_trabalho' =>
+                            $trabalho->id_trabalho,
 
-                        'tipo' =>
-                        'PAGAMENTO_CONTRATADO',
-                    ],
-                    [
-                        'status_id' =>
-                        $statusPagamento
-                            ->id_trabalho_pagamento_status,
+                            'tipo' =>
+                            'PAGAMENTO_CONTRATADO',
+                        ],
+                        [
+                            'status_id' =>
+                            $statusPagamento
+                                ->id_trabalho_pagamento_status,
 
-                        /*
-                         * Valor do serviço que será recebido
-                         * pelo contratado.
-                         */
-                        'valor_trabalho' =>
-                        $trabalho->valor_trabalho,
+                            'valor_trabalho' =>
+                            $trabalho->valor_trabalho,
 
-                        /*
-                         * Taxa de intermediação da JOB.
-                         */
-                        'valor_taxa' =>
-                        $trabalho->valor_taxa,
+                            'valor_taxa' =>
+                            $trabalho->valor_taxa,
 
-                        /*
-                         * Valor total da operação.
-                         */
-                        'valor_total' =>
-                        $trabalho->valor_total,
+                            'valor_total' =>
+                            $trabalho->valor_total,
 
-                        'data_processamento' =>
-                        null,
+                            'data_processamento' =>
+                            null,
 
-                        'observacao' =>
-                        'Pagamento aguardando processamento pela plataforma.',
-                    ]
-                );
+                            'observacao' =>
+                            'Pagamento aguardando processamento pela plataforma.',
+                        ]
+                    );
             }
 
             /*
@@ -565,6 +556,250 @@ class TrabalhoController extends Controller
                 'interacoes.interacao.remetente',
                 'pagamentos.status',
             ]);
+
+            /*
+             * =========================================================
+             * NOTIFICAÇÕES
+             * =========================================================
+             *
+             * As notificações são criadas depois que a alteração
+             * principal já foi realizada dentro da transação.
+             *
+             * Caso alguma notificação apresente erro, registramos
+             * no log sem impedir o funcionamento do trabalho.
+             */
+
+            try {
+
+                /*
+                 * =====================================================
+                 * SERVIÇO CONCLUÍDO
+                 * =====================================================
+                 *
+                 * Contratado concluiu o serviço.
+                 * Notifica o contratante.
+                 */
+                if ($idInteracaoTipo === 6) {
+
+                    $this->criarNotificacao(
+                        $trabalho->id_contratante,
+                        'SERVICO_CONCLUIDO',
+                        'Serviço concluído',
+                        'O contratado informou que o serviço foi concluído. Aguardando sua confirmação.',
+                        [
+                            'trabalho_id' =>
+                            $trabalho->id_trabalho,
+
+                            'publicacao_id' =>
+                            $trabalho->id_publicacao,
+
+                            'interacao_id' =>
+                            $interacao->id_interacao,
+
+                            'tipo' =>
+                            'SERVICO_CONCLUIDO',
+
+                            'status_trabalho' =>
+                            $novoStatus,
+                        ]
+                    );
+                }
+
+                /*
+                 * =====================================================
+                 * SERVIÇO CONFIRMADO
+                 * =====================================================
+                 *
+                 * Contratante confirmou a conclusão.
+                 * Notifica o contratado.
+                 */
+                elseif ($idInteracaoTipo === 7) {
+
+                    $this->criarNotificacao(
+                        $trabalho->id_contratado,
+                        'SERVICO_CONFIRMADO',
+                        'Serviço confirmado',
+                        'O contratante confirmou a conclusão do serviço.',
+                        [
+                            'trabalho_id' =>
+                            $trabalho->id_trabalho,
+
+                            'publicacao_id' =>
+                            $trabalho->id_publicacao,
+
+                            'interacao_id' =>
+                            $interacao->id_interacao,
+
+                            'tipo' =>
+                            'SERVICO_CONFIRMADO',
+
+                            'status_trabalho' =>
+                            $novoStatus,
+                        ]
+                    );
+
+                    /*
+                     * O pagamento foi criado automaticamente.
+                     * Notifica também o contratado.
+                     */
+                    if ($pagamento) {
+
+                        $this->criarNotificacao(
+                            $trabalho->id_contratado,
+                            'PAGAMENTO_TRABALHO_CRIADO',
+                            'Pagamento criado',
+                            'O serviço foi confirmado e o pagamento foi criado. O valor está aguardando processamento pela plataforma.',
+                            [
+                                'trabalho_id' =>
+                                $trabalho->id_trabalho,
+
+                                'publicacao_id' =>
+                                $trabalho->id_publicacao,
+
+                                'interacao_id' =>
+                                $interacao->id_interacao,
+
+                                'pagamento_id' =>
+                                $pagamento->id,
+
+                                'tipo' =>
+                                'PAGAMENTO_TRABALHO_CRIADO',
+
+                                'status_trabalho' =>
+                                $novoStatus,
+
+                                'status_pagamento' =>
+                                'AGUARDANDO_PROCESSAMENTO',
+                            ]
+                        );
+                    }
+                }
+
+                /*
+                 * =====================================================
+                 * SERVIÇO CONTESTADO
+                 * =====================================================
+                 *
+                 * Contratante contestou a conclusão.
+                 * Notifica o contratado.
+                 */
+                elseif ($idInteracaoTipo === 8) {
+
+                    $this->criarNotificacao(
+                        $trabalho->id_contratado,
+                        'SERVICO_CONTESTADO',
+                        'Serviço contestado',
+                        'O contratante contestou a conclusão do serviço. O trabalho entrou em avaliação.',
+                        [
+                            'trabalho_id' =>
+                            $trabalho->id_trabalho,
+
+                            'publicacao_id' =>
+                            $trabalho->id_publicacao,
+
+                            'interacao_id' =>
+                            $interacao->id_interacao,
+
+                            'tipo' =>
+                            'SERVICO_CONTESTADO',
+
+                            'status_trabalho' =>
+                            $novoStatus,
+                        ]
+                    );
+                }
+
+                /*
+                 * =====================================================
+                 * DESISTÊNCIA DO CONTRATADO
+                 * =====================================================
+                 *
+                 * Contratado desistiu.
+                 * Notifica o contratante.
+                 */
+                elseif ($idInteracaoTipo === 9) {
+
+                    $this->criarNotificacao(
+                        $trabalho->id_contratante,
+                        'DESISTENCIA_CONTRATADO',
+                        'Desistência do contratado',
+                        'O contratado informou que desistiu deste trabalho.',
+                        [
+                            'trabalho_id' =>
+                            $trabalho->id_trabalho,
+
+                            'publicacao_id' =>
+                            $trabalho->id_publicacao,
+
+                            'interacao_id' =>
+                            $interacao->id_interacao,
+
+                            'tipo' =>
+                            'DESISTENCIA_CONTRATADO',
+
+                            'status_trabalho' =>
+                            $novoStatus,
+                        ]
+                    );
+                }
+
+                /*
+                 * =====================================================
+                 * DESISTÊNCIA DO CONTRATANTE
+                 * =====================================================
+                 *
+                 * Contratante desistiu.
+                 * Notifica o contratado.
+                 */
+                elseif ($idInteracaoTipo === 10) {
+
+                    $this->criarNotificacao(
+                        $trabalho->id_contratado,
+                        'DESISTENCIA_CONTRATANTE',
+                        'Desistência do contratante',
+                        'O contratante informou que desistiu deste trabalho.',
+                        [
+                            'trabalho_id' =>
+                            $trabalho->id_trabalho,
+
+                            'publicacao_id' =>
+                            $trabalho->id_publicacao,
+
+                            'interacao_id' =>
+                            $interacao->id_interacao,
+
+                            'tipo' =>
+                            'DESISTENCIA_CONTRATANTE',
+
+                            'status_trabalho' =>
+                            $novoStatus,
+                        ]
+                    );
+                }
+
+            } catch (\Throwable $e) {
+
+                /*
+                 * A notificação não deve impedir o fluxo principal
+                 * do trabalho.
+                 */
+                Log::error(
+                    'Erro ao criar notificações do trabalho.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'interacao_id' =>
+                        $interacao->id_interacao,
+
+                        'usuario_id' =>
+                        $usuario->id,
+
+                        'erro' =>
+                        $e->getMessage(),
+                    ]
+                );
+            }
 
             return response()->json([
                 'message' =>
@@ -582,6 +817,40 @@ class TrabalhoController extends Controller
                 ],
             ]);
         });
+    }
+
+    /**
+     * Cria uma notificação para um usuário.
+     *
+     * A criação da notificação fica centralizada neste método
+     * para manter o padrão utilizado pelos demais controllers.
+     */
+    private function criarNotificacao(
+        int $usuarioId,
+        string $tipo,
+        string $titulo,
+        string $mensagem,
+        array $dados = []
+    ): void {
+        Notificacao::create([
+            'user_id' =>
+            $usuarioId,
+
+            'tipo' =>
+            $tipo,
+
+            'titulo' =>
+            $titulo,
+
+            'mensagem' =>
+            $mensagem,
+
+            'lida' =>
+            false,
+
+            'dados' =>
+            $dados,
+        ]);
     }
 
     /**

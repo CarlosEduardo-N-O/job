@@ -6,8 +6,10 @@ use App\Models\Publicacao;
 use App\Models\PublicacaoStatus;
 use App\Models\Negociacao;
 use App\Models\NegociacaoStatus;
+use App\Models\Notificacao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
@@ -20,7 +22,7 @@ class PublicacaoController extends Controller
     */
 
     /**
-     * Quantidade de publicações retornadas por página.
+     * Quantidade padrão de publicações retornadas por página.
      */
     private const PUBLICACOES_POR_PAGINA = 20;
 
@@ -30,8 +32,9 @@ class PublicacaoController extends Controller
      * As colunas são limitadas para evitar carregar dados
      * desnecessários do banco.
      */
-    private function relacionamentosPublicacao(bool $incluirEmail = true): array
-    {
+    private function relacionamentosPublicacao(
+        bool $incluirEmail = true
+    ): array {
         return [
             'categoria:id,nome,descricao',
 
@@ -97,27 +100,17 @@ class PublicacaoController extends Controller
     {
         $usuario = $request->user();
 
-        /*
-         * Permite que o frontend controle a quantidade por página,
-         * mas limita o máximo para evitar consultas muito grandes.
-         */
         $perPage = min(
-            max((int) $request->input('per_page', self::PUBLICACOES_POR_PAGINA), 1),
+            max(
+                (int) $request->input(
+                    'per_page',
+                    self::PUBLICACOES_POR_PAGINA
+                ),
+                1
+            ),
             50
         );
 
-        /*
-         * IMPORTANTE:
-         *
-         * Não executamos mais sincronizarNegociacoesCanceladas()
-         * aqui.
-         *
-         * Essa era uma operação de escrita no banco executada
-         * toda vez que a Home era carregada.
-         *
-         * O cancelamento agora é tratado no momento em que
-         * a publicação é efetivamente cancelada.
-         */
         $publicacoes = Publicacao::query()
             ->select([
                 'id',
@@ -142,7 +135,7 @@ class PublicacaoController extends Controller
             )
 
             /*
-             * Somente publicações ATIVAS.
+             * Somente publicações ativas.
              */
             ->whereHas(
                 'status',
@@ -155,18 +148,19 @@ class PublicacaoController extends Controller
 
             /*
              * Somente categorias vinculadas ao usuário.
-             *
-             * Mantém a regra atual do sistema.
              */
             ->whereHas(
                 'categoria.usuarios',
                 function ($query) use ($usuario) {
-                    $query->where('users.id', $usuario->id);
+                    $query->where(
+                        'users.id',
+                        $usuario->id
+                    );
                 }
             )
 
             /*
-             * Nunca mostrar ao usuário a própria publicação.
+             * Nunca mostrar a própria publicação.
              */
             ->where(
                 'contratante_id',
@@ -190,27 +184,29 @@ class PublicacaoController extends Controller
 
             ->orderByDesc('id')
 
-            /*
-             * Paginação:
-             *
-             * Evita carregar todas as publicações e todos
-             * os relacionamentos de uma única vez.
-             */
             ->paginate($perPage);
 
         return response()->json([
             'data' => $publicacoes->items(),
 
             'pagination' => [
-                'current_page' => $publicacoes->currentPage(),
-                'last_page' => $publicacoes->lastPage(),
-                'per_page' => $publicacoes->perPage(),
-                'total' => $publicacoes->total(),
-                'has_more_pages' => $publicacoes->hasMorePages(),
+                'current_page' =>
+                $publicacoes->currentPage(),
+
+                'last_page' =>
+                $publicacoes->lastPage(),
+
+                'per_page' =>
+                $publicacoes->perPage(),
+
+                'total' =>
+                $publicacoes->total(),
+
+                'has_more_pages' =>
+                $publicacoes->hasMorePages(),
             ],
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -265,14 +261,16 @@ class PublicacaoController extends Controller
         $usuario = $request->user();
 
         $perPage = min(
-            max((int) $request->input('per_page', self::PUBLICACOES_POR_PAGINA), 1),
+            max(
+                (int) $request->input(
+                    'per_page',
+                    self::PUBLICACOES_POR_PAGINA
+                ),
+                1
+            ),
             50
         );
 
-        /*
-         * Não executamos mais sincronizarNegociacoesCanceladas()
-         * em uma requisição de leitura.
-         */
         $publicacoes = Publicacao::query()
             ->select([
                 'id',
@@ -311,21 +309,29 @@ class PublicacaoController extends Controller
             'data' => $publicacoes->items(),
 
             'pagination' => [
-                'current_page' => $publicacoes->currentPage(),
-                'last_page' => $publicacoes->lastPage(),
-                'per_page' => $publicacoes->perPage(),
-                'total' => $publicacoes->total(),
-                'has_more_pages' => $publicacoes->hasMorePages(),
+                'current_page' =>
+                $publicacoes->currentPage(),
+
+                'last_page' =>
+                $publicacoes->lastPage(),
+
+                'per_page' =>
+                $publicacoes->perPage(),
+
+                'total' =>
+                $publicacoes->total(),
+
+                'has_more_pages' =>
+                $publicacoes->hasMorePages(),
             ],
         ]);
     }
 
-
     /*
-|--------------------------------------------------------------------------
-| LISTAR OUTRAS PUBLICAÇÕES
-|--------------------------------------------------------------------------
-*/
+    |--------------------------------------------------------------------------
+    | LISTAR OUTRAS PUBLICAÇÕES
+    |--------------------------------------------------------------------------
+    */
 
     #[OA\Get(
         path: '/api/publicacoes/outras',
@@ -348,9 +354,6 @@ class PublicacaoController extends Controller
     {
         $usuario = $request->user();
 
-        /*
-     * Verifica se o usuário possui alguma categoria.
-     */
         $temCategorias = $usuario
             ->categorias()
             ->exists();
@@ -379,8 +382,8 @@ class PublicacaoController extends Controller
             )
 
             /*
-         * Somente publicações ATIVAS.
-         */
+             * Somente publicações ativas.
+             */
             ->whereHas(
                 'status',
                 function ($query) {
@@ -391,9 +394,9 @@ class PublicacaoController extends Controller
             )
 
             /*
-         * Somente categorias que NÃO estão
-         * vinculadas ao usuário.
-         */
+             * Somente categorias que não estão
+             * vinculadas ao usuário.
+             */
             ->whereDoesntHave(
                 'categoria.usuarios',
                 function ($query) use ($usuario) {
@@ -405,8 +408,8 @@ class PublicacaoController extends Controller
             )
 
             /*
-         * Nunca mostrar a própria publicação.
-         */
+             * Nunca mostrar a própria publicação.
+             */
             ->where(
                 'contratante_id',
                 '!=',
@@ -414,9 +417,9 @@ class PublicacaoController extends Controller
             )
 
             /*
-         * Não mostrar publicações onde o usuário
-         * já iniciou uma negociação.
-         */
+             * Não mostrar publicações onde o usuário
+             * já iniciou uma negociação.
+             */
             ->whereDoesntHave(
                 'negociacoes',
                 function ($query) use ($usuario) {
@@ -434,9 +437,11 @@ class PublicacaoController extends Controller
             ->get();
 
         return response()->json([
-            'tem_categorias' => $temCategorias,
+            'tem_categorias' =>
+            $temCategorias,
 
-            'data' => $publicacoes,
+            'data' =>
+            $publicacoes,
         ]);
     }
 
@@ -645,28 +650,29 @@ class PublicacaoController extends Controller
         $caminhosCriados = [];
 
         try {
-
             $publicacao = DB::transaction(
                 function () use (
                     $dados,
                     $arquivos,
                     &$caminhosCriados
                 ) {
-
                     /*
                      * Cria a publicação.
                      */
-                    $publicacao = Publicacao::create($dados);
+                    $publicacao = Publicacao::create(
+                        $dados
+                    );
 
                     /*
                      * Processa os anexos.
                      */
-                    foreach ($arquivos as $ordem => $arquivo) {
-
-                        $mimeType = $arquivo->getMimeType();
+                    foreach (
+                        $arquivos as $ordem => $arquivo
+                    ) {
+                        $mimeType =
+                            $arquivo->getMimeType();
 
                         $tipo = match (true) {
-
                             str_starts_with(
                                 $mimeType,
                                 'image/'
@@ -677,7 +683,8 @@ class PublicacaoController extends Controller
                                 'video/'
                             ) => 'video',
 
-                            $mimeType === 'application/pdf'
+                            $mimeType ===
+                                'application/pdf'
                             => 'pdf',
 
                             default => null,
@@ -689,35 +696,42 @@ class PublicacaoController extends Controller
                             );
                         }
 
-                        $caminho = $arquivo->store(
-                            "publicacoes/{$publicacao->id}",
-                            'local'
-                        );
+                        $caminho =
+                            $arquivo->store(
+                                "publicacoes/{$publicacao->id}",
+                                'local'
+                            );
 
-                        $caminhosCriados[] = $caminho;
+                        $caminhosCriados[] =
+                            $caminho;
 
-                        $publicacao->anexos()->create([
-                            'nome_original' =>
-                            $arquivo->getClientOriginalName(),
+                        $publicacao
+                            ->anexos()
+                            ->create([
+                                'nome_original' =>
+                                $arquivo
+                                    ->getClientOriginalName(),
 
-                            'nome_arquivo' =>
-                            basename($caminho),
+                                'nome_arquivo' =>
+                                basename(
+                                    $caminho
+                                ),
 
-                            'caminho' =>
-                            $caminho,
+                                'caminho' =>
+                                $caminho,
 
-                            'mime_type' =>
-                            $mimeType,
+                                'mime_type' =>
+                                $mimeType,
 
-                            'tipo' =>
-                            $tipo,
+                                'tipo' =>
+                                $tipo,
 
-                            'tamanho' =>
-                            $arquivo->getSize(),
+                                'tamanho' =>
+                                $arquivo->getSize(),
 
-                            'ordem' =>
-                            $ordem,
-                        ]);
+                                'ordem' =>
+                                $ordem,
+                            ]);
                     }
 
                     return $publicacao;
@@ -729,11 +743,116 @@ class PublicacaoController extends Controller
              * Se o banco falhar depois de algum arquivo
              * ter sido salvo, remove os arquivos físicos.
              */
-            foreach ($caminhosCriados as $caminho) {
-                Storage::disk('local')->delete($caminho);
+            foreach (
+                $caminhosCriados as $caminho
+            ) {
+                Storage::disk('local')
+                    ->delete($caminho);
             }
 
             throw $e;
+        }
+
+        /*
+         * ==============================================================
+         * NOTIFICAÇÃO DE NOVA PUBLICAÇÃO
+         * ==============================================================
+         *
+         * Usuários vinculados à categoria recebem a notificação.
+         *
+         * O próprio autor é ignorado.
+         *
+         * A falha de notificação não desfaz a publicação.
+         */
+        try {
+            $usuariosNotificacao =
+                DB::table('user_categoria')
+                ->where(
+                    'categoria_id',
+                    $publicacao->categoria_id
+                )
+                ->where(
+                    'user_id',
+                    '!=',
+                    $usuario->id
+                )
+                ->pluck('user_id');
+
+            if (
+                $usuariosNotificacao->isNotEmpty()
+            ) {
+                $agora = now();
+
+                $notificacoes =
+                    $usuariosNotificacao
+                    ->map(
+                        function ($userId) use (
+                            $publicacao,
+                            $agora
+                        ) {
+                            return [
+                                'user_id' =>
+                                $userId,
+
+                                'tipo' =>
+                                'NOVA_PUBLICACAO',
+
+                                'titulo' =>
+                                'Nova publicação na sua categoria',
+
+                                'mensagem' =>
+                                "Uma nova publicação foi criada na categoria relacionada aos seus interesses: {$publicacao->titulo}.",
+
+                                'lida' =>
+                                false,
+
+                                'dados' =>
+                                json_encode([
+                                    'publicacao_id' =>
+                                    $publicacao->id,
+
+                                    'categoria_id' =>
+                                    $publicacao->categoria_id,
+
+                                    'contratante_id' =>
+                                    $publicacao->contratante_id,
+
+                                    'tipo' =>
+                                    'NOVA_PUBLICACAO',
+                                ]),
+
+                                'created_at' =>
+                                $agora,
+
+                                'updated_at' =>
+                                $agora,
+                            ];
+                        }
+                    )
+                    ->values()
+                    ->all();
+
+                Notificacao::insert(
+                    $notificacoes
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error(
+                'Erro ao criar notificações de nova publicação.',
+                [
+                    'publicacao_id' =>
+                    $publicacao->id,
+
+                    'categoria_id' =>
+                    $publicacao->categoria_id,
+
+                    'usuario_id' =>
+                    $usuario->id,
+
+                    'erro' =>
+                    $e->getMessage(),
+                ]
+            );
         }
 
         /*
@@ -751,7 +870,6 @@ class PublicacaoController extends Controller
             $publicacao
         ], 201);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -798,22 +916,14 @@ class PublicacaoController extends Controller
         $usuario = $request->user();
 
         /*
-         * Carrega somente o status inicialmente.
-         */
-        $publicacao->loadMissing('status');
-
-        /*
-         * Se a publicação estiver cancelada,
-         * garante o cancelamento das negociações abertas.
+         * Carrega o status.
          *
-         * Esse comportamento foi mantido porque o show()
-         * trabalha diretamente com uma publicação específica.
+         * IMPORTANTE:
+         * show() não altera mais o banco.
          */
-        if ($publicacao->status?->codigo === 'CANCELADO') {
-            $this->cancelarNegociacoes(
-                $publicacao->id
-            );
-        }
+        $publicacao->loadMissing(
+            'status'
+        );
 
         /*
          * Dono da publicação:
@@ -823,22 +933,24 @@ class PublicacaoController extends Controller
             (int) $publicacao->contratante_id ===
             (int) $usuario->id
         ) {
-
             $publicacao->load(
                 $this->relacionamentosPublicacao()
             );
 
             return response()->json([
-                'data' => $publicacao
+                'data' =>
+                $publicacao
             ]);
         }
 
         /*
-         * Usuários que não são donos:
+         * Usuários externos:
          * somente publicações ATIVAS.
          */
-        if ($publicacao->status?->codigo !== 'ATIVO') {
-
+        if (
+            $publicacao->status?->codigo !==
+            'ATIVO'
+        ) {
             return response()->json([
                 'message' =>
                 'Publicação não encontrada.'
@@ -848,7 +960,8 @@ class PublicacaoController extends Controller
         /*
          * Verifica se o usuário possui a categoria.
          */
-        $possuiCategoria = $usuario
+        $possuiCategoria =
+            $usuario
             ->categorias()
             ->where(
                 'categorias.id',
@@ -857,7 +970,6 @@ class PublicacaoController extends Controller
             ->exists();
 
         if (!$possuiCategoria) {
-
             return response()->json([
                 'message' =>
                 'Publicação não encontrada.'
@@ -865,8 +977,8 @@ class PublicacaoController extends Controller
         }
 
         /*
-         * Para um usuário externo não precisamos
-         * carregar telefone/e-mail do contratante.
+         * Para usuário externo não carregamos
+         * telefone/e-mail do contratante.
          */
         $publicacao->load([
             'categoria:id,nome,descricao',
@@ -877,10 +989,10 @@ class PublicacaoController extends Controller
         ]);
 
         return response()->json([
-            'data' => $publicacao
+            'data' =>
+            $publicacao
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1002,7 +1114,6 @@ class PublicacaoController extends Controller
             (int) $publicacao->contratante_id !==
             (int) $usuario->id
         ) {
-
             return response()->json([
                 'message' =>
                 'Você não pode alterar esta publicação.'
@@ -1012,15 +1123,17 @@ class PublicacaoController extends Controller
         /*
          * Carrega o status atual.
          */
-        $publicacao->loadMissing('status');
+        $publicacao->loadMissing(
+            'status'
+        );
 
         /*
          * Publicações encerradas não podem ser alteradas.
          */
         if (
-            $publicacao->status?->codigo === 'ENCERRADO'
+            $publicacao->status?->codigo ===
+            'ENCERRADO'
         ) {
-
             return response()->json([
                 'message' =>
                 'Esta publicação está encerrada e não pode mais ser alterada.'
@@ -1097,7 +1210,142 @@ class PublicacaoController extends Controller
             $dados['status_id']
         );
 
-        $publicacao->update($dados);
+        /*
+         * Guarda os dados anteriores para identificar
+         * alterações relevantes.
+         */
+        $tituloAnterior =
+            $publicacao->titulo;
+
+        $categoriaAnterior =
+            $publicacao->categoria_id;
+
+        $publicacao->update(
+            $dados
+        );
+
+        /*
+         * ==============================================================
+         * NOTIFICAÇÃO DE PUBLICAÇÃO ATUALIZADA
+         * ==============================================================
+         *
+         * Somente usuários que já possuem negociação aberta
+         * recebem essa notificação.
+         *
+         * Isso evita enviar "publicação atualizada" para todos
+         * os usuários da categoria sem necessidade.
+         */
+        try {
+            $publicacaoAtualizada =
+                $publicacao->fresh();
+
+            $negociacoesAbertas =
+                Negociacao::query()
+                ->where(
+                    'id_publicacao',
+                    $publicacao->id
+                )
+                ->whereHas(
+                    'status',
+                    function ($query) {
+                        $query->whereIn(
+                            'codigo',
+                            [
+                                'AGUARDANDO_INTERESSADO',
+                                'AGUARDANDO_CONTRATANTE',
+                                'AGUARDANDO_PAGAMENTO',
+                                'PROCESSANDO_PAGAMENTO',
+                            ]
+                        );
+                    }
+                )
+                ->pluck(
+                    'id_interessado'
+                )
+                ->unique()
+                ->values();
+
+            if (
+                $negociacoesAbertas->isNotEmpty()
+            ) {
+                $agora = now();
+
+                $notificacoes =
+                    $negociacoesAbertas
+                    ->map(
+                        function ($userId) use (
+                            $publicacaoAtualizada,
+                            $agora,
+                            $tituloAnterior,
+                            $categoriaAnterior
+                        ) {
+                            return [
+                                'user_id' =>
+                                $userId,
+
+                                'tipo' =>
+                                'PUBLICACAO_ATUALIZADA',
+
+                                'titulo' =>
+                                'Publicação atualizada',
+
+                                'mensagem' =>
+                                "A publicação \"{$publicacaoAtualizada->titulo}\" foi atualizada pelo contratante.",
+
+                                'lida' =>
+                                false,
+
+                                'dados' =>
+                                json_encode([
+                                    'publicacao_id' =>
+                                    $publicacaoAtualizada->id,
+
+                                    'categoria_id' =>
+                                    $publicacaoAtualizada->categoria_id,
+
+                                    'contratante_id' =>
+                                    $publicacaoAtualizada->contratante_id,
+
+                                    'titulo_anterior' =>
+                                    $tituloAnterior,
+
+                                    'categoria_anterior_id' =>
+                                    $categoriaAnterior,
+
+                                    'tipo' =>
+                                    'PUBLICACAO_ATUALIZADA',
+                                ]),
+
+                                'created_at' =>
+                                $agora,
+
+                                'updated_at' =>
+                                $agora,
+                            ];
+                        }
+                    )
+                    ->values()
+                    ->all();
+
+                Notificacao::insert(
+                    $notificacoes
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error(
+                'Erro ao criar notificações de publicação atualizada.',
+                [
+                    'publicacao_id' =>
+                    $publicacao->id,
+
+                    'usuario_id' =>
+                    $usuario->id,
+
+                    'erro' =>
+                    $e->getMessage(),
+                ]
+            );
+        }
 
         /*
          * Recarrega somente os relacionamentos necessários.
@@ -1115,7 +1363,6 @@ class PublicacaoController extends Controller
         ]);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | CANCELAR PUBLICAÇÃO
@@ -1125,7 +1372,7 @@ class PublicacaoController extends Controller
     #[OA\Patch(
         path: '/api/publicacoes/{publicacao}/cancelar',
         summary: 'Cancela uma publicação',
-        description: 'Cancela a publicação e altera todas as negociações abertas vinculadas para CANCELADA.',
+        description: 'Cancela a publicação e altera todas as negociações abertas vinculadas para CANCELADA. Os usuários interessados são notificados.',
         tags: ['Publicações'],
         security: [['sanctum' => []]],
         parameters: [
@@ -1176,51 +1423,186 @@ class PublicacaoController extends Controller
             (int) $publicacao->contratante_id !==
             (int) $usuario->id
         ) {
-
             return response()->json([
                 'message' =>
                 'Você não pode cancelar esta publicação.'
             ], 403);
         }
 
-        $publicacao->loadMissing('status');
+        $publicacao->loadMissing(
+            'status'
+        );
 
         /*
          * Somente publicações ATIVAS podem ser canceladas.
          */
-        if ($publicacao->status?->codigo !== 'ATIVO') {
-
+        if (
+            $publicacao->status?->codigo !==
+            'ATIVO'
+        ) {
             return response()->json([
                 'message' =>
                 'Somente uma publicação ativa pode ser cancelada.'
             ], 422);
         }
 
-        $statusCancelado = PublicacaoStatus::query()
-            ->where('codigo', 'CANCELADO')
-            ->where('ativo', true)
+        $statusCancelado =
+            PublicacaoStatus::query()
+            ->where(
+                'codigo',
+                'CANCELADO'
+            )
+            ->where(
+                'ativo',
+                true
+            )
             ->firstOrFail();
 
-        DB::transaction(function () use (
-            $publicacao,
-            $statusCancelado
-        ) {
-
-            /*
-             * Cancela a publicação.
-             */
-            $publicacao->update([
-                'status_id' => $statusCancelado->id
+        /*
+         * Busca as negociações antes de alterar o status.
+         *
+         * Precisamos dos interessados para enviar as notificações.
+         */
+        $negociacoesAbertas =
+            Negociacao::query()
+            ->where(
+                'id_publicacao',
+                $publicacao->id
+            )
+            ->whereHas(
+                'status',
+                function ($query) {
+                    $query->whereIn(
+                        'codigo',
+                        [
+                            'AGUARDANDO_INTERESSADO',
+                            'AGUARDANDO_CONTRATANTE',
+                        ]
+                    );
+                }
+            )
+            ->get([
+                'id_negociacao',
+                'id_publicacao',
+                'id_interessado',
+                'id_contratante',
             ]);
 
-            /*
-             * Cancela todas as negociações abertas
-             * dessa publicação.
-             */
-            $this->cancelarNegociacoes(
-                $publicacao->id
+        DB::transaction(
+            function () use (
+                $publicacao,
+                $statusCancelado
+            ) {
+                /*
+                 * Cancela a publicação.
+                 */
+                $publicacao->update([
+                    'status_id' =>
+                    $statusCancelado->id
+                ]);
+
+                /*
+                 * Cancela as negociações abertas.
+                 */
+                $this->cancelarNegociacoes(
+                    $publicacao->id
+                );
+            }
+        );
+
+        /*
+         * ==============================================================
+         * NOTIFICAÇÕES DE CANCELAMENTO
+         * ==============================================================
+         *
+         * A publicação já foi cancelada com sucesso.
+         *
+         * A notificação é criada depois da transação para que
+         * uma eventual falha não impeça o cancelamento.
+         */
+        try {
+            if (
+                $negociacoesAbertas->isNotEmpty()
+            ) {
+                $agora = now();
+
+                $notificacoes =
+                    $negociacoesAbertas
+                    ->map(
+                        function ($negociacao) use (
+                            $publicacao,
+                            $agora
+                        ) {
+                            return [
+                                'user_id' =>
+                                $negociacao
+                                    ->id_interessado,
+
+                                'tipo' =>
+                                'PUBLICACAO_CANCELADA',
+
+                                'titulo' =>
+                                'Publicação cancelada',
+
+                                'mensagem' =>
+                                "A publicação \"{$publicacao->titulo}\" foi cancelada pelo contratante. Sua negociação também foi encerrada.",
+
+                                'lida' =>
+                                false,
+
+                                'dados' =>
+                                json_encode([
+                                    'publicacao_id' =>
+                                    $publicacao->id,
+
+                                    'negociacao_id' =>
+                                    $negociacao
+                                        ->id_negociacao,
+
+                                    'contratante_id' =>
+                                    $publicacao
+                                        ->contratante_id,
+
+                                    'tipo' =>
+                                    'PUBLICACAO_CANCELADA',
+
+                                    'status_publicacao' =>
+                                    'CANCELADO',
+
+                                    'status_negociacao' =>
+                                    'CANCELADA',
+                                ]),
+
+                                'created_at' =>
+                                $agora,
+
+                                'updated_at' =>
+                                $agora,
+                            ];
+                        }
+                    )
+                    ->values()
+                    ->all();
+
+                Notificacao::insert(
+                    $notificacoes
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error(
+                'Erro ao criar notificações de publicação cancelada.',
+                [
+                    'publicacao_id' =>
+                    $publicacao->id,
+
+                    'usuario_id' =>
+                    $usuario->id,
+
+                    'erro' =>
+                    $e->getMessage(),
+                ]
             );
-        });
+        }
 
         /*
          * Recarrega os dados da publicação.
@@ -1231,13 +1613,12 @@ class PublicacaoController extends Controller
 
         return response()->json([
             'message' =>
-            'Publicação cancelada com sucesso. Todas as negociações abertas foram canceladas.',
+            'Publicação cancelada com sucesso. Todas as negociações abertas foram canceladas e os interessados foram notificados.',
 
             'data' =>
             $publicacao
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1248,13 +1629,19 @@ class PublicacaoController extends Controller
     private function cancelarNegociacoes(
         int $publicacaoId
     ): void {
-
         /*
          * Busca o status CANCELADA.
          */
-        $statusCancelada = NegociacaoStatus::query()
-            ->where('codigo', 'CANCELADA')
-            ->where('ativo', true)
+        $statusCancelada =
+            NegociacaoStatus::query()
+            ->where(
+                'codigo',
+                'CANCELADA'
+            )
+            ->where(
+                'ativo',
+                true
+            )
             ->firstOrFail();
 
         /*
@@ -1276,8 +1663,9 @@ class PublicacaoController extends Controller
             )
             ->whereHas(
                 'status',
-                function ($query) use ($statusAbertos) {
-
+                function ($query) use (
+                    $statusAbertos
+                ) {
                     $query->whereIn(
                         'codigo',
                         $statusAbertos

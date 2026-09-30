@@ -12,6 +12,7 @@ use App\Http\Controllers\TrabalhoController;
 use App\Http\Controllers\TrabalhoPagamentoController;
 use App\Http\Controllers\PublicacaoAnexoController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\NotificacaoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -311,5 +312,41 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/onboarding/concluir', [
         OnboardingController::class,
         'concluir'
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notificações
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/notificacoes', [
+        NotificacaoController::class,
+        'index'
+    ]);
+
+    Route::get('/notificacoes/nao-lidas', [
+        NotificacaoController::class,
+        'naoLidas'
+    ]);
+
+    Route::get('/notificacoes/contador', [
+        NotificacaoController::class,
+        'contador'
+    ]);
+
+    Route::patch('/notificacoes/ler-todas', [
+        NotificacaoController::class,
+        'marcarTodasComoLidas'
+    ]);
+
+    Route::patch('/notificacoes/{notificacao}/ler', [
+        NotificacaoController::class,
+        'marcarComoLida'
+    ]);
+
+    Route::delete('/notificacoes/{notificacao}', [
+        NotificacaoController::class,
+        'destroy'
     ]);
 });

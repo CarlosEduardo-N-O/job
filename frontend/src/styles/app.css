@@ -5,6 +5,7 @@
 .app-container {
     width: 100%;
     min-height: 100vh;
+    min-width: 0;
 
     padding-top: 50px;
 
@@ -17,12 +18,25 @@
 
 
 /* ==========================================================================
+   CONTEÚDO PRINCIPAL DA APLICAÇÃO
+   ========================================================================== */
+
+.app-content {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0;
+}
+
+/* ==========================================================================
    ESTRUTURA DE PÁGINA
    ========================================================================== */
 
 .page {
     width: 100%;
     max-width: 900px;
+    min-width: 0;
 
     margin: 0 auto;
     padding: 82px 18px 90px;
@@ -898,7 +912,7 @@
     gap: 20px;
 }
 
-.home-header > div {
+.home-header>div {
     flex: 1;
     min-width: 0;
 }
@@ -1442,4 +1456,734 @@
 
         font-size: 16px;
     }
+}
+
+
+/* ==========================================================================
+   NOTIFICAÇÕES
+   ========================================================================== */
+
+.notificacao-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1100;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    padding-top: 80px;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    background: rgba(0, 0, 0, 0.25);
+
+    animation: notificacao-fade-in 0.18s ease;
+}
+
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.notificacao-modal {
+    width: 100%;
+    max-width: 520px;
+    max-height: calc(100vh - 110px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.18);
+
+    animation: notificacao-slide-in 0.2s ease;
+}
+
+
+/* ==========================================================================
+   CABEÇALHO
+   ========================================================================== */
+
+.notificacao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 18px 20px;
+
+    flex-shrink: 0;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.notificacao-header h2 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.notificacao-header-acoes {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+/* ==========================================================================
+   MARCAR TODAS COMO LIDAS
+   ========================================================================== */
+
+.notificacao-marcar-todas {
+    padding: 7px 10px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #374151;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.notificacao-marcar-todas:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.notificacao-marcar-todas:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   BOTÃO FECHAR
+   ========================================================================== */
+
+.notificacao-fechar {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #6b7280;
+
+    font-size: 25px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.notificacao-fechar:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.notificacao-fechar:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   FILTROS
+   ========================================================================== */
+
+.notificacao-filtros {
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 10px 20px 0;
+
+    flex-shrink: 0;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.notificacao-filtro {
+    position: relative;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    min-height: 38px;
+
+    padding: 0 10px;
+
+    border: 0;
+    border-radius: 8px 8px 0 0;
+
+    background: transparent;
+    color: #6b7280;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.notificacao-filtro:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+
+.notificacao-filtro span {
+    min-width: 20px;
+    height: 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 6px;
+
+    border-radius: 10px;
+
+    background: #f3f4f6;
+    color: #6b7280;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.notificacao-filtro.ativo {
+    color: #111827;
+}
+
+.notificacao-filtro.ativo::after {
+    content: '';
+
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: -1px;
+
+    height: 2px;
+
+    border-radius: 2px;
+
+    background: #111827;
+}
+
+.notificacao-filtro.ativo span {
+    background: #111827;
+    color: #ffffff;
+}
+
+.notificacao-filtro:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+}
+
+
+/* ==========================================================================
+   CONTEÚDO
+   ========================================================================== */
+
+.notificacao-conteudo {
+    min-height: 0;
+
+    padding: 12px 20px 20px;
+
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.notificacao-conteudo::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notificacao-conteudo::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notificacao-conteudo::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+
+    background: #d1d5db;
+}
+
+
+/* ==========================================================================
+   LISTA
+   ========================================================================== */
+
+.notificacao-lista {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+/* ==========================================================================
+   ITEM
+   ========================================================================== */
+
+.notificacao-item {
+    position: relative;
+
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    width: 100%;
+
+    padding: 13px 12px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.notificacao-item:hover {
+    border-color: #d1d5db;
+
+    background: #f9fafb;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ==========================================================================
+   NOTIFICAÇÃO NÃO LIDA
+   ========================================================================== */
+
+.notificacao-item.nao-lida {
+    border-color: #d1d5db;
+
+    background: #f8fafc;
+}
+
+.notificacao-item.nao-lida:hover {
+    background: #f3f4f6;
+}
+
+
+/* ==========================================================================
+   CONTEÚDO DO ITEM
+   ========================================================================== */
+
+.notificacao-item-conteudo {
+    min-width: 0;
+
+    flex: 1;
+}
+
+.notificacao-item-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 5px;
+}
+
+.notificacao-item-topo h3 {
+    min-width: 0;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+
+    text-overflow: ellipsis;
+}
+
+.notificacao-item p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 13px;
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+}
+
+.notificacao-data {
+    display: block;
+
+    margin-top: 8px;
+
+    color: #9ca3af;
+
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+
+/* ==========================================================================
+   INDICADOR "NOVA"
+   ========================================================================== */
+
+.notificacao-indicador {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    padding: 3px 7px;
+
+    border-radius: 6px;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+/* ==========================================================================
+   BOTÃO EXCLUIR
+   ========================================================================== */
+
+.notificacao-excluir {
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 7px;
+
+    background: transparent;
+    color: #9ca3af;
+
+    font-size: 20px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.notificacao-excluir:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.notificacao-excluir:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   ESTADO VAZIO
+   ========================================================================== */
+
+.notificacao-vazia {
+    min-height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px 15px;
+
+    text-align: center;
+
+    color: #6b7280;
+}
+
+.notificacao-vazia p {
+    max-width: 300px;
+
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================================
+   ANIMAÇÕES
+   ========================================================================== */
+
+@keyframes notificacao-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes notificacao-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ==========================================================================
+   MOBILE
+   ========================================================================== */
+
+@media (max-width: 767px) {
+
+    .notificacao-overlay {
+        align-items: flex-start;
+
+        padding-top: 72px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .notificacao-modal {
+        max-width: 100%;
+
+        max-height: calc(100vh - 88px);
+
+        border-radius: 14px;
+    }
+
+    .notificacao-header {
+        padding: 16px;
+    }
+
+    .notificacao-header h2 {
+        font-size: 18px;
+    }
+
+    .notificacao-marcar-todas {
+        max-width: 150px;
+
+        padding: 6px 8px;
+
+        font-size: 11px;
+
+        text-align: right;
+    }
+
+    .notificacao-filtros {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .notificacao-conteudo {
+        padding: 10px 16px 16px;
+    }
+
+    .notificacao-item {
+        padding: 12px 10px;
+    }
+}
+
+
+/* ==========================================================================
+   MOBILE PEQUENO
+   ========================================================================== */
+
+@media (max-width: 480px) {
+
+    .notificacao-overlay {
+        padding-top: 68px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .notificacao-modal {
+        max-height: calc(100vh - 80px);
+
+        border-radius: 12px;
+    }
+
+    .notificacao-header {
+        gap: 8px;
+
+        padding: 14px;
+    }
+
+    .notificacao-header h2 {
+        font-size: 17px;
+    }
+
+    .notificacao-header-acoes {
+        gap: 4px;
+    }
+
+    .notificacao-marcar-todas {
+        max-width: 125px;
+
+        font-size: 10px;
+    }
+
+    .notificacao-filtros {
+        padding: 8px 12px 0;
+    }
+
+    .notificacao-filtro {
+        min-height: 36px;
+
+        padding: 0 8px;
+
+        font-size: 12px;
+    }
+
+    .notificacao-conteudo {
+        padding: 8px 12px 12px;
+    }
+
+    .notificacao-item {
+        gap: 8px;
+
+        padding: 11px 9px;
+    }
+
+    .notificacao-item-topo {
+        gap: 6px;
+    }
+
+    .notificacao-item-topo h3 {
+        font-size: 13px;
+    }
+
+    .notificacao-item p {
+        font-size: 12px;
+    }
+
+    .notificacao-data {
+        font-size: 10px;
+    }
+
+    .notificacao-indicador {
+        padding: 3px 5px;
+
+        font-size: 9px;
+    }
+
+    .notificacao-excluir {
+        width: 26px;
+        height: 26px;
+
+        font-size: 18px;
+    }
+}
+
+/* =========================================================
+   BOTÃO DE NOTIFICAÇÕES
+   ========================================================= */
+
+.notification-button {
+    position: relative;
+}
+
+
+/* =========================================================
+   INDICADOR DE NOTIFICAÇÕES NÃO LIDAS
+   ========================================================= */
+
+.notification-badge {
+    position: absolute;
+
+    top: 4px;
+    right: 4px;
+
+    min-width: 14px;
+    height: 14px;
+
+    padding: 0 3px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+
+    background: #111827;
+    color: #ffffff;
+
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+
+    border: 2px solid #ffffff;
+
+    pointer-events: none;
 }

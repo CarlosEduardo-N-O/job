@@ -7,8 +7,10 @@ use App\Models\Negociacao;
 use App\Models\NegociacaoPagamento;
 use App\Models\NegociacaoPagamentoStatus;
 use App\Models\NegociacaoStatus;
+use App\Models\Notificacao;
 use App\Models\Publicacao;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -39,7 +41,7 @@ class NegociacaoController extends Controller
             )
         ]
     )]
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $usuario = $request->user();
 
@@ -60,10 +62,6 @@ class NegociacaoController extends Controller
             ->orderByDesc('id_negociacao')
             ->get();
 
-        /*
-         * Adiciona ao retorno as informações que o frontend precisa
-         * para montar a tela.
-         */
         $negociacoes->each(function ($negociacao) use ($usuario) {
             $this->adicionarContextoFrontend(
                 $negociacao,
@@ -72,6 +70,7 @@ class NegociacaoController extends Controller
         });
 
         return response()->json([
+            'success' => true,
             'data' => $negociacoes,
         ]);
     }
@@ -100,7 +99,7 @@ class NegociacaoController extends Controller
             )
         ]
     )]
-    public function minhas(Request $request)
+    public function minhas(Request $request): JsonResponse
     {
         $usuario = $request->user();
 
@@ -125,6 +124,7 @@ class NegociacaoController extends Controller
         });
 
         return response()->json([
+            'success' => true,
             'data' => $negociacoes,
         ]);
     }
@@ -172,7 +172,7 @@ class NegociacaoController extends Controller
     public function show(
         Request $request,
         Negociacao $negociacao
-    ) {
+    ): JsonResponse {
         $usuario = $request->user();
 
         $this->autorizarParticipacao(
@@ -199,6 +199,7 @@ class NegociacaoController extends Controller
         );
 
         return response()->json([
+            'success' => true,
             'data' => $negociacao,
         ]);
     }
@@ -280,7 +281,7 @@ class NegociacaoController extends Controller
     public function store(
         Request $request,
         Publicacao $publicacao
-    ) {
+    ): JsonResponse {
         $usuario = $request->user();
 
         if ($publicacao->contratante_id == $usuario->id) {
@@ -449,14 +450,6 @@ class NegociacaoController extends Controller
                 ? $dados['valor_proposto']
                 : $publicacao->valor_estimado;
 
-            /*
-             * Calcula os valores financeiros da negociação.
-             *
-             * Para INTERESSE ou DUVIDA, utiliza o valor estimado
-             * da publicação.
-             *
-             * Para PROPOSTA, utiliza o valor informado pelo interessado.
-             */
             $valoresFinanceiros = $this->calcularValoresFinanceiros(
                 $valorTrabalho
             );
@@ -501,6 +494,26 @@ class NegociacaoController extends Controller
                 $publicacao->id,
             ]);
 
+            /*
+             * Notifica o contratante sobre a nova interação.
+             */
+            $this->criarNotificacao(
+                $publicacao->contratante_id,
+                'NOVA_INTERACAO_PUBLICACAO',
+                'Nova interação na sua publicação',
+                $usuario->name .
+                    ' iniciou uma negociação na publicação "' .
+                    ($publicacao->titulo ?? 'Sem título') .
+                    '".',
+                [
+                    'publicacao_id' => $publicacao->id,
+                    'negociacao_id' => $negociacao->id_negociacao,
+                    'interacao_id' => $interacao->id_interacao,
+                    'tipo_interacao' => $dados['tipo'],
+                    'remetente_id' => $usuario->id,
+                ]
+            );
+
             $negociacao->load([
                 'status',
                 'pagamento.status',
@@ -517,11 +530,10 @@ class NegociacaoController extends Controller
             );
 
             return response()->json([
+                'success' => true,
                 'message' =>
                 'Interação enviada e negociação criada com sucesso.',
-
-                'data' =>
-                $negociacao,
+                'data' => $negociacao,
             ], 201);
         });
     }
@@ -597,7 +609,7 @@ class NegociacaoController extends Controller
     public function interagir(
         Request $request,
         Negociacao $negociacao
-    ) {
+    ): JsonResponse {
         $usuario = $request->user();
 
         $this->autorizarParticipacao(
@@ -607,10 +619,6 @@ class NegociacaoController extends Controller
 
         $negociacao->loadMissing('status');
 
-        /*
-         * O backend verifica de quem é a vez.
-         * O frontend não precisa implementar essa regra.
-         */
         $this->autorizarVez(
             $usuario,
             $negociacao
@@ -675,12 +683,6 @@ class NegociacaoController extends Controller
 
         $novoTipo = $dados['tipo'];
 
-        /*
-         * ---------------------------------------------------------
-         * REGRAS DE TRANSIÇÃO
-         * ---------------------------------------------------------
-         */
-
         if ($tipoAnterior === 'INTERESSE') {
             throw ValidationException::withMessages([
                 'tipo' => [
@@ -735,12 +737,6 @@ class NegociacaoController extends Controller
                 ]);
             }
         }
-
-        /*
-         * ---------------------------------------------------------
-         * VALIDAÇÕES ESPECÍFICAS
-         * ---------------------------------------------------------
-         */
 
         if (
             $novoTipo === 'PROPOSTA' &&
@@ -799,6 +795,14 @@ class NegociacaoController extends Controller
                 ]);
             }
 
+            /*
+             * Define o destinatário antes de criar a nova interação.
+             */
+            $destinatarioId =
+                $usuario->id == $negociacao->id_interessado
+                ? $negociacao->id_contratante
+                : $negociacao->id_interessado;
+
             $interacao = Interacao::create([
                 'id_interacao_tipo' =>
                 $tipo->id_interacao_tipo,
@@ -818,9 +822,6 @@ class NegociacaoController extends Controller
                 ? $dados['valor_proposto']
                 : $negociacao->valor_trabalho;
 
-            /*
-             * Define automaticamente quem deverá agir depois.
-             */
             $novoStatus =
                 $usuario->id == $negociacao->id_interessado
                 ? 'AGUARDANDO_CONTRATANTE'
@@ -830,14 +831,6 @@ class NegociacaoController extends Controller
                 $novoStatus
             );
 
-            /*
-             * A taxa somente precisa ser recalculada quando
-             * o valor do serviço realmente muda, ou seja,
-             * quando existe uma nova PROPOSTA.
-             *
-             * Para DUVIDA e RESPOSTA, mantemos os valores
-             * financeiros atuais da negociação.
-             */
             $dadosAtualizacao = [
                 'status_id' =>
                 $status->id,
@@ -880,6 +873,33 @@ class NegociacaoController extends Controller
                 $negociacao->id_publicacao,
             ]);
 
+            /*
+             * Notifica o outro participante.
+             */
+            $this->criarNotificacao(
+                $destinatarioId,
+                'NOVA_INTERACAO_NEGOCIACAO',
+                'Nova interação na negociação',
+                $usuario->name .
+                    ' enviou uma nova interação na negociação.',
+                [
+                    'publicacao_id' =>
+                    $negociacao->id_publicacao,
+
+                    'negociacao_id' =>
+                    $negociacao->id_negociacao,
+
+                    'interacao_id' =>
+                    $interacao->id_interacao,
+
+                    'tipo_interacao' =>
+                    $dados['tipo'],
+
+                    'remetente_id' =>
+                    $usuario->id,
+                ]
+            );
+
             $negociacao->load([
                 'status',
                 'pagamento.status',
@@ -896,9 +916,9 @@ class NegociacaoController extends Controller
             );
 
             return response()->json([
+                'success' => true,
                 'message' =>
                 'Interação enviada com sucesso.',
-
                 'data' =>
                 $negociacao,
             ]);
@@ -947,7 +967,7 @@ class NegociacaoController extends Controller
     public function aceitar(
         Request $request,
         Negociacao $negociacao
-    ) {
+    ): JsonResponse {
         $usuario = $request->user();
 
         $this->autorizarParticipacao(
@@ -960,9 +980,6 @@ class NegociacaoController extends Controller
             'publicacao',
         ]);
 
-        /*
-         * Somente quem recebeu a interação pode aceitá-la.
-         */
         $this->autorizarVez(
             $usuario,
             $negociacao
@@ -1045,41 +1062,33 @@ class NegociacaoController extends Controller
             ]);
         }
 
-        /*
-         * O cálculo definitivo da taxa será realizado novamente
-         * no fechamento da negociação para garantir que o valor
-         * cobrado seja baseado no valor final aceito.
-         */
         return $this->fecharNegociacaoParaPagamento(
             $negociacao,
             $valorTrabalho,
-            $usuario
+            $usuario,
+            $interacao
         );
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | PAGAMENTO
+    | FECHAR NEGOCIAÇÃO PARA PAGAMENTO
     |--------------------------------------------------------------------------
     */
 
     private function fecharNegociacaoParaPagamento(
         Negociacao $negociacao,
         $valorTrabalho,
-        User $usuario
-    ) {
+        User $usuario,
+        ?Interacao $interacaoAceita = null
+    ): JsonResponse {
         return DB::transaction(function () use (
             $negociacao,
             $valorTrabalho,
-            $usuario
+            $usuario,
+            $interacaoAceita
         ) {
-            /*
-             * Recalcula a taxa no momento em que a negociação
-             * é efetivamente aceita.
-             *
-             * Esse é o snapshot financeiro definitivo.
-             */
             $valoresFinanceiros =
                 $this->calcularValoresFinanceiros(
                     $valorTrabalho
@@ -1112,12 +1121,6 @@ class NegociacaoController extends Controller
                 $valoresFinanceiros['valor_total'],
             ]);
 
-            /*
-             * O valor do pagamento representa o valor total
-             * que será cobrado do contratante:
-             *
-             * valor do serviço + taxa de intermediação.
-             */
             NegociacaoPagamento::create([
                 'id_negociacao' =>
                 $negociacao->id_negociacao,
@@ -1130,6 +1133,34 @@ class NegociacaoController extends Controller
             ]);
 
             /*
+             * Notifica quem enviou a interação aceita.
+             */
+            if ($interacaoAceita) {
+                $this->criarNotificacao(
+                    $interacaoAceita->remetente_id,
+                    'NEGOCIACAO_ACEITA',
+                    'Sua negociação foi aceita',
+                    $usuario->name .
+                        ' aceitou sua ' .
+                        strtolower($interacaoAceita->tipo->tipo) .
+                        '. A negociação agora aguarda o pagamento.',
+                    [
+                        'publicacao_id' =>
+                        $negociacao->id_publicacao,
+
+                        'negociacao_id' =>
+                        $negociacao->id_negociacao,
+
+                        'interacao_id' =>
+                        $interacaoAceita->id_interacao,
+
+                        'tipo_interacao' =>
+                        $interacaoAceita->tipo->tipo,
+                    ]
+                );
+            }
+
+            /*
              * Encerra outras negociações abertas
              * da mesma publicação.
              */
@@ -1138,10 +1169,13 @@ class NegociacaoController extends Controller
                     'ENCERRADA'
                 );
 
-            Negociacao::where(
-                'id_publicacao',
-                $negociacao->id_publicacao
-            )
+            $outrasNegociacoes = Negociacao::with([
+                'interessado',
+            ])
+                ->where(
+                    'id_publicacao',
+                    $negociacao->id_publicacao
+                )
                 ->where(
                     'id_negociacao',
                     '!=',
@@ -1156,10 +1190,34 @@ class NegociacaoController extends Controller
                         ]
                     );
                 })
-                ->update([
+                ->get();
+
+            foreach ($outrasNegociacoes as $outraNegociacao) {
+                $outraNegociacao->update([
                     'status_id' =>
                     $statusEncerrada->id,
                 ]);
+
+                /*
+                 * Notifica o interessado da negociação encerrada.
+                 */
+                $this->criarNotificacao(
+                    $outraNegociacao->id_interessado,
+                    'NEGOCIACAO_ENCERRADA',
+                    'Negociação encerrada',
+                    'A publicação recebeu outra negociação aceita e esta negociação foi encerrada.',
+                    [
+                        'publicacao_id' =>
+                        $negociacao->id_publicacao,
+
+                        'negociacao_id' =>
+                        $outraNegociacao->id_negociacao,
+
+                        'negociacao_aceita_id' =>
+                        $negociacao->id_negociacao,
+                    ]
+                );
+            }
 
             $negociacao->load([
                 'status',
@@ -1177,9 +1235,9 @@ class NegociacaoController extends Controller
             );
 
             return response()->json([
+                'success' => true,
                 'message' =>
                 'Negociação aceita. Aguardando pagamento do contratante.',
-
                 'data' =>
                 $negociacao,
             ]);
@@ -1228,7 +1286,7 @@ class NegociacaoController extends Controller
     public function recusar(
         Request $request,
         Negociacao $negociacao
-    ) {
+    ): JsonResponse {
         $usuario = $request->user();
 
         $this->autorizarParticipacao(
@@ -1238,9 +1296,6 @@ class NegociacaoController extends Controller
 
         $negociacao->loadMissing('status');
 
-        /*
-         * Somente quem recebeu a interação pode recusá-la.
-         */
         $this->autorizarVez(
             $usuario,
             $negociacao
@@ -1312,10 +1367,43 @@ class NegociacaoController extends Controller
                 'ENCERRADA'
             );
 
-        $negociacao->update([
-            'status_id' =>
-            $status->id,
-        ]);
+        DB::transaction(function () use (
+            $negociacao,
+            $status,
+            $interacao,
+            $usuario
+        ) {
+            $negociacao->update([
+                'status_id' =>
+                $status->id,
+            ]);
+
+            /*
+             * Notifica quem enviou a interação recusada.
+             */
+            $this->criarNotificacao(
+                $interacao->remetente_id,
+                'NEGOCIACAO_RECUSADA',
+                'Sua negociação foi recusada',
+                $usuario->name .
+                    ' recusou sua ' .
+                    strtolower($interacao->tipo->tipo) .
+                    '.',
+                [
+                    'publicacao_id' =>
+                    $negociacao->id_publicacao,
+
+                    'negociacao_id' =>
+                    $negociacao->id_negociacao,
+
+                    'interacao_id' =>
+                    $interacao->id_interacao,
+
+                    'tipo_interacao' =>
+                    $interacao->tipo->tipo,
+                ]
+            );
+        });
 
         $negociacao->load([
             'status',
@@ -1333,9 +1421,9 @@ class NegociacaoController extends Controller
         );
 
         return response()->json([
+            'success' => true,
             'message' =>
             'Negociação encerrada.',
-
             'data' =>
             $negociacao,
         ]);
@@ -1346,33 +1434,13 @@ class NegociacaoController extends Controller
     |--------------------------------------------------------------------------
     | CONTEXTO PARA O FRONTEND
     |--------------------------------------------------------------------------
-    |
-    | O backend determina:
-    | - quem é o usuário
-    | - qual o papel dele
-    | - de quem é a vez
-    | - quais ações estão disponíveis
-    | - quais tipos de interação podem ser enviados
-    |
     */
 
     private function adicionarContextoFrontend(
         Negociacao $negociacao,
         User $usuario
     ): void {
-        /*
-        |--------------------------------------------------------------------------
-        | STATUS
-        |--------------------------------------------------------------------------
-        */
-
         $status = $negociacao->status?->codigo;
-
-        /*
-        |--------------------------------------------------------------------------
-        | PAPEL DO USUÁRIO
-        |--------------------------------------------------------------------------
-        */
 
         if ($usuario->id == $negociacao->id_interessado) {
             $papelUsuario = 'INTERESSADO';
@@ -1382,23 +1450,11 @@ class NegociacaoController extends Controller
             $papelUsuario = null;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | DE QUEM É A VEZ
-        |--------------------------------------------------------------------------
-        */
-
         $vez = match ($status) {
             'AGUARDANDO_INTERESSADO' => 'INTERESSADO',
             'AGUARDANDO_CONTRATANTE' => 'CONTRATANTE',
             default => null,
         };
-
-        /*
-        |--------------------------------------------------------------------------
-        | ÚLTIMA INTERAÇÃO
-        |--------------------------------------------------------------------------
-        */
 
         $ultimaInteracao = $negociacao
             ->interacoes()
@@ -1418,22 +1474,10 @@ class NegociacaoController extends Controller
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | USUÁRIO PODE AGIR?
-        |--------------------------------------------------------------------------
-        */
-
         $podeAgir = (
             $vez !== null &&
             $vez === $papelUsuario
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | AÇÕES
-        |--------------------------------------------------------------------------
-        */
 
         $acoes = [
             'interagir' => false,
@@ -1442,54 +1486,14 @@ class NegociacaoController extends Controller
             'pagamento' => false,
         ];
 
-        /*
-        |--------------------------------------------------------------------------
-        | OPÇÕES DE INTERAÇÃO
-        |--------------------------------------------------------------------------
-        */
-
         $opcoesInteracao = [];
-
-        /*
-        |--------------------------------------------------------------------------
-        | NEGOCIAÇÃO EM ANDAMENTO
-        |--------------------------------------------------------------------------
-        */
 
         if ($podeAgir) {
 
-            /*
-            |--------------------------------------------------------------------------
-            | INTERESSE
-            |--------------------------------------------------------------------------
-            |
-            | O interessado enviou interesse.
-            | O contratante pode aceitar ou recusar.
-            |
-            */
-
             if ($tipoUltimaInteracao === 'INTERESSE') {
-
                 $acoes['aceitar'] = true;
                 $acoes['recusar'] = true;
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | PROPOSTA
-            |--------------------------------------------------------------------------
-            |
-            | Quem recebeu a proposta pode:
-            |
-            | - aceitar
-            | - recusar
-            | - enviar nova proposta
-            | - fazer dúvida
-            |
-            */
-
-            elseif ($tipoUltimaInteracao === 'PROPOSTA') {
-
+            } elseif ($tipoUltimaInteracao === 'PROPOSTA') {
                 $acoes['aceitar'] = true;
                 $acoes['recusar'] = true;
                 $acoes['interagir'] = true;
@@ -1507,19 +1511,7 @@ class NegociacaoController extends Controller
                         false
                     ),
                 ];
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | DÚVIDA
-            |--------------------------------------------------------------------------
-            |
-            | A dúvida obrigatoriamente deve ser respondida.
-            |
-            */
-
-            elseif ($tipoUltimaInteracao === 'DUVIDA') {
-
+            } elseif ($tipoUltimaInteracao === 'DUVIDA') {
                 $acoes['interagir'] = true;
 
                 $opcoesInteracao = [
@@ -1529,23 +1521,7 @@ class NegociacaoController extends Controller
                         false
                     ),
                 ];
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | RESPOSTA
-            |--------------------------------------------------------------------------
-            |
-            | Após uma resposta, o interessado pode:
-            |
-            | - demonstrar interesse
-            | - enviar proposta
-            | - fazer nova dúvida
-            |
-            */
-
-            elseif ($tipoUltimaInteracao === 'RESPOSTA') {
-
+            } elseif ($tipoUltimaInteracao === 'RESPOSTA') {
                 $acoes['interagir'] = true;
 
                 $opcoesInteracao = [
@@ -1571,26 +1547,14 @@ class NegociacaoController extends Controller
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | PAGAMENTO
-        |--------------------------------------------------------------------------
-        |
-        | Somente o CONTRATANTE deve pagar.
-        |
-        */
-
+         * PAGAMENTO
+         */
         if (
             $status === 'AGUARDANDO_PAGAMENTO' &&
             $papelUsuario === 'CONTRATANTE'
         ) {
             $acoes['pagamento'] = true;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | CONTEXTO
-        |--------------------------------------------------------------------------
-        */
 
         $negociacao->setAttribute(
             'contexto',
@@ -1602,22 +1566,10 @@ class NegociacaoController extends Controller
             ]
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | AÇÕES
-        |--------------------------------------------------------------------------
-        */
-
         $negociacao->setAttribute(
             'acoes',
             $acoes
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | OPÇÕES
-        |--------------------------------------------------------------------------
-        */
 
         $negociacao->setAttribute(
             'opcoes_interacao',
@@ -1652,17 +1604,42 @@ class NegociacaoController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | NOTIFICAÇÕES
+    |--------------------------------------------------------------------------
+    */
+
+    private function criarNotificacao(
+        int $usuarioId,
+        string $tipo,
+        string $titulo,
+        string $mensagem,
+        ?array $dados = null
+    ): void {
+        /*
+         * O destinatário é definido pelo fluxo da negociação.
+         *
+         * A proteção abaixo evita uma tentativa de criar
+         * uma notificação com usuário inválido.
+         */
+        if ($usuarioId <= 0) {
+            return;
+        }
+
+        Notificacao::create([
+            'user_id' => $usuarioId,
+            'tipo' => $tipo,
+            'titulo' => $titulo,
+            'mensagem' => $mensagem,
+            'lida' => false,
+            'dados' => $dados,
+        ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | CÁLCULO DA TAXA DE INTERMEDIAÇÃO
     |--------------------------------------------------------------------------
-    |
-    | A taxa é calculada sobre o valor do serviço.
-    |
-    | Até R$ 500,00        -> 12%
-    | R$ 500,01 - 1.000,00 -> 10%
-    | R$ 1.000,01 - 2.000  -> 9%
-    | R$ 2.000,01 - 5.000  -> 8%
-    | Acima de R$ 5.000    -> 7%
-    |
     */
 
     private function calcularValoresFinanceiros(
@@ -1707,9 +1684,6 @@ class NegociacaoController extends Controller
     |--------------------------------------------------------------------------
     | AUTORIZAÇÃO DA VEZ
     |--------------------------------------------------------------------------
-    |
-    | Essa regra sai completamente do frontend.
-    |
     */
 
     private function autorizarVez(

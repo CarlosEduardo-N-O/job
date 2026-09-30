@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notificacao;
 use App\Models\Trabalho;
 use App\Models\TrabalhoPagamento;
 use App\Models\TrabalhoPagamentoStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
@@ -191,13 +193,13 @@ class TrabalhoPagamentoController extends Controller
              */
             $pagamento->update([
                 'status_id' =>
-                    $statusPago->id_trabalho_pagamento_status,
+                $statusPago->id_trabalho_pagamento_status,
 
                 'data_processamento' =>
-                    now(),
+                now(),
 
                 'observacao' =>
-                    'Pagamento repassado ao contratado pela plataforma.',
+                'Pagamento repassado ao contratado pela plataforma.',
             ]);
 
             /*
@@ -211,9 +213,126 @@ class TrabalhoPagamentoController extends Controller
                 'trabalho.contratado',
             ]);
 
+            /*
+             * =========================================================
+             * NOTIFICAÇÕES
+             * =========================================================
+             *
+             * O pagamento foi efetivamente processado.
+             *
+             * Notificamos:
+             *
+             * 1. O contratado:
+             *    recebeu o pagamento.
+             *
+             * 2. O contratante:
+             *    o pagamento relacionado ao serviço foi concluído.
+             */
+            try {
+
+                /*
+                 * =====================================================
+                 * CONTRATADO
+                 * =====================================================
+                 */
+                $this->criarNotificacao(
+                    $trabalho->id_contratado,
+                    'PAGAMENTO_CONFIRMADO',
+                    'Pagamento confirmado',
+                    'O pagamento referente ao serviço foi processado e repassado pela plataforma.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'pagamento_id' =>
+                        $pagamento->id_trabalho_pagamento,
+
+                        'publicacao_id' =>
+                        $trabalho->id_publicacao,
+
+                        'tipo' =>
+                        'PAGAMENTO_CONFIRMADO',
+
+                        'status_pagamento' =>
+                        'PAGO',
+
+                        'status_trabalho' =>
+                        'CONCLUIDO',
+
+                        'valor_trabalho' =>
+                        $pagamento->valor_trabalho,
+
+                        'valor_taxa' =>
+                        $pagamento->valor_taxa,
+
+                        'valor_total' =>
+                        $pagamento->valor_total,
+                    ]
+                );
+
+                /*
+                 * =====================================================
+                 * CONTRATANTE
+                 * =====================================================
+                 */
+                $this->criarNotificacao(
+                    $trabalho->id_contratante,
+                    'PAGAMENTO_CONFIRMADO',
+                    'Pagamento concluído',
+                    'O pagamento referente ao serviço foi processado e repassado ao contratado.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'pagamento_id' =>
+                        $pagamento->id_trabalho_pagamento,
+
+                        'publicacao_id' =>
+                        $trabalho->id_publicacao,
+
+                        'tipo' =>
+                        'PAGAMENTO_CONFIRMADO',
+
+                        'status_pagamento' =>
+                        'PAGO',
+
+                        'status_trabalho' =>
+                        'CONCLUIDO',
+
+                        'valor_trabalho' =>
+                        $pagamento->valor_trabalho,
+
+                        'valor_taxa' =>
+                        $pagamento->valor_taxa,
+
+                        'valor_total' =>
+                        $pagamento->valor_total,
+                    ]
+                );
+            } catch (\Throwable $e) {
+
+                /*
+                 * A falha de uma notificação não deve impedir
+                 * a confirmação do pagamento.
+                 */
+                Log::error(
+                    'Erro ao criar notificações de pagamento confirmado.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'pagamento_id' =>
+                        $pagamento->id_trabalho_pagamento,
+
+                        'erro' =>
+                        $e->getMessage(),
+                    ]
+                );
+            }
+
             return response()->json([
                 'message' =>
-                    'Pagamento confirmado e repassado ao contratado com sucesso.',
+                'Pagamento confirmado e repassado ao contratado com sucesso.',
 
                 'data' => [
                     'pagamento' => $pagamento,
@@ -327,20 +446,26 @@ class TrabalhoPagamentoController extends Controller
                 );
 
             /*
+             * Observação que será armazenada.
+             */
+            $observacao =
+                $dados['observacao']
+                ??
+                'Pagamento não processado pela plataforma.';
+
+            /*
              * Atualiza o pagamento.
              */
             $pagamento->update([
                 'status_id' =>
-                    $statusNaoProcessado
-                        ->id_trabalho_pagamento_status,
+                $statusNaoProcessado
+                    ->id_trabalho_pagamento_status,
 
                 'data_processamento' =>
-                    now(),
+                now(),
 
                 'observacao' =>
-                    $dados['observacao']
-                    ??
-                    'Pagamento não processado pela plataforma.',
+                $observacao,
             ]);
 
             /*
@@ -354,15 +479,167 @@ class TrabalhoPagamentoController extends Controller
                 'trabalho.contratado',
             ]);
 
+            /*
+             * =========================================================
+             * NOTIFICAÇÕES
+             * =========================================================
+             *
+             * O pagamento não foi processado.
+             *
+             * Notificamos tanto o contratado quanto o contratante,
+             * pois ambos fazem parte da operação.
+             */
+            try {
+
+                /*
+                 * =====================================================
+                 * CONTRATADO
+                 * =====================================================
+                 */
+                $this->criarNotificacao(
+                    $trabalho->id_contratado,
+                    'PAGAMENTO_RECUSADO',
+                    'Pagamento não processado',
+                    'O pagamento referente ao serviço não foi processado pela plataforma.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'pagamento_id' =>
+                        $pagamento->id_trabalho_pagamento,
+
+                        'publicacao_id' =>
+                        $trabalho->id_publicacao,
+
+                        'tipo' =>
+                        'PAGAMENTO_RECUSADO',
+
+                        'status_pagamento' =>
+                        'NAO_PROCESSADO',
+
+                        'status_trabalho' =>
+                        'CONCLUIDO',
+
+                        'observacao' =>
+                        $observacao,
+
+                        'valor_trabalho' =>
+                        $pagamento->valor_trabalho,
+
+                        'valor_taxa' =>
+                        $pagamento->valor_taxa,
+
+                        'valor_total' =>
+                        $pagamento->valor_total,
+                    ]
+                );
+
+                /*
+                 * =====================================================
+                 * CONTRATANTE
+                 * =====================================================
+                 */
+                $this->criarNotificacao(
+                    $trabalho->id_contratante,
+                    'PAGAMENTO_RECUSADO',
+                    'Pagamento não processado',
+                    'O pagamento referente ao serviço não foi processado pela plataforma.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'pagamento_id' =>
+                        $pagamento->id_trabalho_pagamento,
+
+                        'publicacao_id' =>
+                        $trabalho->id_publicacao,
+
+                        'tipo' =>
+                        'PAGAMENTO_RECUSADO',
+
+                        'status_pagamento' =>
+                        'NAO_PROCESSADO',
+
+                        'status_trabalho' =>
+                        'CONCLUIDO',
+
+                        'observacao' =>
+                        $observacao,
+
+                        'valor_trabalho' =>
+                        $pagamento->valor_trabalho,
+
+                        'valor_taxa' =>
+                        $pagamento->valor_taxa,
+
+                        'valor_total' =>
+                        $pagamento->valor_total,
+                    ]
+                );
+            } catch (\Throwable $e) {
+
+                /*
+                 * A falha de uma notificação não deve impedir
+                 * a atualização do pagamento.
+                 */
+                Log::error(
+                    'Erro ao criar notificações de pagamento recusado.',
+                    [
+                        'trabalho_id' =>
+                        $trabalho->id_trabalho,
+
+                        'pagamento_id' =>
+                        $pagamento->id_trabalho_pagamento,
+
+                        'erro' =>
+                        $e->getMessage(),
+                    ]
+                );
+            }
+
             return response()->json([
                 'message' =>
-                    'Pagamento recusado e marcado como não processado.',
+                'Pagamento recusado e marcado como não processado.',
 
                 'data' => [
                     'pagamento' => $pagamento,
                 ],
             ]);
         });
+    }
+
+    /**
+     * Cria uma notificação para um usuário.
+     *
+     * Centraliza a criação das notificações de pagamento
+     * para manter o mesmo padrão utilizado nos demais controllers.
+     */
+    private function criarNotificacao(
+        int $usuarioId,
+        string $tipo,
+        string $titulo,
+        string $mensagem,
+        array $dados = []
+    ): void {
+        Notificacao::create([
+            'user_id' =>
+            $usuarioId,
+
+            'tipo' =>
+            $tipo,
+
+            'titulo' =>
+            $titulo,
+
+            'mensagem' =>
+            $mensagem,
+
+            'lida' =>
+            false,
+
+            'dados' =>
+            $dados,
+        ]);
     }
 
     /**

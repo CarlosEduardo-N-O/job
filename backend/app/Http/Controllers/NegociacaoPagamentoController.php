@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Negociacao;
 use App\Models\NegociacaoPagamentoStatus;
 use App\Models\NegociacaoStatus;
+use App\Models\Notificacao;
 use App\Models\PublicacaoStatus;
 use App\Models\Trabalho;
 use App\Models\TrabalhoStatus;
@@ -150,7 +151,10 @@ class NegociacaoPagamentoController extends Controller
         /*
          * A negociação precisa estar aguardando pagamento.
          */
-        if ($negociacao->status->codigo !== 'AGUARDANDO_PAGAMENTO') {
+        if (
+            !$negociacao->status ||
+            $negociacao->status->codigo !== 'AGUARDANDO_PAGAMENTO'
+        ) {
             throw ValidationException::withMessages([
                 'negociacao' => [
                     'Esta negociação não está aguardando pagamento.',
@@ -183,7 +187,10 @@ class NegociacaoPagamentoController extends Controller
          * O pagamento precisa estar aguardando
          * a informação do contratante.
          */
-        if ($pagamento->status->codigo !== 'AGUARDANDO_PAGAMENTO') {
+        if (
+            !$pagamento->status ||
+            $pagamento->status->codigo !== 'AGUARDANDO_PAGAMENTO'
+        ) {
             throw ValidationException::withMessages([
                 'pagamento' => [
                     'Este pagamento não está aguardando informação de pagamento.',
@@ -205,7 +212,9 @@ class NegociacaoPagamentoController extends Controller
             );
 
             /*
-             * Atualiza pagamento.
+             * =========================================================
+             * 1. ATUALIZA O PAGAMENTO
+             * =========================================================
              */
             $pagamento->update([
                 'status_id' =>
@@ -219,13 +228,56 @@ class NegociacaoPagamentoController extends Controller
             ]);
 
             /*
-             * Atualiza negociação.
+             * =========================================================
+             * 2. ATUALIZA A NEGOCIAÇÃO
+             * =========================================================
              */
             $negociacao->update([
                 'status_id' =>
                 $statusNegociacao->id,
             ]);
 
+            /*
+             * =========================================================
+             * 3. NOTIFICA O CONTRATADO
+             * =========================================================
+             *
+             * O contratante informou que realizou o pagamento.
+             *
+             * O contratado precisa saber que o pagamento está
+             * aguardando processamento da plataforma.
+             */
+            $this->criarNotificacao(
+                $negociacao->id_interessado,
+                'PAGAMENTO_INFORMADO',
+                'Pagamento informado',
+                'O contratante informou que realizou o pagamento. O pagamento está aguardando processamento da plataforma.',
+                [
+                    'negociacao_id' =>
+                    $negociacao->id_negociacao,
+
+                    'publicacao_id' =>
+                    $negociacao->id_publicacao,
+
+                    'pagamento_id' =>
+                    $pagamento->id,
+
+                    'tipo' =>
+                    'PAGAMENTO_INFORMADO',
+
+                    'status_pagamento' =>
+                    'AGUARDANDO_PROCESSAMENTO',
+
+                    'status_negociacao' =>
+                    'PROCESSANDO_PAGAMENTO',
+                ]
+            );
+
+            /*
+             * =========================================================
+             * 4. RETORNO
+             * =========================================================
+             */
             return response()->json([
                 'message' =>
                 'Pagamento informado. Aguardando processamento da plataforma.',
@@ -237,6 +289,470 @@ class NegociacaoPagamentoController extends Controller
                 ]),
             ]);
         });
+    }
+
+    /**
+     * Confirma o pagamento pela plataforma.
+     *
+     * Fluxo:
+     *
+     * 1. Valida o pagamento.
+     * 2. Fecha a negociação.
+     * 3. Encerra a publicação.
+     * 4. Encerra as demais negociações.
+     * 5. Cria o trabalho.
+     * 6. Envia as notificações.
+     */
+    #[OA\Post(
+        path: '/api/negociacoes/{negociacao}/pagamento/confirmar',
+        summary: 'Confirma o pagamento pela plataforma',
+        description: 'Confirma, para fins de demonstração, que o pagamento foi identificado e validado. A negociação passa para FECHADA, a publicação passa para ENCERRADO, as demais negociações da mesma publicação são encerradas e um trabalho é criado para o contratado.',
+        tags: ['Negociações - Pagamentos'],
+        parameters: [
+            new OA\Parameter(
+                name: 'negociacao',
+                description: 'ID da negociação',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(
+                    type: 'integer',
+                    example: 1
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Pagamento validado, negociação fechada, publicação encerrada e trabalho criado'
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Pagamento ou status não encontrado'
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Pagamento não está aguardando processamento'
+            )
+        ]
+    )]
+    public function confirmar(
+        Negociacao $negociacao
+    ) {
+        /*
+         * Busca o pagamento da negociação.
+         */
+        $pagamento = $negociacao
+            ->pagamento()
+            ->with('status')
+            ->first();
+
+        /*
+         * A negociação precisa possuir pagamento.
+         */
+        if (!$pagamento) {
+            throw ValidationException::withMessages([
+                'pagamento' => [
+                    'O pagamento desta negociação não foi encontrado.',
+                ],
+            ]);
+        }
+
+        /*
+         * Somente pagamentos aguardando processamento
+         * podem ser validados pela plataforma.
+         */
+        if (
+            !$pagamento->status ||
+            $pagamento->status->codigo !==
+            'AGUARDANDO_PROCESSAMENTO'
+        ) {
+            throw ValidationException::withMessages([
+                'pagamento' => [
+                    'Este pagamento não está aguardando processamento.',
+                ],
+            ]);
+        }
+
+        return DB::transaction(function () use (
+            $pagamento,
+            $negociacao
+        ) {
+            /*
+             * =========================================================
+             * 1. VALIDA O PAGAMENTO
+             * =========================================================
+             */
+            $statusPagamento =
+                $this->buscarStatusPagamento(
+                    'VALIDADA'
+                );
+
+            $pagamento->update([
+                'status_id' =>
+                $statusPagamento->id,
+
+                'data_pagamento_processado' =>
+                now(),
+            ]);
+
+            /*
+             * =========================================================
+             * 2. FECHA A NEGOCIAÇÃO CONTRATADA
+             * =========================================================
+             */
+            $statusFechada =
+                $this->buscarStatusNegociacao(
+                    'FECHADA'
+                );
+
+            $negociacao->update([
+                'status_id' =>
+                $statusFechada->id,
+            ]);
+
+            /*
+             * =========================================================
+             * 3. BUSCA A PUBLICAÇÃO
+             * =========================================================
+             */
+            $publicacao =
+                $negociacao->publicacao;
+
+            if (!$publicacao) {
+                throw ValidationException::withMessages([
+                    'publicacao' => [
+                        'A publicação da negociação não foi encontrada.',
+                    ],
+                ]);
+            }
+
+            /*
+             * =========================================================
+             * 4. ENCERRA A PUBLICAÇÃO
+             * =========================================================
+             */
+            $statusPublicacao =
+                PublicacaoStatus::where(
+                    'codigo',
+                    'ENCERRADO'
+                )
+                    ->where(
+                        'ativo',
+                        true
+                    )
+                    ->firstOrFail();
+
+            $publicacao->update([
+                'status_id' =>
+                $statusPublicacao->id,
+            ]);
+
+            /*
+             * =========================================================
+             * 5. ENCERRA AS DEMAIS NEGOCIAÇÕES
+             * =========================================================
+             *
+             * A negociação que recebeu o pagamento permanece FECHADA.
+             *
+             * As demais negociações abertas da mesma publicação passam
+             * para ENCERRADA.
+             */
+            $statusEncerrada =
+                $this->buscarStatusNegociacao(
+                    'ENCERRADA'
+                );
+
+            $outrasNegociacoes = Negociacao::with([
+                'status',
+            ])
+                ->where(
+                    'id_publicacao',
+                    $negociacao->id_publicacao
+                )
+                ->where(
+                    'id_negociacao',
+                    '!=',
+                    $negociacao->id_negociacao
+                )
+                ->whereHas(
+                    'status',
+                    function ($query) {
+                        $query->whereIn(
+                            'codigo',
+                            [
+                                'AGUARDANDO_INTERESSADO',
+                                'AGUARDANDO_CONTRATANTE',
+                                'AGUARDANDO_PAGAMENTO',
+                                'PROCESSANDO_PAGAMENTO',
+                            ]
+                        );
+                    }
+                )
+                ->get();
+
+            foreach ($outrasNegociacoes as $outraNegociacao) {
+                /*
+                 * Encerra a negociação.
+                 */
+                $outraNegociacao->update([
+                    'status_id' =>
+                    $statusEncerrada->id,
+                ]);
+
+                /*
+                 * =====================================================
+                 * NOTIFICA O INTERESSADO
+                 * =====================================================
+                 *
+                 * A pessoa precisa saber que outra negociação
+                 * foi concluída para aquela publicação.
+                 */
+                $this->criarNotificacao(
+                    $outraNegociacao->id_interessado,
+                    'NEGOCIACAO_ENCERRADA',
+                    'Negociação encerrada',
+                    'A publicação recebeu outra contratação e esta negociação foi encerrada.',
+                    [
+                        'negociacao_id' =>
+                        $outraNegociacao->id_negociacao,
+
+                        'publicacao_id' =>
+                        $outraNegociacao->id_publicacao,
+
+                        'negociacao_vencedora_id' =>
+                        $negociacao->id_negociacao,
+
+                        'tipo' =>
+                        'NEGOCIACAO_ENCERRADA',
+
+                        'motivo' =>
+                        'OUTRA_NEGOCIACAO_CONTRATADA',
+
+                        'status_negociacao' =>
+                        'ENCERRADA',
+                    ]
+                );
+            }
+
+            /*
+             * =========================================================
+             * 6. CRIA O TRABALHO
+             * =========================================================
+             *
+             * O trabalho somente é criado depois que o pagamento
+             * foi validado.
+             */
+            $statusTrabalho =
+                TrabalhoStatus::where(
+                    'codigo',
+                    'PENDENTE'
+                )
+                    ->where(
+                        'ativo',
+                        true
+                    )
+                    ->firstOrFail();
+
+            /*
+             * Garante que a mesma negociação não gere
+             * mais de um trabalho.
+             */
+            $trabalho = Trabalho::firstOrCreate(
+                [
+                    'id_negociacao' =>
+                    $negociacao->id_negociacao,
+                ],
+                [
+                    'id_publicacao' =>
+                    $negociacao->id_publicacao,
+
+                    'id_contratante' =>
+                    $negociacao->id_contratante,
+
+                    'id_contratado' =>
+                    $negociacao->id_interessado,
+
+                    'status_id' =>
+                    $statusTrabalho->id,
+
+                    /*
+                     * Valor recebido pelo contratado.
+                     */
+                    'valor_trabalho' =>
+                    $negociacao->valor_trabalho,
+
+                    /*
+                     * Taxa de intermediação da JOB.
+                     */
+                    'valor_taxa' =>
+                    $negociacao->valor_taxa ?? 0,
+
+                    /*
+                     * Total pago pelo contratante.
+                     */
+                    'valor_total' =>
+                    $negociacao->valor_total ??
+                    $negociacao->valor_trabalho,
+
+                    'data_inicio' =>
+                    null,
+
+                    'data_conclusao' =>
+                    null,
+                ]
+            );
+
+            /*
+             * =========================================================
+             * 7. NOTIFICA O CONTRATANTE
+             * =========================================================
+             *
+             * O contratante precisa saber que o pagamento foi
+             * validado e que a contratação foi efetivada.
+             */
+            $this->criarNotificacao(
+                $negociacao->id_contratante,
+                'PAGAMENTO_VALIDADO',
+                'Pagamento validado',
+                'O pagamento foi validado pela plataforma e a contratação foi confirmada.',
+                [
+                    'negociacao_id' =>
+                    $negociacao->id_negociacao,
+
+                    'publicacao_id' =>
+                    $negociacao->id_publicacao,
+
+                    'pagamento_id' =>
+                    $pagamento->id,
+
+                    'trabalho_id' =>
+                    $trabalho->id_trabalho,
+
+                    'tipo' =>
+                    'PAGAMENTO_VALIDADO',
+
+                    'status_pagamento' =>
+                    'VALIDADA',
+
+                    'status_negociacao' =>
+                    'FECHADA',
+
+                    'status_trabalho' =>
+                    'PENDENTE',
+                ]
+            );
+
+            /*
+             * =========================================================
+             * 8. NOTIFICA O CONTRATADO
+             * =========================================================
+             *
+             * O contratado precisa saber que o pagamento foi
+             * validado e que existe um novo trabalho.
+             */
+            $this->criarNotificacao(
+                $negociacao->id_interessado,
+                'TRABALHO_CRIADO',
+                'Novo trabalho criado',
+                'O pagamento foi validado e o trabalho foi criado. Você já pode acompanhar a execução do serviço.',
+                [
+                    'negociacao_id' =>
+                    $negociacao->id_negociacao,
+
+                    'publicacao_id' =>
+                    $negociacao->id_publicacao,
+
+                    'pagamento_id' =>
+                    $pagamento->id,
+
+                    'trabalho_id' =>
+                    $trabalho->id_trabalho,
+
+                    'tipo' =>
+                    'TRABALHO_CRIADO',
+
+                    'status_pagamento' =>
+                    'VALIDADA',
+
+                    'status_negociacao' =>
+                    'FECHADA',
+
+                    'status_trabalho' =>
+                    'PENDENTE',
+                ]
+            );
+
+            /*
+             * =========================================================
+             * 9. RETORNO
+             * =========================================================
+             */
+            return response()->json([
+                'message' =>
+                'Pagamento validado. Negociação fechada, publicação encerrada, demais negociações encerradas e trabalho criado.',
+
+                'data' => [
+                    'pagamento' =>
+                    $pagamento->fresh([
+                        'status',
+                    ]),
+
+                    'negociacao' =>
+                    $negociacao->fresh([
+                        'status',
+                        'publicacao.status',
+                        'publicacao',
+                    ]),
+
+                    'trabalho' =>
+                    $trabalho->fresh([
+                        'status',
+                        'publicacao',
+                        'negociacao.status',
+                        'contratante',
+                        'contratado',
+                    ]),
+                ],
+            ]);
+        });
+    }
+
+    /**
+     * Cria uma notificação para um usuário.
+     */
+    private function criarNotificacao(
+        ?int $usuarioId,
+        string $tipo,
+        string $titulo,
+        string $mensagem,
+        array $dados = []
+    ): void {
+        /*
+         * Não cria notificação para usuário inválido.
+         */
+        if (!$usuarioId || $usuarioId <= 0) {
+            return;
+        }
+
+        Notificacao::create([
+            'user_id' =>
+            $usuarioId,
+
+            'tipo' =>
+            $tipo,
+
+            'titulo' =>
+            $titulo,
+
+            'mensagem' =>
+            $mensagem,
+
+            'lida' =>
+            false,
+
+            'dados' =>
+            $dados,
+        ]);
     }
 
     /**
@@ -289,310 +805,5 @@ class NegociacaoPagamentoController extends Controller
                 'Você não participa desta negociação.'
             );
         }
-    }
-
-    #[OA\Post(
-        path: '/api/negociacoes/{negociacao}/pagamento/confirmar',
-        summary: 'Confirma o pagamento pela plataforma',
-        description: 'Confirma, para fins de demonstração, que o pagamento foi identificado e validado. A negociação passa para FECHADA, a publicação passa para ENCERRADO, as demais negociações da mesma publicação são encerradas e um trabalho é criado para o contratado.',
-        tags: ['Negociações - Pagamentos'],
-        parameters: [
-            new OA\Parameter(
-                name: 'negociacao',
-                description: 'ID da negociação',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(
-                    type: 'integer',
-                    example: 1
-                )
-            )
-        ],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Pagamento validado, negociação fechada, publicação encerrada e trabalho criado'
-            ),
-            new OA\Response(
-                response: 404,
-                description: 'Pagamento ou status não encontrado'
-            ),
-            new OA\Response(
-                response: 422,
-                description: 'Pagamento não está aguardando processamento'
-            )
-        ]
-    )]
-    public function confirmar(Negociacao $negociacao)
-    {
-        /*
-         * Busca o pagamento da negociação.
-         */
-        $pagamento = $negociacao
-            ->pagamento()
-            ->with('status')
-            ->first();
-
-        /*
-         * A negociação precisa possuir pagamento.
-         */
-        if (!$pagamento) {
-            throw ValidationException::withMessages([
-                'pagamento' => [
-                    'O pagamento desta negociação não foi encontrado.',
-                ],
-            ]);
-        }
-
-        /*
-         * Somente pagamentos aguardando processamento
-         * podem ser validados pela plataforma.
-         */
-        if (
-            $pagamento->status->codigo !==
-            'AGUARDANDO_PROCESSAMENTO'
-        ) {
-            throw ValidationException::withMessages([
-                'pagamento' => [
-                    'Este pagamento não está aguardando processamento.',
-                ],
-            ]);
-        }
-
-        return DB::transaction(function () use (
-            $pagamento,
-            $negociacao
-        ) {
-
-            /*
-             * =========================================================
-             * 1. VALIDA O PAGAMENTO
-             * =========================================================
-             */
-
-            $statusPagamento =
-                $this->buscarStatusPagamento(
-                    'VALIDADA'
-                );
-
-            $pagamento->update([
-                'status_id' =>
-                $statusPagamento->id,
-
-                'data_pagamento_processado' =>
-                now(),
-            ]);
-
-
-            /*
-             * =========================================================
-             * 2. FECHA A NEGOCIAÇÃO CONTRATADA
-             * =========================================================
-             */
-
-            $statusFechada =
-                $this->buscarStatusNegociacao(
-                    'FECHADA'
-                );
-
-            $negociacao->update([
-                'status_id' =>
-                $statusFechada->id,
-            ]);
-
-
-            /*
-             * =========================================================
-             * 3. ENCERRA A PUBLICAÇÃO
-             * =========================================================
-             */
-
-            $publicacao =
-                $negociacao->publicacao;
-
-            if (!$publicacao) {
-                throw ValidationException::withMessages([
-                    'publicacao' => [
-                        'A publicação da negociação não foi encontrada.',
-                    ],
-                ]);
-            }
-
-            $statusPublicacao =
-                PublicacaoStatus::where(
-                    'codigo',
-                    'ENCERRADO'
-                )
-                ->where(
-                    'ativo',
-                    true
-                )
-                ->firstOrFail();
-
-            $publicacao->update([
-                'status_id' =>
-                $statusPublicacao->id,
-            ]);
-
-
-            /*
-             * =========================================================
-             * 4. ENCERRA AS DEMAIS NEGOCIAÇÕES
-             * =========================================================
-             *
-             * A negociação que recebeu o pagamento
-             * permanece FECHADA.
-             *
-             * As demais negociações abertas da publicação
-             * passam para ENCERRADA.
-             */
-
-            $statusEncerrada =
-                $this->buscarStatusNegociacao(
-                    'ENCERRADA'
-                );
-
-            Negociacao::where(
-                'id_publicacao',
-                $negociacao->id_publicacao
-            )
-                ->where(
-                    'id_negociacao',
-                    '!=',
-                    $negociacao->id_negociacao
-                )
-                ->whereHas(
-                    'status',
-                    function ($query) {
-                        $query->whereIn(
-                            'codigo',
-                            [
-                                'AGUARDANDO_INTERESSADO',
-                                'AGUARDANDO_CONTRATANTE',
-                                'AGUARDANDO_PAGAMENTO',
-                                'PROCESSANDO_PAGAMENTO',
-                            ]
-                        );
-                    }
-                )
-                ->update([
-                    'status_id' =>
-                    $statusEncerrada->id,
-                ]);
-
-
-            /*
-             * =========================================================
-             * 5. CRIA O TRABALHO
-             * =========================================================
-             *
-             * O trabalho só é criado depois que o pagamento
-             * foi validado pela plataforma.
-             *
-             * O trabalho inicia obrigatoriamente como PENDENTE,
-             * aguardando a execução do serviço pelo contratado.
-             *
-             * id_contratante = usuário que criou a publicação
-             * id_contratado  = usuário que participou da negociação
-             */
-
-            $statusTrabalho = TrabalhoStatus::where(
-                'codigo',
-                'PENDENTE'
-            )
-                ->where(
-                    'ativo',
-                    true
-                )
-                ->firstOrFail();
-
-            /*
-             * Garante que a mesma negociação
-             * não gere mais de um trabalho.
-             *
-             * Os valores financeiros são copiados
-             * da negociação para preservar o histórico
-             * da contratação.
-             */
-            $trabalho = Trabalho::firstOrCreate(
-                [
-                    'id_negociacao' =>
-                    $negociacao->id_negociacao,
-                ],
-                [
-                    'id_publicacao' =>
-                    $negociacao->id_publicacao,
-
-                    'id_contratante' =>
-                    $negociacao->id_contratante,
-
-                    'id_contratado' =>
-                    $negociacao->id_interessado,
-
-                    'status_id' =>
-                    $statusTrabalho->id,
-
-                    /*
-                     * Valor que o contratado recebe.
-                     */
-                    'valor_trabalho' =>
-                    $negociacao->valor_trabalho,
-
-                    /*
-                     * Taxa de intermediação da JOB.
-                     */
-                    'valor_taxa' =>
-                    $negociacao->valor_taxa ?? 0,
-
-                    /*
-                     * Total pago pelo contratante.
-                     */
-                    'valor_total' =>
-                    $negociacao->valor_total ??
-                    $negociacao->valor_trabalho,
-
-                    'data_inicio' =>
-                    null,
-
-                    'data_conclusao' =>
-                    null,
-                ]
-            );
-
-
-            /*
-             * =========================================================
-             * 6. RETORNO
-             * =========================================================
-             */
-
-            return response()->json([
-                'message' =>
-                'Pagamento validado. Negociação fechada, publicação encerrada, demais negociações encerradas e trabalho criado.',
-
-                'data' => [
-                    'pagamento' =>
-                    $pagamento->fresh([
-                        'status',
-                    ]),
-
-                    'negociacao' =>
-                    $negociacao->fresh([
-                        'status',
-                        'publicacao.status',
-                        'publicacao',
-                    ]),
-
-                    'trabalho' =>
-                    $trabalho->fresh([
-                        'status',
-                        'publicacao',
-                        'negociacao.status',
-                        'contratante',
-                        'contratado',
-                    ]),
-                ],
-            ]);
-        });
     }
 }

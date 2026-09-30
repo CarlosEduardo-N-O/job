@@ -28,7 +28,7 @@ export default defineConfig({
                 short_name: 'JOB',
                 description: 'Plataforma de intermediação de serviços',
 
-                theme_color: '#863bff',
+                theme_color: '#000000',
                 background_color: '#ffffff',
 
                 display: 'standalone',

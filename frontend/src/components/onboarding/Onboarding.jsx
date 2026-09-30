@@ -68,8 +68,8 @@ const ETAPAS = [
     },
     {
         tipo: 'tour',
-        rota: '/perfil',
-        seletor: '.profile-page',
+        seletor: '.profile-modal',
+        modal: 'perfil',
         titulo: 'Perfil',
         descricao:
             'No seu perfil você pode consultar e administrar suas informações.',
@@ -89,20 +89,8 @@ export default function Onboarding() {
     const [finalizando, setFinalizando] = useState(false);
     const [alvo, setAlvo] = useState(null);
 
-    /*
-     * Guarda se o componente ainda está montado.
-     */
     const montadoRef = useRef(true);
-
-    /*
-     * Evita que a verificação de primeiro acesso
-     * seja executada várias vezes ao mesmo tempo.
-     */
     const verificandoRef = useRef(false);
-
-    /*
-     * Evita chamadas duplicadas para concluir onboarding.
-     */
     const finalizandoRef = useRef(false);
 
     const etapa = ETAPAS[etapaAtual];
@@ -132,10 +120,6 @@ export default function Onboarding() {
         let cancelado = false;
 
         async function verificar() {
-            /*
-             * Se não estiver autenticado, não devemos
-             * consultar o onboarding.
-             */
             if (!isAuthenticated) {
                 verificandoRef.current = false;
 
@@ -150,9 +134,6 @@ export default function Onboarding() {
                 return;
             }
 
-            /*
-             * Evita duas requisições simultâneas.
-             */
             if (verificandoRef.current) {
                 return;
             }
@@ -164,7 +145,8 @@ export default function Onboarding() {
             }
 
             try {
-                const resultado = await verificarPrimeiroAcesso();
+                const resultado =
+                    await verificarPrimeiroAcesso();
 
                 if (
                     cancelado ||
@@ -172,20 +154,6 @@ export default function Onboarding() {
                 ) {
                     return;
                 }
-
-                /*
-                 * O backend pode retornar:
-                 *
-                 * true
-                 * 'S'
-                 * 1
-                 *
-                 * ou eventualmente:
-                 *
-                 * { primeiro_acesso: true }
-                 *
-                 * { primeiro_acesso: 'S' }
-                 */
 
                 const primeiroAcesso =
                     resultado?.primeiro_acesso === true ||
@@ -254,7 +222,13 @@ export default function Onboarding() {
             return;
         }
 
-        if (location.pathname !== etapa.rota) {
+        /*
+         * Etapas com rota.
+         */
+        if (
+            etapa.rota &&
+            location.pathname !== etapa.rota
+        ) {
             setAlvo(null);
 
             navigate(etapa.rota);
@@ -273,7 +247,7 @@ export default function Onboarding() {
             if (!elemento) {
                 tentativas++;
 
-                if (tentativas < 20) {
+                if (tentativas < 30) {
                     timeoutId = setTimeout(
                         atualizarAlvo,
                         100
@@ -299,6 +273,31 @@ export default function Onboarding() {
         };
 
         const prepararTour = () => {
+            /*
+             * PERFIL
+             *
+             * Abre o modal através do AppLayout.
+             */
+            if (etapa.modal === 'perfil') {
+                window.dispatchEvent(
+                    new CustomEvent(
+                        'abrir-modal-perfil'
+                    )
+                );
+
+                tentativas = 0;
+
+                timeoutId = setTimeout(
+                    atualizarAlvo,
+                    150
+                );
+
+                return;
+            }
+
+            /*
+             * DEMAIS ETAPAS
+             */
             const elemento = document.querySelector(
                 etapa.seletor
             );
@@ -315,6 +314,8 @@ export default function Onboarding() {
                     250
                 );
             } else {
+                tentativas = 0;
+
                 atualizarAlvo();
             }
         };
@@ -363,15 +364,14 @@ export default function Onboarding() {
      * =========================================================
      * FINALIZAR ONBOARDING
      * =========================================================
+     *
+     * fecharPerfil = true somente quando o usuário
+     * clicar em "Começar a usar".
      */
 
-    const finalizar = async () => {
-        /*
-         * Proteção importante:
-         *
-         * mesmo que algum evento seja disparado duas vezes,
-         * somente uma requisição poderá ser executada.
-         */
+    const finalizar = async (
+        fecharPerfil = false
+    ) => {
         if (
             finalizando ||
             finalizandoRef.current
@@ -387,11 +387,6 @@ export default function Onboarding() {
         );
 
         try {
-            /*
-             * A chamada continua sendo feita normalmente.
-             *
-             * Se a API responder, encerramos o onboarding.
-             */
             await concluirOnboarding();
 
             console.log(
@@ -402,12 +397,48 @@ export default function Onboarding() {
                 return;
             }
 
+            /*
+             * =================================================
+             * FECHAR PERFIL
+             * =================================================
+             *
+             * IMPORTANTE:
+             *
+             * O Perfil somente será fechado quando
+             * fecharPerfil === true.
+             *
+             * Isso acontece apenas no botão
+             * "Começar a usar".
+             */
+            if (fecharPerfil) {
+                console.log(
+                    '[ONBOARDING] Fechando modal de perfil.'
+                );
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        'fechar-modal-perfil'
+                    )
+                );
+            }
+
+            /*
+             * Primeiro desativamos o onboarding.
+             */
             setAtivo(false);
             setAlvo(null);
             setFinalizando(false);
 
             finalizandoRef.current = false;
 
+            /*
+             * =================================================
+             * IR PARA HOME
+             * =================================================
+             *
+             * Depois que o modal foi solicitado para fechar,
+             * navegamos para a Home.
+             */
             navigate('/', {
                 replace: true,
             });
@@ -421,12 +452,6 @@ export default function Onboarding() {
                 return;
             }
 
-            /*
-             * Muito importante:
-             *
-             * se a API falhar, não deixamos o botão
-             * preso eternamente em "Finalizando...".
-             */
             setFinalizando(false);
             finalizandoRef.current = false;
         }
@@ -447,14 +472,19 @@ export default function Onboarding() {
         }
 
         /*
-         * Só chama finalizar quando o usuário realmente
-         * estiver na última etapa e clicar no botão.
+         * ÚLTIMA ETAPA
+         *
+         * Aqui é o único ponto em que:
+         *
+         * 1. conclui o onboarding;
+         * 2. fecha o Perfil;
+         * 3. vai para a Home.
          */
         if (
             etapaAtual ===
             ETAPAS.length - 1
         ) {
-            finalizar();
+            finalizar(true);
             return;
         }
 
@@ -478,6 +508,9 @@ export default function Onboarding() {
             return;
         }
 
+        /*
+         * Não fecha o Perfil.
+         */
         setEtapaAtual(
             (atual) => atual - 1
         );
@@ -497,7 +530,10 @@ export default function Onboarding() {
             return;
         }
 
-        finalizar();
+        /*
+         * Pular NÃO fecha o Perfil.
+         */
+        finalizar(false);
     };
 
     /*
@@ -522,11 +558,11 @@ export default function Onboarding() {
 
     const estiloAlvo = alvo
         ? {
-              top: `${alvo.top - 6}px`,
-              left: `${alvo.left - 6}px`,
-              width: `${alvo.width + 12}px`,
-              height: `${alvo.height + 12}px`,
-          }
+            top: `${alvo.top - 6}px`,
+            left: `${alvo.left - 6}px`,
+            width: `${alvo.width + 12}px`,
+            height: `${alvo.height + 12}px`,
+        }
         : {};
 
     /*
@@ -632,7 +668,7 @@ export default function Onboarding() {
                                 Finalizando...
                             </>
                         ) : etapaAtual ===
-                          ETAPAS.length - 1 ? (
+                            ETAPAS.length - 1 ? (
                             'Começar a usar'
                         ) : (
                             'Próximo'
